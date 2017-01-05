@@ -7,7 +7,7 @@
  */
 
 return [
-        'permalink' => true,
+        'permalink' => null,
 // When not set, will translate group name
 // Panel allowed action
         'actions' => [

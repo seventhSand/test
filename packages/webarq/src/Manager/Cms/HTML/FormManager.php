@@ -151,7 +151,7 @@ class FormManager implements Htmlable
     {
         $this->admin = $admin;
 
-        $this->setPropertyFromOptions($options, true);
+        $this->setPropertyFromOptions($options, false);
 
         $this->compileOptions($options);
 
