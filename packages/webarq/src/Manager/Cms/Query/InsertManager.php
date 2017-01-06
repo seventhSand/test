@@ -44,18 +44,16 @@ class InsertManager extends CrudAbstractManager
                 if ([] !== $this->pairs) {
                     $foreignKey = Wa::table($this->master)->getReferenceKeyName();
                     foreach ($this->pairs as $table => $row) {
-                        if (is_array($row)) {
-                            if (!Arr::isAssocAbs($row)) {
+                        if (!Arr::isAssocAbs($row)) {
 // Multi insertion
-                                foreach ($row as $row1) {
-                                    $row1[$foreignKey] = $id;
-                                    $this->makeInsert($table, $row1);
-                                }
-                                unset($this->pairs[$table]);
-                                continue;
-                            } else {
-                                $this->makeInsert($table, $row);
+                            foreach ($row as $row1) {
+                                $row1[$foreignKey] = $id;
+                                $this->makeInsert($table, $row1);
                             }
+                            unset($this->pairs[$table]);
+                            continue;
+                        } else {
+                            $this->makeInsert($table, $row);
                         }
                     }
                 }

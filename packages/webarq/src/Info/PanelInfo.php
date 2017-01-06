@@ -41,6 +41,7 @@ class PanelInfo
 
     /**
      * Panel label
+     *
      * Used when generate panel anchor <a/> html tag
      *
      * @var
@@ -48,7 +49,15 @@ class PanelInfo
     protected $label;
 
     /**
-     * Panel permitted actions
+     * Panel listing configuration
+     *
+     * @var array
+     */
+    protected $listing = [];
+
+    /**
+     * Panel actions configuration
+     *
      * Used when generate panel button in listing
      *
      * @var array
@@ -57,6 +66,7 @@ class PanelInfo
 
     /**
      * Panel attributes.
+     *
      * Used when generate panel anchor <a/> html tag
      *
      * @var array
@@ -89,16 +99,6 @@ class PanelInfo
     }
 
     /**
-     * Get panel name
-     *
-     * @return mixed
-     */
-    public function getName()
-    {
-        return $this->name;
-    }
-
-    /**
      * Get panel action
      *
      * @param $key
@@ -108,6 +108,14 @@ class PanelInfo
     public function getAction($key, $default = null)
     {
         return array_get($this->actions, $key, $default);
+    }
+
+    /**
+     * @return array
+     */
+    public function getActions()
+    {
+        return $this->actions;
     }
 
     /**
@@ -121,14 +129,11 @@ class PanelInfo
     }
 
     /**
-     * @param null|string $action
-     * @return mixed
+     * @return array
      */
-    public function getPermalink($action = null)
+    public function getListing()
     {
-        return is_null($action)
-                ? $this->permalink
-                : \URL::panel(\URL::detect($this->permalink, $this->module, $this->name, $action));
+        return $this->listing;
     }
 
     /**
@@ -137,5 +142,26 @@ class PanelInfo
     public function getModule()
     {
         return $this->module;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getName()
+    {
+        return $this->name;
+    }
+
+    /**
+     * Get panel permalink, auto generate url panel when action is set
+     *
+     * @param null|string $action
+     * @return mixed
+     */
+    public function getPermalink($action = null)
+    {
+        return is_null($action)
+                ? $this->permalink
+                : \URL::panel(\URL::detect($this->permalink, $this->module, $this->name, $action));
     }
 }

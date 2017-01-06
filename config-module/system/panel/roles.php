@@ -8,6 +8,15 @@
 
 return [
         'permalink' => null,
+        'listing' => [
+                'headers' => [ 'role_level' => [ 'label' => 'LevelQ' ], 'title', 'is_admin', 'is_active' ],
+// Default listing sequence, give array for multiple column sequence
+                'sequence' => 'label',
+// Searchable column, give array for multiple column sequence
+                'searchable' => 'label',
+                'driver' => 'json',
+                'data' => ''
+        ],
 // When not set, will translate group name
 // Panel allowed action
         'actions' => [
@@ -47,6 +56,34 @@ return [
 // the related controller it self
                         'rules' => [
                                 'admin:level' => 'item:role_level'
+                        ],
+// Transaction form if any
+                        'form' => [
+                                'title' => 'Create Role',
+// Following by input key => attributes
+// Input key should be following "moduleName.tableName.columnName" format name
+                                'system.roles.role_level' => [
+                                        'name' => 'level',
+                                        'type' => 'text',
+                                        'label' => 'Level',
+                                        'rules' => 'max:255|min:10',
+                                        'error-message' => [
+                                                'required' => 'Role level should not be empty'
+                                        ],
+                                        'info' => 'For best practice, please use simple number which is easy '
+                                                . 'to remember. Eg 10, 20, ...',
+                                ],
+                                'system.roles.title',
+                                'system.roles.is_admin' => [
+                                        'required'
+                                ],
+                                'system.roles.is_active' => [
+// Mean current login admin must have activeness permission
+                                        'permissions' => 'activeness',
+// Guarded value, use when input permission not fulfilled
+                                        'guarded-value' => 0
+                                ],
+                                'system.roles.is_system'
                         ]
                 ],
                 'delete',
