@@ -12,7 +12,7 @@ namespace Webarq\Manager\HTML\Table\Driver;
 abstract class DriverAbstractManager
 {
     /**
-     * There is two ways how to provided data value:
+     * There is two ways to provided data value:
      *
      * $data = [['id' => 1, 'name' => 'John Doe'], ['id' => 2, 'name' => 'Jane Doe'], ['name' => '??', 'id' => '??']]
      *

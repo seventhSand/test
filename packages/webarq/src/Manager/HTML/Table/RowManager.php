@@ -42,11 +42,11 @@ class RowManager implements Htmlable
 
     /**
      * @param $value
-     * @param null $container
+     * @param string|null $container
      * @param array $attributes
      * @return $this
      */
-    public function addCell($value, $container = null, $attributes = [])
+    public function addCell($value, $container = 'td', $attributes = [])
     {
         if (is_array($container)) {
             $attributes = $container;

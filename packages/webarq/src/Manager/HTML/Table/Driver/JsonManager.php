@@ -9,6 +9,8 @@
 namespace Webarq\Manager\HTML\Table\Driver;
 
 
+use URL;
+
 class JsonManager extends DriverAbstractManager
 {
     /**
@@ -25,7 +27,7 @@ class JsonManager extends DriverAbstractManager
             $string($this);
         } elseif (true === $string) {
             $this->sampling();
-        } elseif (\URL::isValidUrl($string)) {
+        } elseif (URL::isValidUrl($string)) {
             $this->setURL($string);
         } else {
             $this->setString($string);
@@ -76,7 +78,7 @@ class JsonManager extends DriverAbstractManager
      */
     public function setURL($string)
     {
-// Allow url fopen must be allow
+// Make sure our server enabled to access external url
         ini_set("allow_url_fopen", 1);
 
         $this->setString(file_get_contents($string));

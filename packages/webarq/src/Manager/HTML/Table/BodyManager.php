@@ -58,19 +58,13 @@ class BodyManager implements Htmlable
         if (is_array($container)) {
             $attributes = $container;
             $container = 'tr';
+        } elseif (null === $container) {
+            $container = 'tr';
         }
 
         $this->containers[] = [$container, $attributes];
 
         return $this->rows[] = Wa::html('table.row', $this->type);
-    }
-
-    /**
-     * @return array
-     */
-    public function getRows()
-    {
-        return $this->rows;
     }
 
     /**

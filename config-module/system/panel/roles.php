@@ -9,13 +9,14 @@
 return [
         'permalink' => null,
         'listing' => [
-                'headers' => [ 'role_level' => [ 'label' => 'LevelQ' ], 'title', 'is_admin', 'is_active' ],
+                'headers' => [
+                        'columns' => ['role_level' => ['label' => 'LabelQ'], 'title', 'is_admin', 'is_active']
+                ],
 // Default listing sequence, give array for multiple column sequence
                 'sequence' => 'label',
 // Searchable column, give array for multiple column sequence
                 'searchable' => 'label',
-                'driver' => 'json',
-                'data' => ''
+//                'driver' => ['json', '[{"title": "Q-Team", "role_level": 2,"is_admin": 1, "is_active": 0}, [2, "S-Team", 1, 1]]']
         ],
 // When not set, will translate group name
 // Panel allowed action

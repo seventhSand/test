@@ -14,6 +14,7 @@ use Illuminate\Support\Arr;
 use Wa;
 use Webarq\Manager\HTML\Table\BodyManager;
 use Webarq\Manager\HTML\Table\Driver\DriverAbstractManager;
+use Webarq\Manager\HTML\Table\RowManager;
 
 class TableManager implements Htmlable
 {
@@ -26,6 +27,13 @@ class TableManager implements Htmlable
      * @var object Webarq\Manager\HTML\Table\BodyManager
      */
     protected $head;
+
+    /**
+     * Table column name
+     *
+     * @var array
+     */
+    protected $columns = [];
 
     /**
      * @var object Webarq\Manager\HTML\Table\BodyManager
@@ -42,7 +50,7 @@ class TableManager implements Htmlable
      *
      * @var array
      */
-    protected $containers = [
+    protected $componentContainer = [
             'table' => ['table', []],
             'head' => ['thead', []],
             'body' => ['tbody', []],
@@ -74,6 +82,9 @@ class TableManager implements Htmlable
                     $key = $setting;
                     $setting = [];
                 }
+
+                $this->columns[] = $key;
+
                 $manager->addCell($key, $setting);
             }
         }
@@ -99,7 +110,7 @@ class TableManager implements Htmlable
      */
     public function addHead($container = 'thead', $attributes = [])
     {
-        return $this->addRows(array_merge(['head'], func_get_args()));
+        return $this->addRows(array_merge(['head'], [$container, $attributes]));
     }
 
     /**
@@ -149,9 +160,9 @@ class TableManager implements Htmlable
     public function setContainer($key, $value, array $attributes = [])
     {
         if (!is_array($key)) {
-            $this->containers[$key] = [$value, $attributes];
+            $this->componentContainer[$key] = [$value, $attributes];
         } else {
-            $this->containers = $key + $this->containers;
+            $this->componentContainer = $key + $this->componentContainer;
         }
 
         return $this;
@@ -168,7 +179,12 @@ class TableManager implements Htmlable
     {
         if (isset($args)) {
             $args = func_get_args();
-            $type = array_shift($args);
+// Remove type arguments
+            array_shift($args);
+        }
+
+        if (Wa::getGhost() === array_get($args, 1)) {
+            $args = array_shift($args);
         }
 
         return $this->driver = Wa::load('manager.html.table.driver.' . $type, $args, Wa::getGhost());
@@ -200,10 +216,10 @@ class TableManager implements Htmlable
 
         $rowHtml = '';
         foreach (['head', 'body', 'foot'] as $key) {
-            $rowHtml .= $this->makeRows($key);
+            $rowHtml .= $this->buildComponent($key);
         }
-        $str .= Wa::html('element', $rowHtml, array_get($this->containers, 'table.0', 'table'),
-                array_get($this->containers, 'table.1', []))->toHtml();
+        $str .= Wa::html('element', $rowHtml, array_get($this->componentContainer, 'table.0', 'table'),
+                array_get($this->componentContainer, 'table.1', []))->toHtml();
 
         return $str;
     }
@@ -213,8 +229,7 @@ class TableManager implements Htmlable
      */
     protected function compileDriver()
     {
-// Reset all data
-        if ([] !== $this->driver->getData('head')) {
+        if (!isset($this->head) && is_array($this->driver->getData('head'))) {
             $head = $this->addHead()->addRow();
             foreach ($this->driver->getData('head') as $column => $attributes) {
                 if (is_numeric($column)) {
@@ -223,33 +238,22 @@ class TableManager implements Htmlable
                 } elseif (!is_array($attributes)) {
                     $attributes = [];
                 }
+
+                $this->columns[] = $column;
+
                 $head->addCell($column, $attributes);
             }
+        }
 
-
+        if ([] !== ($rows = $this->driver->getData('rows'))) {
             $this->addBody();
-            if ([] !== $this->driver->getData('rows')) {
-// Provided data could be in disordered state, so we should found the column value by its column name
-                if (Arr::isAssocAbs($this->driver->getData('head'))) {
-                    foreach ($this->driver->getData('rows') as $row) {
-                        $handler = $this->body->addRow();
-                        foreach ($this->driver->getData('head') as $column) {
-                            $handler->addCell(array_get($row, $column));
-                        }
-                    }
-                } else {
-                    foreach ($this->driver->getData('rows') as $row) {
-                        $handler = $this->body->addRow();
-                        foreach ($row as $value) {
-                            $handler->addCell($value);
-                        }
-                    }
-                }
-            } else {
-                $this->body->addRow()->addCell('No Data', ['colspan' => count($this->driver->getData('head'))]);
+
+            foreach ($rows as $row) {
+                $this->buildRow($this->body->addRow(), $row);
             }
         }
     }
+
 
     /**
      * @param string $container
@@ -262,17 +266,36 @@ class TableManager implements Htmlable
     }
 
     /**
+     * Helper to decide how to print row member
+     *
+     * @param RowManager $handler
+     * @param array $row
+     */
+    protected function buildRow(RowManager $handler, array $row)
+    {
+        if (Arr::isAssoc($row) && [] !== $this->columns) {
+            foreach ($this->columns as $column) {
+                $handler->addCell(array_get($row, $column));
+            }
+        } else {
+            foreach ($row as $value) {
+                $handler->addCell($value);
+            }
+        }
+    }
+
+    /**
      * @param $type
      * @return string
      */
-    private function makeRows($type)
+    private function buildComponent($type)
     {
         if (isset($this->{$type}) && $this->{$type} instanceof BodyManager) {
             return Wa::html(
                     'element',
                     $this->{$type}->toHtml(),
-                    array_get($this->containers, $type . '.0', 't' . $type),
-                    array_get($this->containers, $type . '.1', [])
+                    array_get($this->componentContainer, $type . '.0', 't' . $type),
+                    array_get($this->componentContainer, $type . '.1', [])
             )->toHtml();
         }
     }
