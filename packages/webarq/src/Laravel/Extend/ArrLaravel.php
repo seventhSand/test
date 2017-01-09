@@ -196,5 +196,16 @@ class ArrLaravel
             }
             return false;
         });
+
+        Arr::macro('unsetAssocKey', function(array $array){
+            if ([] !== $array) {
+                foreach ($array as $key => $value) {
+                    if (!is_numeric($key)) {
+                        unset($array[$key]);
+                    }
+                }
+            }
+            return $array;
+        });
     }
 }

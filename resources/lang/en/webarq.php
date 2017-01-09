@@ -30,4 +30,5 @@ return [
         'password' => 'Password',
         'email' => 'Email',
         'address' => 'Address',
+        'actionButton' => 'Action'
 ];

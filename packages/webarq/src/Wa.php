@@ -140,8 +140,11 @@ class Wa
         if (count($path) > 1) {
             $path = $this->compilePathName($path);
             $class = implode('\\', $path);
-            if (!str_contains(last($path), '$')) {
+// Suffixed class with root name space
+            if (!ends_with($class, '$')) {
                 $class .= $path[0];
+            } else {
+                $class = substr($class, 0, -1);
             }
         } else {
             $class = ucfirst(strtolower(current($path)));
@@ -153,10 +156,8 @@ class Wa
     private function compilePathName(array $path)
     {
         foreach ($path as &$item) {
-            if (str_contains($item, ' ')) {
-                $item = $this->compilePathName(explode(' ',$item));
-                $item = implode('', $item);
-            } elseif (ends_with($item, '!')) {
+// Do not modified item value
+            if (ends_with($item, '!')) {
                 $item = substr($item, 0, -1);
             } else {
                 $item = studly_case($item);

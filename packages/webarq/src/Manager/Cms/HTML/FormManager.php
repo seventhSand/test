@@ -267,8 +267,10 @@ class FormManager implements Htmlable
             } else {
                 $input = Wa::load('manager.cms.HTML!.form.input', $this->builder, $type, $name, $value, $attr);
             }
-// Pairing input name with the manager, while every input is protected in the first place
+
+// Pairing input name with the manager, while each input set to be protected at the first
             $this->pairs[$name] = [$input, true];
+
             if (null === array_get($attr, 'protected')
                     && ([] === ($permissions = $input->getPermissions())
                             || $this->admin->hasPermission(

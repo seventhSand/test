@@ -10,6 +10,7 @@ namespace Webarq\Manager\Cms\HTML;
 
 
 use Wa;
+use Webarq\Info\ModuleInfo;
 use Webarq\Info\PanelInfo;
 use Webarq\Manager\AdminManager;
 use Webarq\Manager\SetPropertyManagerTrait;
@@ -22,6 +23,11 @@ class TableManager extends \Webarq\Manager\HTML\TableManager
      * @var AdminManager
      */
     protected $admin;
+
+    /**
+     * @var ModuleInfo
+     */
+    protected $module;
 
     /**
      * @var PanelInfo
@@ -52,17 +58,19 @@ class TableManager extends \Webarq\Manager\HTML\TableManager
      *
      * @var array|number
      */
-    protected $paginator = [2, 'webarq.listing.cms.paginator'];
+    protected $pagination = [2, 'webarq.listing.cms.pagination'];
 
     /**
      * Create CMS\TableManager instance
      *
      * @param AdminManager $admin
+     * @param ModuleInfo $module
      * @param PanelInfo $panel
      */
-    public function __construct(AdminManager $admin, PanelInfo $panel)
+    public function __construct(AdminManager $admin, ModuleInfo $module, PanelInfo $panel)
     {
         $this->admin = $admin;
+        $this->module = $module;
         $this->panel = $panel;
         $this->actions = $panel->getActions();
 
@@ -70,8 +78,39 @@ class TableManager extends \Webarq\Manager\HTML\TableManager
         $settings = $panel->getListing();
         $this->setPropertyFromOptions($settings);
 
-        if (!is_array($this->paginator)) {
-            $this->paginator = [$this->paginator, 'webarq.listing.cms.paginator'];
+// Pagination property should be array
+        if (!is_array($this->pagination)) {
+            $this->pagination = [$this->pagination, 'webarq.listing.cms.pagination'];
+        }
+
+        $this->groupingActions();
+    }
+
+    /**
+     * Grouping actions by placement setting
+     */
+    protected function groupingActions()
+    {
+        if ([] !== $this->actions) {
+// Create action should be on listing header
+            $groups['header']['create'] = array_pull($this->actions, 'create', []);
+
+            foreach ($this->actions as $name => $setting) {
+                if (is_numeric($name)) {
+                    $name = $setting;
+                    $setting = [];
+                }
+// By default, action will be put on listing row item column action
+                $placement = array_pull($setting, 'placement', 'listing');
+                if (is_array($placement)) {
+                    foreach ($placement as $key) {
+                        $groups[$key][$name] = $setting;
+                    }
+                } else {
+                    $groups[$placement][$name] = $setting;
+                }
+            }
+            $this->actions = $groups;
         }
     }
 
@@ -82,11 +121,23 @@ class TableManager extends \Webarq\Manager\HTML\TableManager
      */
     public function toHtml()
     {
+// Build header action, while create actions should be on header
+        $html = $this->buildHeaderActions(array_get($this->actions, 'header', []));
+
         $this->setup();
 
-        $s = parent::toHtml();
+        $html .= parent::toHtml();
 
-        return $s . $this->driver->paginator($this->paginator[1]);
+        return $html . $this->driver->paginate($this->pagination[1]);
+    }
+
+    /**
+     * @param array $actions
+     * @return string
+     */
+    protected function buildHeaderActions(array $actions)
+    {
+        return '';
     }
 
     /**
@@ -96,47 +147,73 @@ class TableManager extends \Webarq\Manager\HTML\TableManager
     {
         $this->makeHeader();
 
-        if (!isset($this->driver)) {
-            $this->driver = ['paginator', $this->panel->getName(), $this->columns, $this->paginator[0]];
-        }
-
         $this->setupDriver();
     }
 
     protected function makeHeader()
     {
         if ([] !== ($groups = array_get($this->headers, 'columns', []))) {
-            $container = array_get($this->headers, 'container');
-
             if (!is_array($groups[0])) {
                 $groups = [$groups];
             }
 
-            $head = $this->addHead($container);
+            $this->addHead(array_get($this->headers, 'container'));
 
-            foreach ($groups as $columns) {
-                $row = $head->addRow(array_pull($columns, 'container'));
+            foreach ($groups as $i => $columns) {
+                $row = $this->head->addRow(array_pull($columns, 'container'));
+
                 foreach ($columns as $column => $attr) {
                     if (is_numeric($column)) {
                         $column = $attr;
                         $attr = [];
                     }
 
-                    $this->columns[] = $column;
+// Guarded column should not be shown on listing
+                    if (null === array_pull($attr, 'guarded')) {
+                        $this->columns[] = $column;
+                        $row->addCell(trans('webarq.' . $column), array_pull($attr, 'container'), $attr);
+                    } else {
+                        $this->columns[$column] = $column;
+                    }
+                }
 
-                    $row->addCell(trans('webarq.'. $column), array_pull($attr, 'container'), $attr);
+// Add action column
+                if (0 === $i) {
+                    $row->addCell(trans('webarq.actionButton'), ['rowspan' => count($groups)]);
                 }
             }
+            $this->columns[] = 'actionButton';
         }
     }
 
     protected function setupDriver()
     {
-        if (is_array($this->driver) && [] !== ($driver = $this->driver)) {
+        if (!isset($this->driver)) {
+            $this->driver = Wa::manager(
+                    'cms.HTML!.table.driver.paginate',
+                    $this->admin,
+                    $this->module->getName(),
+                    $this->panel->getName(),
+                    $this->columns,
+                    $this->pagination[0],
+                    array_get($this->actions, 'listing', [])
+            );
+        } elseif (is_array($this->driver) && [] !== ($driver = $this->driver)) {
             $type = array_shift($driver);
 
             $this->driver($type, $driver, Wa::getGhost());
         }
     }
 
+    protected function buildAction($type)
+    {
+        $attr = array_pull($this->actions, $type, []) + [
+                        'module' => $this->panel->getModule(),
+                        'panel' => $this->panel->getName(),
+                        'type' => $type
+                ];
+
+        return Wa::manager('cms.HTML!.table.' . $type, $this->admin, $attr)
+                ?: Wa::manager('cms.HTML!.table.button', $this->admin, $attr);
+    }
 }

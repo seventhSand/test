@@ -8,20 +8,38 @@
 
 return [
         'permalink' => null,
+// When not set, will translate group name
+        'label' => 'RoleQ',
         'listing' => [
                 'headers' => [
-                        'columns' => ['role_level' => ['label' => 'LabelQ'], 'title', 'is_admin', 'is_active']
+                        'columns' => [
+                                'role_level' => ['label' => 'LabelQ'],
+                                'title',
+                                'is_admin',
+                                'is_active',
+                                'is_system' => [
+// @todo Column selected but not showing on the list
+                                        'guarded' => true
+                                ]
+                        ]
                 ],
 // Default listing sequence, give array for multiple column sequence
                 'sequence' => 'label',
 // Searchable column, give array for multiple column sequence
                 'searchable' => 'label',
-//                'driver' => ['json', '[{"title": "Q-Team", "role_level": 2,"is_admin": 1, "is_active": 0}, [2, "S-Team", 1, 1]]']
+// Set as an array in [limit, view file name] format
+                'pagination' => 3,
         ],
-// When not set, will translate group name
 // Panel allowed action
         'actions' => [
-                'activeness',
+                'activeness' => [
+                        'permissions' => 'activeness',
+                        'rules' => [
+                                'item.is_system' => 0
+                        ],
+// Set button position location
+                        'placement' => 'listing'
+                ],
                 'create' => [
 // Transaction form if any
                         'form' => [
@@ -53,10 +71,9 @@ return [
                         ]
                 ],
                 'edit' => [
-// Actions rules if any. This will be checking on routes while possible, or on admin base controller, or on
-// the related controller it self
+// Button rules
                         'rules' => [
-                                'admin:level' => 'item:role_level'
+                                'admin.level' => ['>=', 'item.role_level']
                         ],
 // Transaction form if any
                         'form' => [

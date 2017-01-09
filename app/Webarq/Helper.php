@@ -6,7 +6,7 @@
  * Time: 6:40 PM
  */
 
-namespace app\Webarq;
+namespace App\Webarq;
 
 
 class Helper

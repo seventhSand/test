@@ -187,7 +187,19 @@ class TableManager implements Htmlable
             $args = array_shift($args);
         }
 
-        return $this->driver = Wa::load('manager.html.table.driver.' . $type, $args, Wa::getGhost());
+        $this->setDriver(Wa::load('manager.html.table.driver.' . $type, $args, Wa::getGhost()));
+
+        return $this->driver;
+    }
+
+    /**
+     * Set table manager driver
+     *
+     * @param DriverAbstractManager $driver
+     */
+    protected function setDriver(DriverAbstractManager $driver)
+    {
+        $this->driver = $driver;
     }
 
     /**
@@ -274,7 +286,10 @@ class TableManager implements Htmlable
     protected function buildRow(RowManager $handler, array $row)
     {
         if (Arr::isAssoc($row) && [] !== $this->columns) {
-            foreach ($this->columns as $column) {
+            foreach ($this->columns as $key => $column) {
+                if (!is_numeric($key)) {
+                    continue;
+                }
                 $handler->addCell(array_get($row, $column));
             }
         } else {

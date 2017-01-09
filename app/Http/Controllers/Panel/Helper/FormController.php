@@ -55,7 +55,7 @@ class FormController extends BaseController
         $options = $this->panel->getAction($this->action . '.form', []);
         $options['action'] = \URL::panel(
                 \URL::detect(
-                        array_pull($options, 'action'), $this->module->getName(),
+                        array_pull($options, 'permalink'), $this->module->getName(),
                         $this->panel->getName(), 'form/' . $this->action
                 )
         );
