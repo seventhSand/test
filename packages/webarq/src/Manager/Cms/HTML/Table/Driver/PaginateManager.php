@@ -56,7 +56,7 @@ class PaginateManager extends DriverAbstractManager
     /**
      * @var array
      */
-    protected $head = [];
+    protected $sequence = [];
 
     /**
      * Create builder instance
@@ -78,8 +78,31 @@ class PaginateManager extends DriverAbstractManager
 
 // Remove action button from columns
         array_pop($columns);
-        $this->head = Arr::unsetAssocKey($columns);
-        $this->builder = DB::table($panel)->select($columns);
+
+        $this->builder = DB::table($panel)->select([] === $columns ? '*' : $columns)
+                ->addSelect(Wa::table($panel)->primaryColumn()->getName());
+    }
+
+    /**
+     * @param $sequences
+     * @return $this
+     */
+    public function buildSequence($sequences)
+    {
+        if (!is_array($sequences)) {
+            $sequences = [$sequences];
+        }
+
+        foreach ($sequences as $column => $direction) {
+            if (is_numeric($column)) {
+                $column = $direction;
+                $direction = 'asc';
+            }
+
+            $this->builder->orderBy($column, $direction);
+        }
+
+        return $this;
     }
 
     /**
@@ -101,9 +124,7 @@ class PaginateManager extends DriverAbstractManager
             $data = $this->get->toArray();
             foreach ($data['data'] as &$item) {
                 $item = (array)$item;
-                $tmp = array_intersect_key($item, array_flip($this->head));
-                $tmp['actionButton'] = $this->buildActions($item);
-                $item = $tmp;
+                $item['actionButton'] = $this->buildActions($item);
             }
 
             return $data['data'];

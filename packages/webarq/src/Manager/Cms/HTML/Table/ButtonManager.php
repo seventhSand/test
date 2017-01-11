@@ -52,10 +52,20 @@ class ButtonManager implements Htmlable
      */
     protected $type;
 
-
+    /**
+     * @var
+     */
     protected $permalink;
 
+    /**
+     * @var array
+     */
     protected $rows = [];
+
+    /**
+     * @var array
+     */
+    protected $attributes = [];
 
     /**
      * @param AdminManager $admin
@@ -80,11 +90,14 @@ class ButtonManager implements Htmlable
     public function toHtml()
     {
         if ($this->permitted()) {
-            $suffix = 'create' === $this->type || 'edit' === $this->type ? 'form/' : '';
             return Html::link(
-                    URL::panel(URL::detect($this->permalink, $this->module, $this->panel, $suffix . $this->type)),
-                    $this->type);
+                    Wa::instance('manager.cms.panel')
+                            ->generateURL($this->permalink, $this->module, $this->panel, $this->type, $this->rows),
+                    $this->type,
+                    $this->attributes
+            );
         }
+
         return '';
     }
 
@@ -93,10 +106,7 @@ class ButtonManager implements Htmlable
      */
     protected function permitted()
     {
-        if ($this->admin->hasPermission(Wa::formatPermissions($this->type, $this->module, $this->panel, $this->type))
-         && Wa::manager('cms.rule', $this->admin, $this->rules, $this->rows)->isValid()) {
-            return true;
-        }
-        return false;
+        return $this->admin->hasPermission(Wa::formatPermissions($this->type, $this->module, $this->panel, $this->type))
+        && Wa::manager('cms.rule', $this->admin, $this->rules, $this->rows)->isValid();
     }
 }

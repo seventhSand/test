@@ -20,12 +20,6 @@ class DashboardController extends BaseController
 
     public function actionGetIndex()
     {
-        return 'Dashboard Area';
-    }
-
-    public function actionGetCreate()
-    {
-
-        return 'Create Dashboard';
+        $this->layout->right = 'Dashboard area';
     }
 }

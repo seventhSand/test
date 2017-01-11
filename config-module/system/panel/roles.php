@@ -9,7 +9,7 @@
 return [
         'permalink' => null,
 // When not set, will translate group name
-        'label' => 'RoleQ',
+        'label' => 'Roles',
         'listing' => [
                 'headers' => [
                         'columns' => [
@@ -18,13 +18,13 @@ return [
                                 'is_admin',
                                 'is_active',
                                 'is_system' => [
-// @todo Column selected but not showing on the list
+// Column is selected, but not shown on the list
                                         'guarded' => true
                                 ]
-                        ]
+                        ],
                 ],
 // Default listing sequence, give array for multiple column sequence
-                'sequence' => 'label',
+                'sequence' => 'role_level',
 // Searchable column, give array for multiple column sequence
                 'searchable' => 'label',
 // Set as an array in [limit, view file name] format
@@ -33,23 +33,34 @@ return [
 // Panel allowed action
         'actions' => [
                 'activeness' => [
+// Button permission, if multiple permissions is needed, then set it as an numeric array
+// When multiple permissions is given, and we needed all permissions to be granted,
+// then add boolean true as the last item
                         'permissions' => 'activeness',
+// Button rules, for callback item will use two parameter (Object Admin, Array Items)
+// To get row (item) value, then key should be prefixed with "item.", and "admin." to get
+// admin attributes.
+// To change logic operator (eg. "=, !=") then set the keys value as an array in
+// [known logic operator, value] format
                         'rules' => [
                                 'item.is_system' => 0
                         ],
-// Set button position location
-                        'placement' => 'listing'
+// Button position location, automatically registered to the listing when not set
+                        'placement' => 'listing',
+// Button HTML attributes
+                        'attributes' => []
                 ],
                 'create' => [
 // Transaction form if any
                         'form' => [
+// Form title
+// @todo default value when not set
                                 'title' => 'Create Role',
-// Following by input key => attributes
 // Input key should be following "moduleName.tableName.columnName" format name
                                 'system.roles.role_level' => [
                                         'name' => 'level',
                                         'type' => 'text',
-                                        'label' => 'Level',
+                                        'title' => 'LevelQ',
                                         'rules' => 'max:255|min:10',
                                         'error-message' => [
                                                 'required' => 'Role level should not be empty'
@@ -71,6 +82,8 @@ return [
                         ]
                 ],
                 'edit' => [
+// Allowing parameter in permalink "?" mean null as for permalink while "." mean true
+//                        'permalink' => '?id,role_level',
 // Button rules
                         'rules' => [
                                 'admin.level' => ['>=', 'item.role_level']

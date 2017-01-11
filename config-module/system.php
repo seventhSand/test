@@ -15,16 +15,21 @@ return [
         ],
         'panels' => [
                 'dashboard' => [
-// When not set, will use system determination which is return helper/listing/index/systems/admins
+// When not set, will use system determination which is return helper/listing/index/systems/dashboard
 // True will return systems/admins/listing
-                        'permalink' => true,
+                        'permalink' => 'system/dashboard',
                         'class' => 'dashboard',
-                        'label' => 'Dashboard'
+// When not set, will translate group name
+                        'label' => 'Dashboard',
+// Disable listing
+                        'listing' => false,
+                ],
+                'configurations' => [
+                        'permalink' => true,
+                        'listing' => false,
                 ],
                 'admins' => [
                         'permalink' => null,
-// When not set, will translate group name
-                        'label' => 'Admins',
 // Panel allowed action
                         'actions' => [
                                 'activeness',
@@ -42,7 +47,7 @@ return [
                                         ],
 // Transaction form if any
                                         'form' => [
-                                                'title' => 'someBody',
+                                                'title' => 'Create Admins',
 // Following by input key => attributes
 // Input key should be following "moduleName.tableName.columnName" format name
                                                 'system.admins.username' => [
@@ -92,6 +97,6 @@ return [
                                         ]
                                 ]
                         ]
-                ]
+                ],
         ],
 ];

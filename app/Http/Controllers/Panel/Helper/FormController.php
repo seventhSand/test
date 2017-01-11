@@ -30,16 +30,10 @@ class FormController extends BaseController
      */
     protected $post = [];
 
+    protected $layout = 'webarq.layout.panel.form';
+
     public function before()
     {
-        if (!is_object($this->module) || !is_object($this->panel)) {
-            $this->setModule($this->getParam(1));
-            $this->setPanel($this->getParam(2));
-            if (!is_object($this->module) || !is_object($this->panel)) {
-                return $this->actionGetForbidden();
-            }
-        }
-
         $parent = parent::before();
 
         if (isset($this->admin)) {
@@ -125,6 +119,10 @@ class FormController extends BaseController
      */
     public function actionGetEdit()
     {
+        $id = $this->getParam(3);
+        if (is_numeric($id)) {
+
+        }
         $this->builder->compile();
     }
 
@@ -141,6 +139,8 @@ class FormController extends BaseController
      */
     public function after()
     {
-        return $this->builder->toHtml();
+        $this->layout->right = $this->builder->toHtml();
+
+        return parent::after();
     }
 }

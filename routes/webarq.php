@@ -53,11 +53,11 @@ Route::match(['get', 'post'], $urlFormat, function () use ($paramLength, $urlFor
         $action = $panel;
         $panel = $module;
         $module = $directory;
-        $directory = 'site';
+        $directory = 'Site';
         $inAdminPage = false;
     } else {
         $inAdminPage = true;
-        $directory = 'panel';
+        $directory = 'Panel';
     }
 // Server directory separator
     $sep = DIRECTORY_SEPARATOR;
@@ -70,6 +70,7 @@ Route::match(['get', 'post'], $urlFormat, function () use ($paramLength, $urlFor
 // File controller should be under App/Http/Controllers/$directory
     $namespace = 'App' . $sep . 'Http' . $sep . 'Controllers' . $sep . $directory1 . $sep;
     $root = '..' . $sep . 'app' . $sep . 'Http' . $sep . 'Controllers' . $sep . $directory . $sep;
+    $method = null;
 // Starting by checking if segment panel is a directory
     if (is_dir($root . $module1 . $sep . $panel1) &&
             null !==
@@ -80,7 +81,7 @@ Route::match(['get', 'post'], $urlFormat, function () use ($paramLength, $urlFor
         if (null !== ($method = webarqMakeControllerMethod($class, array_get($params, 4))) || $inAdminPage) {
             $action = array_pull($params, 4);
         }
-    } // Down to segment module
+    } // Down to segment module (as directory)
     elseif (is_dir($root . $module1) &&
             null !== ($class = webarqMakeControllerClass($namespace, $root, $module1 . $sep . $panel1))
     ) {
@@ -117,7 +118,8 @@ Route::match(['get', 'post'], $urlFormat, function () use ($paramLength, $urlFor
                 $params1[] = $action;
             }
         }
-        if (null === ($method = webarqMakeControllerMethod($class, $module1)) && isset($module) || $inAdminPage) {
+
+        if ((null === ($method = webarqMakeControllerMethod($class, $module1)) && isset($module)) || $inAdminPage) {
             $action = $module;
 // Un-shift $module into parameters
         } elseif (isset($module)) {
@@ -133,7 +135,7 @@ Route::match(['get', 'post'], $urlFormat, function () use ($paramLength, $urlFor
 
 // Yay, found a class
     if (isset($class)) {
-        if (!isset($method)) {
+        if (is_null($method)) {
             $action = isset($action) && isset($inAdminPage) ? 'forbidden' : config('webarq.system.default-action');
             $method = config('webarq.system.action-prefix') . ucfirst(strtolower(Request::method()))
                     . studly_case($action);
@@ -143,6 +145,7 @@ Route::match(['get', 'post'], $urlFormat, function () use ($paramLength, $urlFor
                 'controller' => $controller,
                 'module' => $module, 'panel' => $panel,
                 'action' => $action, 'params' => $params]);
+
 // Execute class object "before" method if any
         if (method_exists($class, 'before')) {
             if (null !== ($before = $class->before($params))) {

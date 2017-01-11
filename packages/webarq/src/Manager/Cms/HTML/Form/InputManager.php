@@ -9,6 +9,7 @@
 namespace Webarq\Manager\Cms\HTML\Form;
 
 
+use Illuminate\Support\Arr;
 use Wa;
 use Webarq\Manager\HTML\FormManager;
 use Webarq\Manager\setPropertyManagerTrait;
@@ -44,11 +45,11 @@ class InputManager
     protected $info;
 
     /**
-     * Input label
+     * Input title
      *
      * @var string
      */
-    protected $label;
+    protected $title;
 
     /**
      * Input name
@@ -169,11 +170,20 @@ class InputManager
         $this->name = $name;
         $this->value = $value;
 
+        $this->setup($attributes);
+    }
+
+    protected function setup(array $attributes)
+    {
         $this->generateClassAttribute($attributes);
 
         $this->stringifyArrayAttributes($attributes);
 
         $this->attributes = $attributes;
+
+        if (true === array_get($this->attributes, 'multiple') || Arr::inArray($this->attributes, 'multiple')) {
+            $this->attributes['name'] = $this->name . '[]';
+        }
     }
 
     /**
@@ -226,7 +236,7 @@ class InputManager
     public function buildInput()
     {
         return $this->form->addCollection([$this->type, $this->name, $this->value, $this->attributes],
-                $this->label, $this->info);
+                $this->title, $this->info);
     }
 
     /**
@@ -238,6 +248,17 @@ class InputManager
     public function getColumn($manager = true)
     {
         return true === $manager ? $this->getTable()->getColumn($this->column) : $this->column;
+    }
+
+    /**
+     * Get input table
+     *
+     * @param bool $manager
+     * @return mixed
+     */
+    public function getTable($manager = true)
+    {
+        return true === $manager ? Wa::table($this->table) : $this->table;
     }
 
     /**
@@ -297,18 +318,7 @@ class InputManager
      */
     public function getRules($key = null)
     {
-        return isset($key) ? ( is_object($this->rules) ? $this->rules->getAttribute($key) : false) : $this->rules;
-    }
-
-    /**
-     * Get input table
-     *
-     * @param bool $manager
-     * @return mixed
-     */
-    public function getTable($manager = true)
-    {
-        return true === $manager ? Wa::table($this->table) : $this->table;
+        return isset($key) ? (is_object($this->rules) ? $this->rules->getAttribute($key) : false) : $this->rules;
     }
 
     /**

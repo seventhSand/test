@@ -18,18 +18,7 @@ class ListingController extends BaseController
      */
     protected $builder;
 
-    public function before()
-    {
-        if (!is_object($this->module) || !is_object($this->panel)) {
-            $this->setModule($this->getParam(1));
-            $this->setPanel($this->getParam(2));
-            if (!is_object($this->module) || !is_object($this->panel)) {
-                return $this->actionGetForbidden();
-            }
-        }
-
-        return parent::before();
-    }
+    protected $layout = 'webarq.layout.panel.listing';
 
     public function actionGetIndex()
     {
@@ -38,6 +27,8 @@ class ListingController extends BaseController
 
     public function after()
     {
-        return $this->builder->toHtml();
+        $this->layout->right = $this->builder->toHtml();
+
+        return parent::after();
     }
 }

@@ -1,0 +1,13 @@
+th {
+    background-color: #196c4b;
+    padding: 2px;
+    color: #ffffff;
+}
+
+ul.pagination {
+    list-style: none;
+}
+
+ul.pagination li {
+    display: inline-block;
+}

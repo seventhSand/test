@@ -24,9 +24,6 @@ class SelectInputManager extends InputManager
 
     public function buildInput()
     {
-        if (true === array_get($this->attributes, 'multiple') || Arr::inArray($this->attributes, 'multiple')) {
-            $this->attributes['name'] = $this->name . '[]';
-        }
         if (null !== ($labelOption = array_pull($this->attributes, 'blankOption'))) {
             if (true === $labelOption || 1 === $labelOption || '1' === $labelOption) {
                 $this->options = Arr::merge(['' => config('webarq.system.input.blank-option-label')], $this->options);
@@ -36,7 +33,7 @@ class SelectInputManager extends InputManager
         }
         return $this->form->addCollection(
                 [$this->type, $this->name, $this->options, $this->value, $this->attributes],
-                $this->label, $this->info
+                $this->title, $this->info
         );
     }
 }

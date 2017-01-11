@@ -9,6 +9,7 @@
 namespace Webarq\Manager\Cms\HTML;
 
 
+use Illuminate\Support\Arr;
 use Wa;
 use Webarq\Info\ModuleInfo;
 use Webarq\Info\PanelInfo;
@@ -137,7 +138,28 @@ class TableManager extends \Webarq\Manager\HTML\TableManager
      */
     protected function buildHeaderActions(array $actions)
     {
-        return '';
+        $string = '';
+
+        foreach ($actions as $type => $setting) {
+            $class = Wa::manager(
+                    'cms.HTML!.table.' . $type,
+                    $this->admin,
+                    $this->module->getName(),
+                    $this->panel->getName(),
+                    [],
+                    $setting
+            ) ?: Wa::manager(
+                    'cms.HTML!.table.button',
+                    $this->admin,
+                    $this->module->getName(),
+                    $this->panel->getName(),
+                    [],
+                    $setting + ['type' => $type]);
+
+            $string .= $class ? $class->toHtml() : '';
+        }
+
+        return $string;
     }
 
     /**
@@ -197,7 +219,10 @@ class TableManager extends \Webarq\Manager\HTML\TableManager
                     $this->columns,
                     $this->pagination[0],
                     array_get($this->actions, 'listing', [])
-            );
+            )->buildSequence($this->sequence);
+
+// Remove guarded columns
+            $this->columns = Arr::unsetAssocKey($this->columns);
         } elseif (is_array($this->driver) && [] !== ($driver = $this->driver)) {
             $type = array_shift($driver);
 

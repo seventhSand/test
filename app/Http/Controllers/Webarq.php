@@ -40,6 +40,13 @@ class Webarq extends Controller
      */
     protected $params = [];
 
+    /**
+     * @param string $controller
+     * @param string $module
+     * @param string $panel
+     * @param string $action
+     * @param array $params
+     */
     public function __construct($controller, $module, $panel, $action, array $params = [])
     {
         $this->controller = $controller;
@@ -103,6 +110,10 @@ class Webarq extends Controller
         return array_get($this->params, $key, $default);
     }
 
+    /**
+     * Called from rotu
+     * @return mixed
+     */
     public function before()
     {
         if ('POST' == \Request::method() && [] === \Request::input()) {

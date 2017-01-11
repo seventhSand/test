@@ -15,6 +15,8 @@ use URL;
 
 class AuthController extends BaseController
 {
+    protected $layout = 'webarq.layout.panel.login';
+
     protected function hasPermission()
     {
         return true;

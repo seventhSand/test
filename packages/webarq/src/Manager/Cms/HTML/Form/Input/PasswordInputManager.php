@@ -20,6 +20,6 @@ class PasswordInputManager extends InputManager
     public function buildInput()
     {
         return $this->form->addCollection([$this->type, $this->name, $this->attributes],
-                $this->label, $this->info);
+                $this->title, $this->info);
     }
 }

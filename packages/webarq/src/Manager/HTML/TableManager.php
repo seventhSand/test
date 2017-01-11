@@ -253,7 +253,7 @@ class TableManager implements Htmlable
 
                 $this->columns[] = $column;
 
-                $head->addCell($column, $attributes);
+                $head->addCell($column, array_pull($attributes, 'container'), $attributes);
             }
         }
 
@@ -286,10 +286,7 @@ class TableManager implements Htmlable
     protected function buildRow(RowManager $handler, array $row)
     {
         if (Arr::isAssoc($row) && [] !== $this->columns) {
-            foreach ($this->columns as $key => $column) {
-                if (!is_numeric($key)) {
-                    continue;
-                }
+            foreach ($this->columns as $column) {
                 $handler->addCell(array_get($row, $column));
             }
         } else {

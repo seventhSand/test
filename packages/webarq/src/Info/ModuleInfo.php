@@ -60,6 +60,10 @@ class ModuleInfo
     {
         $this->name = $name;
 
+        if ([] === $configs) {
+            $configs = Wa::config($name, []);
+        }
+
         $this->setup($configs);
     }
 
@@ -187,5 +191,13 @@ class ModuleInfo
     public function getPanel($key, $default = null)
     {
         return array_get($this->panels, $key, $default);
+    }
+
+    /**
+     * @return array
+     */
+    public function getPanels()
+    {
+        return $this->panels;
     }
 }

@@ -100,13 +100,6 @@ class FormManager implements Htmlable
     protected $builder;
 
     /**
-     * Form view template
-     *
-     * @var string
-     */
-    protected $view = 'webarq.form.cms.index';
-
-    /**
      * Validator messages
      *
      * @var array
@@ -383,6 +376,6 @@ class FormManager implements Htmlable
             $this->builder->setTitle($this->title);
         }
 
-        return view($this->view, ['html' => $this->builder->toHtml()])->render();
+        return $this->builder->toHtml();
     }
 }

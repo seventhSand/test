@@ -45,11 +45,11 @@ class UrlLaravel
 
         URL::macro('detect', function ($url, $module, $panel, $item) {
             if (true === $url) {
-                return $module . '/' . $panel . '/' . $item;
+                return trim($module . '/' . $panel . '/' . $item, '/');
             } elseif (!isset($url)) {
                 return 'helper/' . $item . '/' . $module . '/' . $panel;
             } else {
-                return $this->to($url);
+                return $url;
             }
         });
     }

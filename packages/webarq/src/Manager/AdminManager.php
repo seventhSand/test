@@ -150,7 +150,7 @@ class AdminManager extends WatchdogAbstractManager
      * Check if admin has permission
      *
      * @param string|array $path Permission path in {module}.{panel?}.{action?} format
-     * @return true|null
+     * @return true
      */
     public function hasPermission($path)
     {
@@ -175,8 +175,19 @@ class AdminManager extends WatchdogAbstractManager
             }
             return $hasPermission;
         } else {
-            return array_get($this->permissions, $path, false);
+            return null !== $this->getPermission($path);
         }
+    }
+
+    /**
+     * Get permissions
+     *
+     * @param $path
+     * @return array|null
+     */
+    public function getPermission($path)
+    {
+        return array_get($this->permissions, $path);
     }
 
     /**
