@@ -15,6 +15,7 @@ use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Support\Arr;
 use Wa;
 use Webarq\Manager\AdminManager;
+use Webarq\Manager\Cms\HTML\Form\InputManager;
 use Webarq\Manager\setPropertyManagerTrait;
 
 /**
@@ -229,49 +230,38 @@ class FormManager implements Htmlable
     protected function addInput($path, array $attr = [])
     {
         list($module, $table, $column) = explode('.', $path);
-
+// Merge extended input attributes with pre-defined attributes in column information
         $attr = Arr::merge(Wa::module($module)->getTable($table)->getColumn($column)->getInputAttribute(), $attr);
-
 // Attribute type and name should not be empty
         $type = array_pull($attr, 'type');
         $name = array_pull($attr, 'name');
         if (null === $type || null === $name) {
             abort('405', config('webarq.system.error-message.configuration'));
         }
-// Only add non guarded input
+// Only add unguarded input
         if (null === array_get($attr, 'guarded')) {
 // Following laravel way, value should not be not in attributes
-            $value = array_pull($attr, 'value', [] !== $this->post
-                    ? array_get($this->post, $name)
-                    : ('create' === $this->type ? array_get($attr, 'default') : ''));
+            $value = $this->pullValueFromAttributes($name, $attr);
+
+            $attr += ['table' => $table, 'column' => $column, 'module' => $module];
 
 // This is could be pain on the process, but due to laravel input form method behaviour is different
 // one from another, we need class helper to enable us adding collection with proper arguments
 // @todo Build own form builder to simplify the logic
-            $class = Wa::normalizeClass('manager.cms.HTML!.form.input.' . $type . ' input');
-            $attr += [
-                    'table' => $table,
-                    'column' => $column,
-                    'module' => $module
-            ];
+            $input = Wa::load('manager.cms.HTML!.form.input.' . $type . ' input',
+                    $this->builder, $type, $name, $value, $attr)
+                    ?: Wa::load('manager.cms.HTML!.form.input', $this->builder, $type, $name, $value, $attr);
 
-            if (class_exists($class)) {
-                $input = Wa::load(false, $class, $this->builder, $type, $name, $value, $attr);
-            } else {
-                $input = Wa::load('manager.cms.HTML!.form.input', $this->builder, $type, $name, $value, $attr);
-            }
-
-// Pairing input name with the manager, while each input set to be protected at the first
+// Pairing input name with the manager, while each input set as impermissible
             $this->pairs[$name] = [$input, true];
 
             if (null === array_get($attr, 'protected')
-                    && ([] === ($permissions = $input->getPermissions())
-                            || $this->admin->hasPermission(
-                                    Wa::formatPermissions($permissions, $this->module, $this->panel))
-                    )
+                    && ([] === $input->getPermissions()
+                            || Wa::panel()->isAccessible($this->module, $this->panel, $input->getPermissions()))
             ) {
                 $input->buildInput();
 
+                $this->setValidatorMessage($name, $input);
                 if ([] !== $input->getErrorMessage()) {
                     foreach ($input->getErrorMessage() as $errType => $errMsg) {
                         $this->validatorMessages[$name . '.' . $errType] = $errMsg;
@@ -279,10 +269,27 @@ class FormManager implements Htmlable
                 }
 
                 $this->validatorRules[$name] = $input->getRules()->toString();
-// Unprotected permitted input
+// Set input permission in to true
                 $this->pairs[$name][1] = false;
             }
         }
+    }
+
+    /**
+     * @param mixed $name Input name
+     * @param array $attr Input attributes
+     * @return mixed
+     */
+    protected function pullValueFromAttributes($name, array &$attr = [])
+    {
+        return array_pull($attr, 'value', [] !== $this->post
+                ? array_get($this->post, $name)
+                : ('create' === $this->type ? array_get($attr, 'default') : ''));
+    }
+
+    protected function setValidatorMessage($inputName, InputManager $manager)
+    {
+
     }
 
     /**

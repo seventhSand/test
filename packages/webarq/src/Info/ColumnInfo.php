@@ -198,6 +198,11 @@ class ColumnInfo
         return $this->primary;
     }
 
+    /**
+     * Column is guarded
+     *
+     * @return bool
+     */
     public function isGuarded()
     {
         return $this->guarded;

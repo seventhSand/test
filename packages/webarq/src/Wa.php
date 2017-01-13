@@ -302,8 +302,23 @@ class Wa
         return $permissions;
     }
 
+    /**
+     * Shortcut for calling modifier manager
+     *
+     * @return mixed
+     */
     public function modifier()
     {
         return $this->instance('manager.modifier');
+    }
+
+    /**
+     * Shortcut for calling cms panel manager
+     *
+     * @return mixed
+     */
+    public function panel()
+    {
+        return $this->instance('manager.cms.panel', \Auth::user());
     }
 }

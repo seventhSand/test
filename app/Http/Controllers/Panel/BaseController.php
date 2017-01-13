@@ -24,7 +24,7 @@ class BaseController extends Webarq
     /**
      * @var object View
      */
-    protected $layout = 'webarq.layout.panel';
+    protected $layout = 'webarq.tcl-panel.index';
 
     /**
      * @param string $controller
@@ -53,7 +53,7 @@ class BaseController extends Webarq
             if ('login' !== $this->action && 'auth' !== $this->controller) {
                 return redirect(URL::panel('system/admins/auth/login'));
             }
-        } elseif (!$this->hasPermission()) {
+        } elseif (!Wa::panel()->isAccessible($this->getModule(), $this->getPanel(), $this->action)) {
             return $this->actionGetForbidden();
         } elseif (!is_object($this->module) || !is_object($this->panel)) {
             return $this->actionGetForbidden();
@@ -61,21 +61,7 @@ class BaseController extends Webarq
 
         $this->setLayout($this->layout);
 
-        $this->layout->panel = Wa::instance('manager.cms.panel', $this->admin)->generateMenu();
-
         return parent::before();
-    }
-
-    /**
-     * Check if admin has permission accessing current url
-     *
-     * @return mixed
-     */
-    protected function hasPermission()
-    {
-        $path = strtolower($path = $this->getModule() . '.' . $this->getPanel() . '.' . $this->action);
-
-        return $this->admin->hasPermission($path);
     }
 
     /**
@@ -88,7 +74,7 @@ class BaseController extends Webarq
 
     public function actionGetIndex()
     {
-        return 'Index';
+        return 'Content not available';
     }
 
     /**

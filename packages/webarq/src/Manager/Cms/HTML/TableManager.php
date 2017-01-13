@@ -123,43 +123,14 @@ class TableManager extends \Webarq\Manager\HTML\TableManager
     public function toHtml()
     {
 // Build header action, while create actions should be on header
-        $html = $this->buildHeaderActions(array_get($this->actions, 'header', []));
-
+//        $html = $this->buildHeaderActions(array_get($this->actions, 'header', []));
+        $html = Wa::panel()->generateActionButton(
+                array_get($this->actions, 'header', []), $this->module->getName(), $this->panel->getName());
         $this->setup();
 
         $html .= parent::toHtml();
 
         return $html . $this->driver->paginate($this->pagination[1]);
-    }
-
-    /**
-     * @param array $actions
-     * @return string
-     */
-    protected function buildHeaderActions(array $actions)
-    {
-        $string = '';
-
-        foreach ($actions as $type => $setting) {
-            $class = Wa::manager(
-                    'cms.HTML!.table.' . $type,
-                    $this->admin,
-                    $this->module->getName(),
-                    $this->panel->getName(),
-                    [],
-                    $setting
-            ) ?: Wa::manager(
-                    'cms.HTML!.table.button',
-                    $this->admin,
-                    $this->module->getName(),
-                    $this->panel->getName(),
-                    [],
-                    $setting + ['type' => $type]);
-
-            $string .= $class ? $class->toHtml() : '';
-        }
-
-        return $string;
     }
 
     /**
@@ -228,17 +199,5 @@ class TableManager extends \Webarq\Manager\HTML\TableManager
 
             $this->driver($type, $driver, Wa::getGhost());
         }
-    }
-
-    protected function buildAction($type)
-    {
-        $attr = array_pull($this->actions, $type, []) + [
-                        'module' => $this->panel->getModule(),
-                        'panel' => $this->panel->getName(),
-                        'type' => $type
-                ];
-
-        return Wa::manager('cms.HTML!.table.' . $type, $this->admin, $attr)
-                ?: Wa::manager('cms.HTML!.table.button', $this->admin, $attr);
     }
 }

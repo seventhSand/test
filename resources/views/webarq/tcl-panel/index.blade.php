@@ -24,8 +24,7 @@
 <div class="dark-line" style="position: fixed; top:0px; width:100%;">&nbsp;</div>
 <div class="section group panel">
     <div class="span_fl_left">
-        <h3>Your site name</h3>
-        {!! $panel or 'Panel not available right now' !!}
+        {!! Wa::panel()->generateMenu('webarq.tcl-panel.common.side-bar') !!}
     </div>
     <div class="span_fl_right">
         {!! $right or 'Content not available right now' !!}

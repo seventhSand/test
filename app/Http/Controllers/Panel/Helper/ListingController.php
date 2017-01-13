@@ -18,7 +18,7 @@ class ListingController extends BaseController
      */
     protected $builder;
 
-    protected $layout = 'webarq.layout.panel.listing';
+    protected $layout = 'webarq.tcl-panel.layout.listing';
 
     public function actionGetIndex()
     {

@@ -36,7 +36,7 @@ return [
 // Button permission, if multiple permissions is needed, then set it as an numeric array
 // When multiple permissions is given, and we needed all permissions to be granted,
 // then add boolean true as the last item
-                        'permissions' => 'activeness',
+                        'permissions' => ['activeness'],
 // Button rules, for callback item will use two parameter (Object Admin, Array Items)
 // To get row (item) value, then key should be prefixed with "item.", and "admin." to get
 // admin attributes.
@@ -48,7 +48,9 @@ return [
 // Button position location, automatically registered to the listing when not set
                         'placement' => 'listing',
 // Button HTML attributes
-                        'attributes' => []
+                        'attributes' => [],
+// Button container view
+                        'container-view' => ''
                 ],
                 'create' => [
 // Transaction form if any
@@ -67,6 +69,7 @@ return [
                                         ],
                                         'info' => 'For best practice, please use simple number which is easy '
                                                 . 'to remember. Eg 10, 20, ...',
+                                        'modifier' => 'test'
                                 ],
                                 'system.roles.title',
                                 'system.roles.is_admin' => [
@@ -74,9 +77,9 @@ return [
                                 ],
                                 'system.roles.is_active' => [
 // Mean current login admin must have activeness permission
-                                        'permissions' => 'activeness',
-// Guarded value, use when input permission not fulfilled
-                                        'guarded-value' => 0
+                                        'permissions' => 'activeness-x',
+// Impermissible value, used when input permission not fulfilled
+                                        'impermissible' => 0,
                                 ],
                                 'system.roles.is_system'
                         ]

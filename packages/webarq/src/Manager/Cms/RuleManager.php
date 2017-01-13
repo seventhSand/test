@@ -71,7 +71,7 @@ class RuleManager
             call_user_func_array($this->rules, [$this->admin, $this->items]);
         }
 
-        return [] === $this->rules;
+        return [] === $this->rules || [] === $this->items;
     }
 
     protected function compareValue($left, $right, $operator = '===')

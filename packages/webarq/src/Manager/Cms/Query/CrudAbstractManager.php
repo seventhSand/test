@@ -79,35 +79,33 @@ abstract class CrudAbstractManager
     protected function pairData(array $pairs)
     {
         foreach ($pairs as $input => $options) {
-            list($manager, $guarded) = $options;
+            list($manager, $rejected) = $options;
             if (null !== ($column = $manager->getColumn()) && !$column->isGuarded()) {
-                $this->setPair($manager, $guarded);
+                $this->setPair($manager, $rejected);
             }
         }
+        dd($this->pairs, $pairs);
     }
 
     /**
      * @param InputManager $input
-     * @param bool $guarded
+     * @param bool $rejected
      */
-    protected function setPair(InputManager $input, $guarded = true)
+    protected function setPair(InputManager $input, $rejected = true)
     {
-// While inserting row, all guarded input should not have post value
-        $value = true === $guarded && 'insert' === $this->type
-                ? $input->getRules()->getAttribute('guarded-value', $input->getDefault())
-                : array_get($this->post, $input->getName());
+// While inserting row, all impermissible input should not have post value
+        $value = true === $rejected && 'insert' === $this->type
+                ? $input->getImpermissible() : array_get($this->post, $input->getName());
+// Table name
+        $t = $input->getTable(false);
+// Column name
+        $c = $input->getColumn(false);
+
         if (!is_array($value)) {
-            $this->pairs[$input->getTable(false)][$input->getColumn(false)] =
-                    $this->modifyValue($input->getModifier(), $value);
+            $this->pairs[$t][$c] = $this->modifyValue($input->getModifier(), $value);
         } else {
-            if (!isset($this->pairs[$input->getTable(false)])) {
-                $this->pairs[$input->getTable(false)] = [];
-            }
-
-            $items = &$this->pairs[$input->getTable(false)];
-
             foreach ($value as $i => $item) {
-                $items[$i][$input->getColumn(false)] = $this->modifyValue($input->getModifier(), $item);
+                $this->pairs[$t][$i][$c] = $this->modifyValue($input->getModifier(), $item);
             }
         }
     }
@@ -121,12 +119,15 @@ abstract class CrudAbstractManager
      */
     protected function modifyValue($modifier, $string)
     {
-        if (isset($modifier)) {
+        if (null !== $modifier) {
             return Wa::load('manager.value modifier')->{$modifier}($string);
         }
         return $string;
     }
 
+    /**
+     * @param $master
+     */
     protected function setMaster($master)
     {
         if (!isset($master)) {

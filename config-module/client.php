@@ -7,5 +7,5 @@
  */
 
 return [
-    'tables' => ['contact']
+        'tables' => ['contact']
 ];

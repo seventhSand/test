@@ -150,6 +150,13 @@ class InputManager
     protected $modifier;
 
     /**
+     * Impermissible default value
+     *
+     * @var
+     */
+    protected $impermissible;
+
+    /**
      * Create InputManager instance
      *
      * @param FormManager $form
@@ -161,7 +168,7 @@ class InputManager
     public function __construct(FormManager $form, $type, $name, $value = null, array $attributes = [])
     {
         $this->rules = Wa::manager('cms.HTML!.form.rules', $attributes);
-        array_forget($attributes, ['rules', 'guarded-value']);
+        array_forget($attributes, ['rules']);
 
         $this->setPropertyFromOptions($attributes, true);
 
@@ -327,5 +334,13 @@ class InputManager
     public function getModifier()
     {
         return $this->modifier;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getImpermissible()
+    {
+        return $this->impermissible ?: $this->default;
     }
 }

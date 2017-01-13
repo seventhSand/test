@@ -30,7 +30,7 @@ class FormController extends BaseController
      */
     protected $post = [];
 
-    protected $layout = 'webarq.layout.panel.form';
+    protected $layout = 'webarq.tcl-panel.layout.form';
 
     public function before()
     {
@@ -55,7 +55,7 @@ class FormController extends BaseController
         );
         $options += [
                 'module' => $this->module->getName(),
-                'panel' => $this->module->getName(),
+                'panel' => $this->panel->getName(),
                 'type' => $this->action
         ];
 

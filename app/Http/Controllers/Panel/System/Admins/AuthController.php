@@ -15,7 +15,7 @@ use URL;
 
 class AuthController extends BaseController
 {
-    protected $layout = 'webarq.layout.panel.login';
+    protected $layout = 'webarq.tcl-panel.layout.login';
 
     protected function hasPermission()
     {
@@ -25,6 +25,7 @@ class AuthController extends BaseController
     public function actionGetLogin()
     {
         Auth::attempt(['username' => 'superadmin', 'password' => 'superadmin']);
+
         if (Auth::user()) {
             return redirect(URL::panel('system/dashboard'));
         } else {

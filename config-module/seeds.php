@@ -97,6 +97,6 @@ return [
                 ['role_id' => 1, 'module' => 'system', 'panel' => 'menus', 'permission' => 'create', 'create_on' => '2016-12:21 10:00'],
                 ['role_id' => 1, 'module' => 'system', 'panel' => 'menus', 'permission' => 'edit', 'create_on' => '2016-12:21 10:00'],
                 ['role_id' => 1, 'module' => 'system', 'panel' => 'menus', 'permission' => 'activeness', 'create_on' => '2016-12:21 10:00'],
-                ['role_id' => 1, 'module' => 'system', 'panel' => 'menus', 'permission' => 'index', 'create_on' => '2016-12:21 10:00']
+                ['role_id' => 1, 'module' => 'system', 'panel' => 'menus', 'permission' => 'index', 'create_on' => '2016-12:21 10:00'],
         ]
 ];

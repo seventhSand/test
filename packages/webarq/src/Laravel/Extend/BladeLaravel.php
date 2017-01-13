@@ -15,8 +15,35 @@ class BladeLaravel
 {
     public function __construct()
     {
-        Blade::extend(function($value) {
-            return preg_replace('/\{\?(.+)\?\}/s', '<?php ${1} ?>', $value);
+        Blade::extend(function ($value) {
+            return preg_replace('/\{\{\?(.+)\?\}\}/', '<?php ${1} ?>', $value);
+        });
+
+        $this->directiveExtend();
+    }
+
+    protected function directiveExtend()
+    {
+        Blade::directive('continue', function () {
+            return '<?php continue; ?>';
+        });
+
+        Blade::directive('break', function () {
+            return '<?php break; ?>';
+        });
+
+        Blade::directive('set', function ($expression) {
+// Break the Expression into Pieces
+            $params = explode(',', $expression, 2);
+
+// Check if value param is given
+            if (!isset($params[1])) {
+                $params[1] = '\'\'';
+            }
+// Trim space from value param
+            $params[1] = trim($params[1]);
+
+            return '<?php $' . $params[0] . ' = ' . $params[1] . '; ?>';
         });
     }
 }

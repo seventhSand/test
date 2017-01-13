@@ -139,28 +139,7 @@ class PaginateManager extends DriverAbstractManager
      */
     protected function buildActions(array $item)
     {
-        $string = '';
-
-        foreach ($this->actions as $type => $setting) {
-            $class = Wa::manager(
-                    'cms.HTML!.table.' . $type,
-                    $this->admin,
-                    $this->module,
-                    $this->panel,
-                    $item,
-                    $setting
-            ) ?: Wa::manager(
-                    'cms.HTML!.table.button',
-                    $this->admin,
-                    $this->module,
-                    $this->panel,
-                    $item,
-                    $setting + ['type' => $type]);
-
-            $string .= $class ? $class->toHtml() : '';
-        }
-
-        return $string;
+        return Wa::panel()->generateActionButton($this->actions, $this->module, $this->panel, $item);
     }
 
     /**
