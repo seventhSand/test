@@ -109,18 +109,6 @@ class AdminManager extends WatchdogAbstractManager
         $this->profile = $data;
     }
 
-    /**
-     * Get admin profile
-     *
-     * @param mixed $key
-     * @param null $default
-     * @return mixed
-     */
-    public function getProfile($key, $default = null)
-    {
-        return array_get($this->profile, $key, $default);
-    }
-
     public function getProfiles()
     {
         return $this->profile;
@@ -212,5 +200,26 @@ class AdminManager extends WatchdogAbstractManager
         }
 
         return $this->levels;
+    }
+
+    /**
+     * @param $key
+     * @return mixed
+     */
+    public function __get($key)
+    {
+        return $this->getProfile($key);
+    }
+
+    /**
+     * Get admin profile
+     *
+     * @param mixed $key
+     * @param null $default
+     * @return mixed
+     */
+    public function getProfile($key, $default = null)
+    {
+        return array_get($this->profile, $key, $default);
     }
 }

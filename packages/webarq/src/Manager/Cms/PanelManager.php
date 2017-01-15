@@ -55,8 +55,8 @@ class PanelManager
                 if ([] !== ($panels = $module->getPanels())) {
                     foreach ($panels as $panel) {
                         if ($this->isAccessible($module->getName(), $panel->getName())) {
-                            $this->menus[$module->getName()][$panel->getName()] = [
-                                    $panel->getLabel(),
+                            $this->menus[$module->getTitle()][$panel->getName()] = [
+                                    $panel->getTitle(),
                                     $this->generateURL($panel->getPermalink(), $module->getName(), $panel->getName(),
                                             $this->getAction($panel))
                             ];
@@ -212,6 +212,14 @@ class PanelManager
     public function getAdmin()
     {
         return $this->admin;
+    }
+
+    /**
+     * @return array
+     */
+    public function getMenus()
+    {
+        return $this->menus;
     }
 
     /**

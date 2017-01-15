@@ -10,6 +10,7 @@ namespace Webarq\Info;
 
 
 use Wa;
+use Webarq\Manager\SetPropertyManagerTrait;
 use Webarq\Manager\SingletonManagerTrait as Singleton;
 
 /**
@@ -20,7 +21,7 @@ use Webarq\Manager\SingletonManagerTrait as Singleton;
  */
 class ModuleInfo
 {
-    use Singleton;
+    use Singleton, SetPropertyManagerTrait;
 
     /**
      * Module configuration
@@ -35,6 +36,13 @@ class ModuleInfo
      * @var string
      */
     protected $name;
+
+    /**
+     * Module title
+     *
+     * @var
+     */
+    protected $title;
 
     /**
      * Module registered panel menu
@@ -74,13 +82,11 @@ class ModuleInfo
      */
     protected function setup(array $options)
     {
-        if ([] !== $options) {
-            $this->configs = array_get($options, 'configs', []);
+        $this->setupTables(array_pull($options, 'tables', []));
 
-            $this->setupTables(array_get($options, 'tables', []));
+        $this->setupPanels(array_pull($options, 'panels', []));
 
-            $this->setupPanels(array_get($options, 'panels', []));
-        }
+        $this->setPropertyFromOptions($options);
     }
 
     /**
@@ -146,6 +152,16 @@ class ModuleInfo
     public function getName()
     {
         return $this->name;
+    }
+
+    /**
+     * Get module title
+     *
+     * @return string
+     */
+    public function getTitle()
+    {
+        return $this->title ?: ucfirst($this->name);
     }
 
     /**

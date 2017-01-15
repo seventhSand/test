@@ -10,6 +10,7 @@
  */
 
 return [
+        'title' => 'System',
         'tables' => [
                 'histories', 'permissions', 'configurations', 'admins', 'admin_roles', 'roles', 'menus'
         ],
@@ -20,7 +21,7 @@ return [
                         'permalink' => 'system/dashboard',
                         'class' => 'dashboard',
 // When not set, will translate group name
-                        'label' => 'Dashboard',
+                        'title' => 'Dashboard',
 // Disable listing
                         'listing' => false,
                 ],

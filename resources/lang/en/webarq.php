@@ -16,19 +16,23 @@ return [
                 'unassigned' => ':admin unassigned :item from :object',
                 'upload' => ':admin upload :media',
         ],
+
+        'title' => [
+                'welcome' => 'Welcome',
 // General
-        'title' => 'Title',
-        'narration' => 'Narration',
-        'description' => 'Description',
+                'title' => 'Title',
+                'narration' => 'Narration',
+                'description' => 'Description',
 // General CMS
-        'is_system' => 'Is System',
-        'is_active' => 'Is Active',
-        'is_admin' => 'Is Admin',
+                'is_system' => 'Is System',
+                'is_active' => 'Is Active',
+                'is_admin' => 'Is Admin',
 // Person
-        'username' => 'User Name',
-        'first_name' => 'First Name',
-        'password' => 'Password',
-        'email' => 'Email',
-        'address' => 'Address',
-        'actionButton' => 'Action'
+                'username' => 'User Name',
+                'first_name' => 'First Name',
+                'password' => 'Password',
+                'email' => 'Email',
+                'address' => 'Address',
+                'actionButton' => 'Action',
+        ]
 ];

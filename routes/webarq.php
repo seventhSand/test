@@ -7,7 +7,8 @@
  */
 
 /**
- * @param $string
+ * @param string $class
+ * @param string $string
  * @return string
  */
 function webarqMakeControllerMethod($class, $string)
@@ -18,6 +19,12 @@ function webarqMakeControllerMethod($class, $string)
     }
 }
 
+/**
+ * @param $namespace
+ * @param $directory
+ * @param $file
+ * @return string
+ */
 function webarqMakeControllerClass($namespace, $directory, $file)
 {
     if (is_file($directory . DIRECTORY_SEPARATOR . $file . 'Controller.php')) {

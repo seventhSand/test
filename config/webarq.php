@@ -20,6 +20,7 @@ return [
 
 // Site configuration
         'site' => [
+                'name' => 'Gentella',
                 'meta' => [
                         'author' => 'Daniel Simangunsong',
                         'description' => 'Some description',
@@ -50,7 +51,8 @@ return [
                         'configuration' => 'It seems some of your configuration still need to be fixed :). '
                                 . 'Please help me by do the things rightfully',
 
-                ]
+                ],
+                'themes' => 'gentella'
         ],
 
 // Themes

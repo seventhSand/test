@@ -40,13 +40,13 @@ class PanelInfo
     protected $permalink;
 
     /**
-     * Panel label
+     * Panel title
      *
      * Used when generate panel anchor <a/> html tag
      *
      * @var
      */
-    protected $label;
+    protected $title;
 
     /**
      * Panel listing configuration
@@ -119,13 +119,13 @@ class PanelInfo
     }
 
     /**
-     * Get panel label, if empty return panel name
+     * Get panel title
      *
      * @return mixed
      */
-    public function getLabel()
+    public function getTitle()
     {
-        return $this->label ?: $this->name;
+        return $this->title ?: ucfirst($this->name);
     }
 
     /**

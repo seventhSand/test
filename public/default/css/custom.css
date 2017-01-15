@@ -1,0 +1,16 @@
+label.messages {
+    display: block;
+    padding: 5px;
+}
+
+label.error {
+    color: #bb0101;
+}
+
+label.warning {
+    color: #e87a18;
+}
+
+label.success {
+    color: #009055;
+}

@@ -11,25 +11,52 @@ namespace App\Http\Controllers\Panel\System\Admins;
 
 use App\Http\Controllers\Panel\BaseController;
 use Auth;
+use Request;
 use URL;
 
 class AuthController extends BaseController
 {
-    protected $layout = 'webarq.tcl-panel.layout.login';
+    protected $layout = 'login';
 
-    protected function hasPermission()
+    public function before()
     {
-        return true;
+        if (isset($this->admin) && 'logout' !== $this->action) {
+            return redirect(URL::panel('system/dashboard'));
+        }
     }
 
     public function actionGetLogin()
     {
-        Auth::attempt(['username' => 'superadmin', 'password' => 'superadmin']);
 
-        if (Auth::user()) {
-            return redirect(URL::panel('system/dashboard'));
+    }
+
+    public function actionPostLogin()
+    {
+        $validator = \Validator::make(
+                ['username' => Request::input('username'), 'password' => Request::input('password'),],
+                ['username' => 'required', 'password' => 'required']
+        );
+
+        if ($validator->fails()) {
+            $this->layout->messages = $validator->errors()->getMessages();
         } else {
-            return 'Ups no login found';
+            Auth::attempt(['username' => Request::input('username'), 'password' => Request::input('password')]);
+
+            if (Auth::user()) {
+                return redirect(URL::panel('system/dashboard'));
+            } else {
+                $this->layout->messages = [['Please check your username and password']];
+            }
         }
+    }
+
+    public function actionGetLogout()
+    {
+        Auth::logout();
+    }
+
+    protected function hasPermission()
+    {
+        return true;
     }
 }

@@ -59,7 +59,13 @@ class TableManager extends \Webarq\Manager\HTML\TableManager
      *
      * @var array|number
      */
-    protected $pagination = [2, 'webarq.listing.cms.pagination'];
+    protected $pagination = 2;
+
+    /**
+     * @var string
+     * @todo
+     */
+    protected $themes = 'default';
 
     /**
      * Create CMS\TableManager instance
@@ -81,7 +87,7 @@ class TableManager extends \Webarq\Manager\HTML\TableManager
 
 // Pagination property should be array
         if (!is_array($this->pagination)) {
-            $this->pagination = [$this->pagination, 'webarq.listing.cms.pagination'];
+            $this->pagination = [$this->pagination, 'themes.' . config('webarq.system.themes', 'default') . '.common.pagination'];
         }
 
         $this->groupingActions();
@@ -164,7 +170,7 @@ class TableManager extends \Webarq\Manager\HTML\TableManager
 // Guarded column should not be shown on listing
                     if (null === array_pull($attr, 'guarded')) {
                         $this->columns[] = $column;
-                        $row->addCell(trans('webarq.' . $column), array_pull($attr, 'container'), $attr);
+                        $row->addCell(trans('webarq.title.' . $column), array_pull($attr, 'container'), $attr);
                     } else {
                         $this->columns[$column] = $column;
                     }
@@ -172,7 +178,7 @@ class TableManager extends \Webarq\Manager\HTML\TableManager
 
 // Add action column
                 if (0 === $i) {
-                    $row->addCell(trans('webarq.actionButton'), ['rowspan' => count($groups)]);
+                    $row->addCell(trans('webarq.title.actionButton'), ['rowspan' => count($groups)]);
                 }
             }
             $this->columns[] = 'actionButton';

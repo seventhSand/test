@@ -57,7 +57,11 @@ class RuleManager
      */
     public function isValid()
     {
-        if (is_array($this->rules) && [] !== $this->rules) {
+        if ([] === $this->rules || [] === $this->items) {
+            return true;
+        } elseif (is_callable($this->rules)) {
+            return call_user_func_array($this->rules, [$this->admin, $this->items]);
+        } elseif (is_array($this->rules) && [] !== $this->rules) {
             $and = true === last($this->rules);
             foreach ($this->rules as $key => $value) {
                 $valid = $this->compareValue($this->getValue($key), $this->getValue($value));
@@ -67,11 +71,9 @@ class RuleManager
                     return true;
                 }
             }
-        } elseif (is_callable($this->rules)) {
-            call_user_func_array($this->rules, [$this->admin, $this->items]);
         }
 
-        return [] === $this->rules || [] === $this->items;
+        return false;
     }
 
     protected function compareValue($left, $right, $operator = '===')

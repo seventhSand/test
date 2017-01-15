@@ -41,6 +41,16 @@ class Webarq extends Controller
     protected $params = [];
 
     /**
+     * @var string
+     */
+    protected $themes = 'default';
+
+    /**
+     * @var \Illuminate\View\View
+     */
+    protected $layout = 'index';
+
+    /**
      * @param string $controller
      * @param string $module
      * @param string $panel
@@ -50,10 +60,14 @@ class Webarq extends Controller
     public function __construct($controller, $module, $panel, $action, array $params = [])
     {
         $this->controller = $controller;
+
         $this->setModule($module);
         $this->setPanel($panel);
+
         $this->action = $action;
         $this->params = $params;
+
+        $this->setLayout($this->layout);
     }
 
     /**
@@ -75,6 +89,14 @@ class Webarq extends Controller
     protected function getModule()
     {
         return is_object($this->module) ? $this->module->getName() : $this->module;
+    }
+
+    /**
+     * @param $name
+     */
+    protected function setLayout($name)
+    {
+        $this->layout = view('themes.' . $this->themes . '.layout.' . $name);
     }
 
     /**
@@ -129,6 +151,16 @@ class Webarq extends Controller
     public function actionGetForbidden()
     {
         return view('webarq.errors.403');
+    }
+
+    /**
+     * Called from routing file
+     *
+     * @return object
+     */
+    public function after()
+    {
+        return $this->layout;
     }
 
 }

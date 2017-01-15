@@ -51,10 +51,10 @@ class TableManager implements Htmlable
      * @var array
      */
     protected $componentContainer = [
-            'table' => ['table', []],
-            'head' => ['thead', []],
-            'body' => ['tbody', []],
-            'foot' => ['tfoot', []]
+            'table' => ['table', ['class' => 'table']],
+            'head' => ['thead', ['class' => 'thead']],
+            'body' => ['tbody', ['class' => 'tbody']],
+            'foot' => ['tfoot', ['class' => 'tfoot']]
     ];
 
     /**

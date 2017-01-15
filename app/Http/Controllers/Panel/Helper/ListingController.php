@@ -18,7 +18,7 @@ class ListingController extends BaseController
      */
     protected $builder;
 
-    protected $layout = 'webarq.tcl-panel.layout.listing';
+    protected $layout = 'listing';
 
     public function actionGetIndex()
     {
@@ -27,7 +27,7 @@ class ListingController extends BaseController
 
     public function after()
     {
-        $this->layout->right = $this->builder->toHtml();
+        $this->layout->{'rightSection'} = $this->builder->toHtml();
 
         return parent::after();
     }

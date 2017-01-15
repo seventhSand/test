@@ -30,7 +30,7 @@ class FormController extends BaseController
      */
     protected $post = [];
 
-    protected $layout = 'webarq.tcl-panel.layout.form';
+    protected $layout = 'form';
 
     public function before()
     {
@@ -139,7 +139,7 @@ class FormController extends BaseController
      */
     public function after()
     {
-        $this->layout->right = $this->builder->toHtml();
+        $this->layout->{'rightSection'} = $this->builder->toHtml();
 
         return parent::after();
     }

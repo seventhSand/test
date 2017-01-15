@@ -22,9 +22,9 @@ class BaseController extends Webarq
     protected $admin;
 
     /**
-     * @var object View
+     * @inheritdoc
      */
-    protected $layout = 'webarq.tcl-panel.index';
+    protected $themes = 'gentella';
 
     /**
      * @param string $controller
@@ -35,9 +35,13 @@ class BaseController extends Webarq
      */
     public function __construct($controller, $module, $panel, $action, array $params = [])
     {
+        $this->themes = config('webarq.system.themes', $this->themes);
+
         parent::__construct($controller, $module, $panel, $action, $params);
 
         $this->admin = Auth::user();
+
+        \View::share('admin', $this->admin);
     }
 
     /**
@@ -59,32 +63,12 @@ class BaseController extends Webarq
             return $this->actionGetForbidden();
         }
 
-        $this->setLayout($this->layout);
-
         return parent::before();
-    }
-
-    /**
-     * @param $view
-     */
-    protected function setLayout($view)
-    {
-        $this->layout = view($view);
     }
 
     public function actionGetIndex()
     {
         return 'Content not available';
-    }
-
-    /**
-     * Called from routing file
-     *
-     * @return object
-     */
-    public function after()
-    {
-        return $this->layout;
     }
 
     /**
