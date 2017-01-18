@@ -2,24 +2,19 @@
 /**
  * Created by PhpStorm.
  * User: DanielSimangunsong
- * Date: 1/5/2017
- * Time: 1:30 PM
+ * Date: 1/17/2017
+ * Time: 6:14 PM
  */
 
 namespace Webarq\Manager\Cms\HTML\Form\Input;
 
 
-use Webarq\Manager\Cms\HTML\Form\InputManager;
+use Webarq\Manager\Cms\HTML\Form\AbstractInput;
 
-class PasswordInputManager extends InputManager
+class PasswordInputManager extends AbstractInput
 {
-    /**
-     * @doc inherit
-     * @return null|\Webarq\Manager\HTML\Form\InputManager
-     */
-    public function buildInput()
+    protected function buildInput()
     {
-        return $this->form->addCollection([$this->type, $this->name, $this->attributes],
-                $this->title, $this->info);
+        return \Form::password($this->name, $this->getAttributes());
     }
 }

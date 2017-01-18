@@ -19,15 +19,15 @@ return [
 
         'title' => [
                 'welcome' => 'Welcome',
-// General
                 'title' => 'Title',
                 'narration' => 'Narration',
                 'description' => 'Description',
-// General CMS
+
                 'is_system' => 'Is System',
                 'is_active' => 'Is Active',
                 'is_admin' => 'Is Admin',
-// Person
+                'create' => 'Create :item',
+
                 'username' => 'User Name',
                 'first_name' => 'First Name',
                 'password' => 'Password',

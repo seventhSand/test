@@ -20,7 +20,7 @@ return [
 
 // Site configuration
         'site' => [
-                'name' => 'Gentella',
+                'name' => 'WEBARQ',
                 'meta' => [
                         'author' => 'Daniel Simangunsong',
                         'description' => 'Some description',
@@ -52,7 +52,7 @@ return [
                                 . 'Please help me by do the things rightfully',
 
                 ],
-                'themes' => 'gentella'
+                'themes' => 'admin-lte'
         ],
 
 // Themes

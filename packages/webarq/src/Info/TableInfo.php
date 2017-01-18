@@ -224,7 +224,7 @@ class TableInfo
      */
     public function isMultiLingual()
     {
-        return $this->multilingual;
+        return $this->multilingual && class_exists('Wlang\Lang');
     }
 
     /**

@@ -96,7 +96,9 @@ class Webarq extends Controller
      */
     protected function setLayout($name)
     {
-        $this->layout = view('themes.' . $this->themes . '.layout.' . $name);
+        $this->layout = Wa::getThemesView($this->themes, 'layout.' . $name);
+
+        $this->layout->{'themes'} = $this->themes;
     }
 
     /**
@@ -145,12 +147,12 @@ class Webarq extends Controller
 
     public function actionGetNoMethod()
     {
-        return view('webarq.errors.405');
+        return Wa::getThemesView($this->themes, 'errors.405');
     }
 
     public function actionGetForbidden()
     {
-        return view('webarq.errors.403');
+        return Wa::getThemesView($this->themes, 'errors.403');
     }
 
     /**

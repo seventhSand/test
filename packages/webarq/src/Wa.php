@@ -321,4 +321,19 @@ class Wa
     {
         return $this->instance('manager.cms.panel', \Auth::user());
     }
+
+    /**
+     * @param $themes
+     * @param $view
+     * @param bool|true $object
+     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
+     */
+    public function getThemesView($themes, $view, $object = true)
+    {
+        $path = view()->exists('themes.' . $themes . '.' . $view)
+                ? ('themes.' . $themes . '.' . $view)
+                : ('themes.default.' . $view);
+
+        return $object ? view($path) : $path;
+    }
 }

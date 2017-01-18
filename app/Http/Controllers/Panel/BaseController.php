@@ -24,7 +24,7 @@ class BaseController extends Webarq
     /**
      * @inheritdoc
      */
-    protected $themes = 'gentella';
+    protected $themes;
 
     /**
      * @param string $controller
@@ -35,13 +35,13 @@ class BaseController extends Webarq
      */
     public function __construct($controller, $module, $panel, $action, array $params = [])
     {
-        $this->themes = config('webarq.system.themes', $this->themes);
+        $this->themes = config('webarq.system.themes', 'default');
 
         parent::__construct($controller, $module, $panel, $action, $params);
 
         $this->admin = Auth::user();
 
-        \View::share('admin', $this->admin);
+        view()->share('admin', $this->admin);
     }
 
     /**
@@ -57,7 +57,7 @@ class BaseController extends Webarq
             if ('login' !== $this->action && 'auth' !== $this->controller) {
                 return redirect(URL::panel('system/admins/auth/login'));
             }
-        } elseif (!Wa::panel()->isAccessible($this->getModule(), $this->getPanel(), $this->action)) {
+        } elseif (!$this->isAccessible()) {
             return $this->actionGetForbidden();
         } elseif (!is_object($this->module) || !is_object($this->panel)) {
             return $this->actionGetForbidden();
@@ -66,9 +66,19 @@ class BaseController extends Webarq
         return parent::before();
     }
 
+    /**
+     * @return mixed
+     */
+    protected function isAccessible()
+    {
+        return Wa::panel()->isAccessible($this->getModule(), $this->getPanel(), $this->action);
+    }
+
+    /**
+     * @return string
+     */
     public function actionGetIndex()
     {
-        return 'Content not available';
     }
 
     /**

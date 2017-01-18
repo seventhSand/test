@@ -58,13 +58,15 @@ return [
 // Form title
 // @todo default value when not set
                                 'title' => 'Create Role',
+// Extend your form attributes
+                                'attributes' => [],
 // Input key should be following "moduleName.tableName.columnName" format name
                                 'system.roles.role_level' => [
                                         'name' => 'level',
                                         'type' => 'text',
                                         'title' => 'LevelQ',
                                         'rules' => 'max:255|min:10',
-                                        'error-message' => [
+                                        'error-messages' => [
                                                 'required' => 'Role level should not be empty'
                                         ],
                                         'info' => 'For best practice, please use simple number which is easy '
@@ -101,7 +103,7 @@ return [
                                         'type' => 'text',
                                         'label' => 'Level',
                                         'rules' => 'max:255|min:10',
-                                        'error-message' => [
+                                        'error-messages' => [
                                                 'required' => 'Role level should not be empty'
                                         ],
                                         'info' => 'For best practice, please use simple number which is easy '

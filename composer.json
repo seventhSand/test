@@ -22,7 +22,8 @@
         ],
         "psr-4": {
             "App\\": "app/",
-            "Webarq\\": "packages/webarq/src"
+            "Webarq\\": "packages/webarq/src",
+            "Wlang\\": "packages/wlang/src"
         }
     },
     "autoload-dev": {

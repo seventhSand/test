@@ -87,7 +87,10 @@ class TableManager extends \Webarq\Manager\HTML\TableManager
 
 // Pagination property should be array
         if (!is_array($this->pagination)) {
-            $this->pagination = [$this->pagination, 'themes.' . config('webarq.system.themes', 'default') . '.common.pagination'];
+            $this->pagination = [
+                    $this->pagination,
+                    Wa::getThemesView(config('webarq.system.themes', 'default'), 'common.pagination', false)
+            ];
         }
 
         $this->groupingActions();

@@ -59,7 +59,7 @@ class FormController extends BaseController
                 'type' => $this->action
         ];
 
-        $this->builder = new FormManager(\Auth::user(), $options, $this->action);
+        $this->builder = Wa::manager('cms.HTML!.form',\Auth::user(), $options, $this->action);
     }
 
     /**
@@ -98,7 +98,7 @@ class FormController extends BaseController
                 return redirect($this->panel->getPermalink('listing/index'));
             }
         } else {
-            $this->builder->setMessages($validator->errors()->getMessages(), 'error');
+            $this->builder->setAlert($validator->errors()->getMessages(), 'warning');
         }
     }
 

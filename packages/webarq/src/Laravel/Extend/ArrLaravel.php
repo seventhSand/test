@@ -129,7 +129,7 @@ class ArrLaravel
             }
 
             foreach ($new as $key => $value) {
-                if (!isset($old[$key])) {
+                if (!isset($old[$key]) || gettype($old[$key]) !== gettype($value)) {
                     $old[$key] = $value;
                     continue;
                 }
@@ -139,11 +139,12 @@ class ArrLaravel
                 }
                 if (is_array($value)) {
                     $old[$key] = Arr::combine((array)$old[$key], $value, $option);
+
                     if (!Arr::isAssocAbs($old[$key])) {
                         $old[$key] = array_flip(array_flip($old[$key]));
                     }
                 } else {
-                    if (!isset($old[$key]) || 'normal' === $option) {
+                    if ('normal' === $option) {
                         $old[$key] = $value;
                     } elseif ('join' === $option) {
                         $old[$key] .= ' ' . $value;

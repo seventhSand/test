@@ -102,62 +102,8 @@ class RulesManager
      */
     protected function requireRule()
     {
-        if (null !== $this->getItem('required')) {
+        if (null !== $this->getAttribute('required') || true === $this->getAttribute('notnull')) {
             $this->items['required'] = '';
-        }
-    }
-
-    /**
-     * Get attribute item by key
-     *
-     * @param $key
-     * @return mixed
-     */
-    protected function getItem($key)
-    {
-        return array_get($this->attributes, $key);
-    }
-
-    /**
-     * Collect numeric rule
-     */
-    protected function numericRule()
-    {
-        if (null !== $this->getItem('numeric')) {
-            $this->items['numeric'] = '';
-        }
-    }
-
-    /**
-     * Collect max rule
-     */
-    protected function maxRule()
-    {
-        if (null !== ($max = $this->getItem('max')) && is_numeric($max)) {
-            $this->items['max'] = $max;
-        }
-    }
-
-    /**
-     * Collect min rule
-     */
-    protected function minRule()
-    {
-        if (null !== ($min = $this->getItem('min')) && is_numeric($min)) {
-            $this->items['min'] = $min;
-        }
-    }
-
-    /**
-     * Collect unique rule
-     */
-    protected function uniqueRule()
-    {
-        if (null !== ($unique = $this->getItem('unique'))) {
-            if (true === $unique) {
-                $unique = $this->getAttribute('table') . ',' . $this->getAttribute('column');
-            }
-            $this->items['unique'] = $unique;
         }
     }
 
@@ -171,6 +117,49 @@ class RulesManager
     public function getAttribute($key, $default = null)
     {
         return array_get($this->attributes, $key, $default);
+    }
+
+    /**
+     * Collect numeric rule
+     */
+    protected function numericRule()
+    {
+        if (null !== $this->getAttribute('numeric')) {
+            $this->items['numeric'] = '';
+        }
+    }
+
+    /**
+     * Collect max rule
+     */
+    protected function maxRule()
+    {
+        if (null !== ($max = $this->getAttribute('max')) && is_numeric($max)) {
+            $this->items['max'] = $max;
+        }
+    }
+
+    /**
+     * Collect min rule
+     */
+    protected function minRule()
+    {
+        if (null !== ($min = $this->getAttribute('min')) && is_numeric($min)) {
+            $this->items['min'] = $min;
+        }
+    }
+
+    /**
+     * Collect unique rule
+     */
+    protected function uniqueRule()
+    {
+        if (null !== ($unique = $this->getAttribute('unique'))) {
+            if (true === $unique) {
+                $unique = $this->getAttribute('table')->getName() . ',' . $this->getAttribute('column')->getName();
+            }
+            $this->items['unique'] = $unique;
+        }
     }
 
     /**

@@ -9,17 +9,12 @@
 namespace App\Http\Controllers\Site;
 
 
-class BaseController
+use App\Http\Controllers\Webarq;
+
+class BaseController extends Webarq
 {
-
-    public function actionGetNoMethod()
+    public function actionGetTab()
     {
-//        return view('webarq.errors.405');
-        return $this->forbidden();
-    }
-
-    protected function forbidden()
-    {
-        return view('webarq.errors.403');
+        return view('samples.tab');
     }
 }

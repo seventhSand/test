@@ -1,22 +1,21 @@
 <?php
 /**
- * Created by PhpStorm
- * Date: 18/12/2016
- * Time: 10:29
- * Author: Daniel Simangunsong
- *
- * Calm seas, never make skill full sailors
+ * Created by PhpStorm.
+ * User: DanielSimangunsong
+ * Date: 1/16/2017
+ * Time: 2:36 PM
  */
 
 namespace Webarq\Manager\Cms\HTML;
 
 
-use Illuminate\Contracts\Support\Htmlable;
+use Form;
 use Illuminate\Support\Arr;
 use Wa;
 use Webarq\Manager\AdminManager;
-use Webarq\Manager\Cms\HTML\Form\InputManager;
-use Webarq\Manager\setPropertyManagerTrait;
+use Webarq\Manager\Cms\HTML\Form\AbstractInput;
+use Webarq\Manager\SetPropertyManagerTrait;
+
 
 /**
  * Panel form generator
@@ -26,7 +25,7 @@ use Webarq\Manager\setPropertyManagerTrait;
  * Class FormManager
  * @package Webarq\Manager\Cms\HTML
  */
-class FormManager implements Htmlable
+class FormManager
 {
     use SetPropertyManagerTrait;
 
@@ -38,32 +37,21 @@ class FormManager implements Htmlable
     protected $admin;
 
     /**
+     * @var string
+     */
+    protected $defaultModule;
+
+    /**
+     * @var string
+     */
+    protected $defaultPanel;
+
+    /**
      * Form transaction type, create or edit
      *
      * @var string
      */
     protected $type;
-
-    /**
-     * Module name
-     *
-     * @var string
-     */
-    protected $module;
-
-    /**
-     * Panel name
-     *
-     * @var string
-     */
-    protected $panel;
-
-    /**
-     * Table master parent
-     *
-     * @var string
-     */
-    protected $master;
 
     /**
      * Form title
@@ -78,27 +66,6 @@ class FormManager implements Htmlable
      * @var string
      */
     protected $action;
-
-    /**
-     * Form input collections
-     *
-     * @var array
-     */
-    protected $inputs = [];
-
-    /**
-     * Form attributes
-     *
-     * @var array
-     */
-    protected $attributes = [];
-
-    /**
-     * Form builder
-     *
-     * @var object Webarq\Manager\HTML\FormManager
-     */
-    protected $builder;
 
     /**
      * Validator messages
@@ -136,49 +103,174 @@ class FormManager implements Htmlable
     protected $post = [];
 
     /**
-     * FormManager create instance
+     * Form input collections
      *
-     * @param AdminManager $admin
-     * @param array $options
+     * @var array
      */
+    protected $collections = [];
+
+    /**
+     * @var array
+     * @todo Support media tab on form
+     */
+    protected $media = [];
+
+    /**
+     * @var string
+     */
+    protected $view = 'manager.cms.form.index';
+
+    /**
+     * HTML structure;
+     *
+     * @var string
+     */
+    protected $html;
+
+    /**
+     * Form attributes
+     *
+     * @var array
+     */
+    protected $attributes = [];
+
+    /**
+     * @var array
+     */
+    protected $alerts = [];
+
     public function __construct(AdminManager $admin, array $options = [])
     {
         $this->admin = $admin;
 
-        $this->setPropertyFromOptions($options, false);
-
-        $this->compileOptions($options);
-
-        $this->builder = new \Webarq\Manager\HTML\FormManager($this->action, $this->attributes);
+        $this->setup($options);
     }
 
+    protected function setup(array $options)
+    {
+        $this->defaultModule = array_pull($options, 'module');
+        $this->defaultPanel = array_pull($options, 'panel');
+
+        $this->setPropertyFromOptions($options);
+
+        $this->prepareCollections($options);
+    }
 
     /**
-     * Extract options in to class property
-     *
-     * @param array $options
+     * @param array $inputs
+     * @todo Support row grouping, following [[path1 => array setting, path2 => array setting] ...] format
      */
-    protected function compileOptions(array $options)
+    protected function prepareCollections(array $inputs)
     {
-        if ([] !== $options) {
-            foreach ($options as $key => $value) {
-                if (is_numeric($key)) {
-// Multiple inputs in one container
-                    if (is_array($value)) {
-                        $group = [];
-                        foreach ($value as $key1 => $value1) {
-                            $group[$key1] = $value1;
-                        }
-                        $this->inputs[count($this->inputs) + 1] = $group;
-                    } else {
-                        $this->inputs[$value] = [];
+        if ([] !== $inputs) {
+            foreach ($inputs as $path => $attr) {
+                if (is_numeric($path)) {
+                    $path = $attr;
+                    $attr = [];
+                }
+
+                $input = $this->makeInput($path, $attr);
+
+                if ($input->isValid()) {
+// Multilingual input
+                    if (true === $input->multilingual && $input->table->isMultilingual()) {
+                        $this->collections['content']['multilingual'][$input->name] = clone $input;
                     }
-                } elseif (str_contains($key, '.')) {
-                    $this->inputs[$key] = $value;
-                } else {
-                    $this->attributes[$key] = $value;
+
+                    $this->collectInputValidator($input);
+
+                    $this->collections['content'][$input->name] = $input;
+
+                    $this->pairs[$path] = $input;
                 }
             }
+        }
+    }
+
+    protected function collectInputValidator(AbstractInput $input)
+    {
+// Collect validator rules
+        $this->validatorRules[$input->name] = $input->rules->toString();
+
+        if ([] !== $input->errorMessages) {
+            foreach ($input->errorMessages as $errType => $errMsg) {
+                $this->validatorMessages[$input->name . '.' . $errType] = $errMsg;
+            }
+        }
+    }
+
+    /**
+     * @param $path
+     * @param array $attr
+     * @return mixed
+     */
+    protected function makeInput($path, array $attr)
+    {
+        list($module, $table, $column) = explode('.', $path, 3);
+// load info class manager
+        $module = Wa::module($module);
+        $table = $module->getTable($table);
+        $column = $table->getColumn($column);
+        $attr = Arr::merge(Arr::merge($column->unserialize(), $column->getExtra('form')), $attr) + [
+                        'module' => $module, 'table' => $table, 'column' => $column
+                ];
+
+// This is could be pain on the process, but due to laravel input form method behaviour is different
+// one from another, we need class helper to enable us adding consistent parameter
+        $input = Wa::load('manager.cms.HTML!.form.input.' . array_get($attr, 'type', 'null') . ' input', $attr)
+                ?: Wa::load('manager.cms.HTML!.form.input.default input', $attr);
+
+        return $this->inputManagerDependencies($input);
+    }
+
+    /**
+     * @param AbstractInput $input
+     * @return AbstractInput
+     */
+    protected function inputManagerDependencies(AbstractInput $input)
+    {
+        return $input;
+    }
+
+    /**
+     * Get pairs
+     *
+     * @return array
+     */
+    public function getPairs()
+    {
+        return $this->pairs;
+    }
+
+    /**
+     * @return array
+     */
+    public function getValidatorMessages()
+    {
+        return $this->validatorMessages;
+    }
+
+    /**
+     * @return array
+     */
+    public function getValidatorRules()
+    {
+        return $this->validatorRules;
+    }
+
+    /**
+     * @param array $messages
+     * @param string $level
+     */
+    public function setAlert($messages = [], $level = 'warning')
+    {
+        if (is_array($messages)) {
+            foreach ($messages as &$message) {
+                if (is_array($message)) {
+                    $message = current($message);
+                }
+            }
+            $this->alerts = [$messages, $level];
         }
     }
 
@@ -193,181 +285,34 @@ class FormManager implements Htmlable
     }
 
     /**
-     * Compile form configuration
-     *
-     * @return $this
+     * Compile form inputs
      */
     public function compile()
     {
-        $this->compileInputs();
+        if (isset($this->collections['content'])) {
+            $multilingual = array_pull($this->collections, 'content.multilingual', []);
+            foreach ($this->collections['content'] as $input) {
+// Set input value
+                $input->setValue(array_get($this->post, $input->name));
 
-        return $this;
-    }
+                $this->html .= $input->buildHtml();
 
-    /**
-     * Add collections in to $builder by compiling $inputs property
-     */
-    protected function compileInputs()
-    {
-        if ([] !== $this->inputs) {
-            foreach ($this->inputs as $path => $setting) {
-// Add collection group
-                if (is_numeric($path)) {
+// Print out multilingual input
+                if ([] !== $multilingual && null !== ($input = array_get($multilingual, $input->name))) {
+                    foreach (app('Wlang\Lang')->getCodes() as $code) {
+                        if (app('Wlang\Lang')->getSystem() != $code) {
+                            $input->setAttributeName($input->name, $code);
+// Set input value
+                            $input->setValue(array_get($this->post, $input->getAttribute('name')));
 
-                } else {
-                    $this->addInput($path, $setting);
-                }
-            }
-        }
-    }
+                            $input->setTitle($input->getTitle(). ' (' . strtoupper($code) .')');
 
-    /**
-     * Add input in to builder
-     *
-     * @param $path
-     * @param array $attr
-     */
-    protected function addInput($path, array $attr = [])
-    {
-        list($module, $table, $column) = explode('.', $path);
-// Merge extended input attributes with pre-defined attributes in column information
-        $attr = Arr::merge(Wa::module($module)->getTable($table)->getColumn($column)->getInputAttribute(), $attr);
-// Attribute type and name should not be empty
-        $type = array_pull($attr, 'type');
-        $name = array_pull($attr, 'name');
-        if (null === $type || null === $name) {
-            abort('405', config('webarq.system.error-message.configuration'));
-        }
-// Only add unguarded input
-        if (null === array_get($attr, 'guarded')) {
-// Following laravel way, value should not be not in attributes
-            $value = $this->pullValueFromAttributes($name, $attr);
-
-            $attr += ['table' => $table, 'column' => $column, 'module' => $module];
-
-// This is could be pain on the process, but due to laravel input form method behaviour is different
-// one from another, we need class helper to enable us adding collection with proper arguments
-// @todo Build own form builder to simplify the logic
-            $input = Wa::load('manager.cms.HTML!.form.input.' . $type . ' input',
-                    $this->builder, $type, $name, $value, $attr)
-                    ?: Wa::load('manager.cms.HTML!.form.input', $this->builder, $type, $name, $value, $attr);
-
-// Pairing input name with the manager, while each input set as impermissible
-            $this->pairs[$name] = [$input, true];
-
-            if (null === array_get($attr, 'protected')
-                    && ([] === $input->getPermissions()
-                            || Wa::panel()->isAccessible($this->module, $this->panel, $input->getPermissions()))
-            ) {
-                $input->buildInput();
-
-                $this->setValidatorMessage($name, $input);
-                if ([] !== $input->getErrorMessage()) {
-                    foreach ($input->getErrorMessage() as $errType => $errMsg) {
-                        $this->validatorMessages[$name . '.' . $errType] = $errMsg;
+                            $this->html .= $input->buildHtml();
+                        }
                     }
                 }
-
-                $this->validatorRules[$name] = $input->getRules()->toString();
-// Set input permission in to true
-                $this->pairs[$name][1] = false;
             }
         }
-    }
-
-    /**
-     * @param mixed $name Input name
-     * @param array $attr Input attributes
-     * @return mixed
-     */
-    protected function pullValueFromAttributes($name, array &$attr = [])
-    {
-        return array_pull($attr, 'value', [] !== $this->post
-                ? array_get($this->post, $name)
-                : ('create' === $this->type ? array_get($attr, 'default') : ''));
-    }
-
-    protected function setValidatorMessage($inputName, InputManager $manager)
-    {
-
-    }
-
-    /**
-     * @param array $messages
-     * @param string $level
-     * @param string $container
-     */
-    public function setMessages($messages = [], $level = 'warning', $container = ':webarq.form.cms.message')
-    {
-        if (is_array($messages)) {
-            foreach ($messages as &$message) {
-                if (is_array($message)) {
-                    $message = current($message);
-                }
-            }
-        }
-        $this->builder->setMessages($messages, $level, $container);
-    }
-
-    /**
-     * Set form inputs
-     *
-     * While inputs already exist and options not empty,
-     * merge inputs options with the previous one
-     *
-     * @param $name
-     * @param array $options
-     * @return $this
-     */
-    public function setInput($name, array $options = [])
-    {
-        if (isset($this->inputs[$name]) && [] !== $options) {
-            $this->inputs[$name] = Arr::merge($this->inputs[$name], $options);
-        } else {
-            $this->inputs[$name] = $options;
-        }
-
-        return $this;
-    }
-
-    /**
-     * Get validator messages
-     *
-     * @return array
-     */
-    public function getValidatorMessages()
-    {
-        return $this->validatorMessages;
-    }
-
-    /**
-     * Get validator rules
-     *
-     * @return array
-     */
-    public function getValidatorRules()
-    {
-        return Arr::filter($this->validatorRules);
-    }
-
-    /**
-     * Get column and input pair
-     *
-     * @return array
-     */
-    public function getPairs()
-    {
-        return $this->pairs;
-    }
-
-    /**
-     * Get master table name
-     *
-     * @return string
-     */
-    public function getMaster()
-    {
-        return $this->master;
     }
 
     /**
@@ -379,10 +324,17 @@ class FormManager implements Htmlable
      */
     public function toHtml()
     {
-        if (isset($this->title)) {
-            $this->builder->setTitle($this->title);
-        }
+        $this->attributes['url'] = $this->action;
 
-        return $this->builder->toHtml();
+        return view($this->view, [
+                'title' => $this->title ?: trans('webarq.title.' . $this->type,
+                        ['item' => studly_case($this->defaultPanel)]
+                ),
+                'attributes' => $this->attributes,
+                'html' => $this->html,
+// In case you want to build your own elements html structure
+                'elements' => $this->collections,
+                'alerts' => $this->alerts
+        ]);
     }
 }

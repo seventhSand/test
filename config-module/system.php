@@ -65,7 +65,7 @@ return [
                                                         'rules' => 'email'
                                                 ],
                                                 'system.admin_roles.role_id' => [
-                                                        'label' => 'Role',
+                                                        'title' => 'Role',
                                                         'type' => 'select',
                                                         'multiple',
                                                         'options' => [
@@ -90,11 +90,23 @@ return [
                         'actions' => [
                                 'create' => [
                                         'form' => [
-                                                'system.menus.parent_id' => [
-                                                        'type' => 'select',
-                                                        'blankOption' => 'Please Select'
+                                                'system.menus.title',
+                                                'system.menus.permalink' => [
+                                                        'type' => 'text',
                                                 ],
-                                                'system.menus.title'
+                                                'system.menus.parent_id' => [
+// Allow system to build select input, and get options from mentioned table
+                                                        'type' => 'select table',
+                                                        'title' => 'Parent Menu',
+                                                        'source-table' => [
+// Table name, while not set will get current input table
+                                                                'name' => 'menus',
+// Column for select option value, and select option label
+                                                                'column' => ['id', 'title']
+                                                        ],
+                                                        'blankOption' => [0 => 'This is a parent menu'],
+
+                                                ],
                                         ]
                                 ]
                         ]
