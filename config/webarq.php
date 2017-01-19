@@ -404,7 +404,8 @@ return [
                         'notnull' => true,
                         'form' => [
                                 'type' => 'text',
-                                'class' => 'datepicker'
+                                'class' => 'date-picker',
+                                'modifier' => 'datetime'
                         ]
                 ],
 
@@ -413,7 +414,8 @@ return [
                         'name' => 'last_update',
                         'form' => [
                                 'type' => 'text',
-                                'class' => 'datepicker'
+                                'class' => 'date-picker',
+                                'modifier' => 'datetime'
                         ]
                 ]
         ]

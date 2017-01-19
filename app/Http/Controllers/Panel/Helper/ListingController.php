@@ -27,7 +27,7 @@ class ListingController extends BaseController
 
     public function after()
     {
-        $this->layout->{'rightSection'} = $this->builder->toHtml();
+            $this->layout->{'rightSection'} = $this->builder->toHtml();
 
         return parent::after();
     }

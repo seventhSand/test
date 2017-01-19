@@ -80,6 +80,10 @@ class TableInfo
      */
     protected $serialize;
 
+    protected $createTimeColumn;
+
+    protected $updateTimeColumn;
+
     /**
      * Create TableInfo instance
      *
@@ -114,9 +118,12 @@ class TableInfo
                         case 'timestamps':
                             $this->setColumn(config('webarq.data-type-master.createOn'));
                             $this->setColumn(config('webarq.data-type-master.lastUpdate'));
+                            $this->createTimeColumn = config('webarq.data-type-master.createOn.name');
+                            $this->updateTimeColumn = config('webarq.data-type-master.lastUpdate.name');
                             break;
                         case 'timestamp':
                             $this->setColumn(config('webarq.data-type-master.createOn'));
+                            $this->createTimeColumn = config('webarq.data-type-master.createOn.name');
                             break;
                         default:
                             $this->extra[$i] = $value;
@@ -200,11 +207,12 @@ class TableInfo
     /**
      * Get table name
      *
+     * @param bool $translate
      * @return string
      */
-    public function getName()
+    public function getName($translate = false)
     {
-        return $this->name;
+        return $translate ? $this->name . '_i18n' : $this->name;
     }
 
     /**
@@ -257,6 +265,22 @@ class TableInfo
     public function getReferenceKeyName()
     {
         return str_singular($this->name) . '_id';
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getCreateTimeColumn()
+    {
+        return $this->createTimeColumn;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getUpdateTimeColumn()
+    {
+        return $this->updateTimeColumn;
     }
 }
 

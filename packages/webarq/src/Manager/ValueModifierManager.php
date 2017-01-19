@@ -21,16 +21,16 @@ class ValueModifierManager
             return \Hash::make($string);
         });
 
-        static::macro('datetime', function(){
-            return date('Y-m-d H:i:s');
+        static::macro('datetime', function($time = null){
+            return date('Y-m-d H:i:s', strtotime($time) ?: time());
         });
 
-        static::macro('date', function(){
-            return date('Y-m-d');
+        static::macro('date', function($time = null){
+            return date('Y-m-d', strtotime($time) ?: time());
         });
 
-        static::macro('time', function(){
-            return date('H:i:s');
+        static::macro('time', function($time = null){
+            return date('H:i:s', strtotime($time) ?: time());
         });
     }
 }

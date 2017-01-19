@@ -1,11 +1,9 @@
 <?php
 /**
- * Created by PhpStorm
- * Date: 29/12/2016
- * Time: 15:26
- * Author: Daniel Simangunsong
- *
- * Calm seas, never make skill full sailors
+ * Created by PhpStorm.
+ * User: DanielSimangunsong
+ * Date: 1/18/2017
+ * Time: 6:34 PM
  */
 
 namespace Webarq\Manager\Cms\Query;
@@ -13,71 +11,89 @@ namespace Webarq\Manager\Cms\Query;
 
 use DB;
 use Illuminate\Support\Arr;
-use Illuminate\Support\Str;
 use Wa;
-use Webarq\Manager\Cms\HistoryManager;
+use Webarq\Info\TableInfo;
 
-class InsertManager extends CrudAbstractManager
+class InsertManager extends PostManager
 {
-    protected $type = 'insert';
+    protected $formType = 'create';
 
     /**
      * @return bool
      */
     public function execute()
     {
-        if ([] !== $this->pairs && null !== ($row = array_pull($this->pairs, $this->master))) {
-// Auto completion for create time column
-            $this->checkForCreateUpdateTime($row, $this->master, 'create_on');
+        if ([] !== $this->post && !is_null($this->master)) {
+// Master data should be inserted before another
+            $row = array_pull($this->post, $this->master, []);
 
-// Always insert master table in the first place
-            if (null !== ($model = $this->model(str_singular($this->master)))) {
-// Eloquent way
-                $id = $model->insert($row);
-            } else {
-// Builder way
-                $id = $this->makeInsert($this->master, $row);
+            if ([] !== $row) {
+                $m = Wa::table($this->master);
+// Initiate model
+                $model = $this->initiateModel($this->master);
+// Create time completion
+                $this->addCreateTime($m, $row);
+// Bind row in to model
+                $this->rowBinder($model, $row);
+// Save
+                $model->save();
+// Last inserted id
+                $id = $model->{$model->getKeyName()};
+// Translation
+                $this->translation($id,
+                        $m,
+                        array_pull($this->post, 'translation.' . $m->getName(true), []));
+// Support rows
+
+                $this->supportData($id, $m, $this->post);
             }
 
-// Insert foreign data
-            if (is_numeric($id)) {
-                if ([] !== $this->pairs) {
-                    $foreignKey = Wa::table($this->master)->getReferenceKeyName();
-                    foreach ($this->pairs as $table => $row) {
-                        if (!Arr::isAssocAbs($row)) {
-// Multi insertion
-                            foreach ($row as $row1) {
-                                $row1[$foreignKey] = $id;
-                                $this->makeInsert($table, $row1);
-                            }
-                            unset($this->pairs[$table]);
-                            continue;
-                        } else {
-                            $this->makeInsert($table, $row);
-                        }
-                    }
-                }
-
-                return true;
-            }
+            return true;
         }
-
-        return false;
     }
 
     /**
-     * @param $table
-     * @param array $row
-     * @return number
+     * @param $id
+     * @param TableInfo $table
+     * @param array|null $rows
      */
-    protected function makeInsert($table, array $row)
+    protected function translation($id, TableInfo $table, array $rows = null)
     {
-        foreach ($row as $column => $value) {
-            if (is_array($value)) {
-                $row[$column] = Str::decodeSerialize($value);
+        if ([] !== $rows) {
+            foreach ($rows as $code => $row) {
+                $row += ['create_on' => date('Y-m-d H:i:s'), 'lang_code' => $code];
+                $row[$table->getReferenceKeyName()] = $id;
+                $model = $this->initiateModel($table->getName(true), 'id');
+                $this->rowBinder($model, $row);
+                $model->save();
             }
         }
+    }
 
-        return DB::table($table)->insertGetId($row);
+    /**
+     * @param $id
+     * @param TableInfo $master
+     * @param array $groups
+     */
+    protected function supportData($id, TableInfo $master, array $groups)
+    {
+        foreach ($groups as $table => $rows) {
+            $t = Wa::table($table);
+            if (Arr::isAssoc($rows)) {
+                $rows = [$rows];
+            }
+            foreach ($rows as $row) {
+// Initiate model
+                $model = $this->initiateModel($table);
+// Add create time column
+                $this->addCreateTime($t, $row);
+// Add foreign key column
+                $row[$master->getReferenceKeyName()] = $id;
+// Bind row in to model
+                $this->rowBinder($model, $row);
+// Save
+                $model->save();
+            }
+        }
     }
 }

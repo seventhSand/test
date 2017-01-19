@@ -77,10 +77,19 @@ class CreateManager extends InstallerAbstract
     {
         if ($table->isMultiLingual()) {
             $str = PHP_EOL;
-            $str .= '        Schema::create(\'' . $table->getName() . '_i18n\', function(Blueprint $table)' . PHP_EOL;
+            $str .= '        Schema::create(\'' . $table->getName(true) . '\', function(Blueprint $table)' . PHP_EOL;
             $str .= '        {' . PHP_EOL;
+// Column ID
             $str .= Wa::manager('installer.definition', Wa::load('info.column',['master' => 'bigId']))
                     ->getDefinition();
+// Column language code
+            $str .= Wa::manager('installer.definition', Wa::load('info.column',[
+                'name' => 'lang_code',
+                'type' => 'char',
+                'length' => 2,
+                'notnull' => true
+            ]))->getDefinition();
+
             foreach ($table->getColumns() as $column) {
                 if ($column->isPrimary()) {
                     $attrColumn = [
@@ -94,6 +103,7 @@ class CreateManager extends InstallerAbstract
                     $str .= Wa::manager('installer.definition', $column)->getDefinition();
                 }
             }
+
             $str .= Wa::manager('installer.definition', Wa::load('info.column',['master' => 'createOn']))
                     ->getDefinition();
 

@@ -31,6 +31,11 @@ return [
                 ],
                 'admins' => [
                         'permalink' => null,
+                        'listing' => [
+                                'headers' => [
+                                        'columns' => ['username', 'email', 'is_system', 'is_active']
+                                ]
+                        ],
 // Panel allowed action
                         'actions' => [
                                 'activeness',
@@ -75,8 +80,7 @@ return [
                                                         'rules' => 'required|array'
                                                 ],
                                                 'system.admins.create_on' => [
-                                                        'protected' => 'on',
-                                                        'modifier' => 'datetime'
+                                                        'protected' => true
                                                 ]
                                         ]
                                 ],
@@ -90,9 +94,13 @@ return [
                         'actions' => [
                                 'create' => [
                                         'form' => [
-                                                'system.menus.title',
+                                                'system.menus.template',
+                                                'system.menus.title' => [
+                                                        'referrer' => 'seo-url'
+                                                ],
                                                 'system.menus.permalink' => [
                                                         'type' => 'text',
+                                                        'class' => 'seo-url'
                                                 ],
                                                 'system.menus.parent_id' => [
 // Allow system to build select input, and get options from mentioned table
@@ -107,8 +115,11 @@ return [
                                                         'blankOption' => [0 => 'This is a parent menu'],
 
                                                 ],
+                                                'system.menus.sequence'
                                         ]
-                                ]
+                                ],
+                                'activeness',
+                                'delete'
                         ]
                 ],
         ],

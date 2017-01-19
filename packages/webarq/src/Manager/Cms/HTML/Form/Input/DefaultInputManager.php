@@ -19,7 +19,7 @@ class DefaultInputManager extends AbstractInput
      */
     protected function buildInput()
     {
-        return app('form')->{$this->type}($this->name, $this->value, $this->getAttributes());
+        return app('form')->{$this->type}($this->name, $this->value, $this->attributes);
     }
 
 }

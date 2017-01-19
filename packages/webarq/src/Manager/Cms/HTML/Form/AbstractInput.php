@@ -157,11 +157,24 @@ abstract class AbstractInput
     protected $settings = [];
 
     /**
+     * Form type, create or edit
+     * @var string
+     */
+    protected $formType;
+
+    /**
+     * Db column type, eg. int, char, varchar, ... etc
+     *
+     * @var
+     */
+    protected $dbType;
+
+    /**
      * Force inherited class to use getAttributes method
      *
      * @var array
      */
-    private $attributes = [];
+    protected $attributes = [];
 
     /**
      * @param array $options
@@ -174,9 +187,11 @@ abstract class AbstractInput
 
         $this->setPropertyFromOptions($options);
 
-        $this->fixAttributes();
-
         $this->settings = $options;
+
+        $this->makeAttributes();
+
+        $this->fixAttributes();
     }
 
     protected function setRule(array &$options)
@@ -186,10 +201,35 @@ abstract class AbstractInput
         array_forget($options, 'rules');
     }
 
+    /**
+     * Build input attributes
+     */
+    protected function makeAttributes()
+    {
+        if ([] !== $this->settings) {
+            $this->attributes = Arr::merge($this->settings, $this->attributes);
+            foreach ($this->attributes as $key => $value) {
+                if (is_object($value)) {
+                    unset($this->attributes[$key]);
+                } elseif (is_array($value)) {
+                    $this->attributes[$key] = base64_encode(serialize($value));
+                }
+            }
+        }
+
+        $this->attributes = Arr::merge($this->attributes, [
+                'class' => 'form-control'
+        ], 'join');
+    }
+
     protected function fixAttributes()
     {
         if (!is_array($this->permissions)) {
             $this->permissions = [$this->permissions];
+        }
+
+        if (Arr::inArray($this->attributes, 'multiple') || 'multiple' === array_get($this->attributes, 'multiple')) {
+            $this->attributes['name'] = $this->name . '[]';
         }
     }
 
@@ -241,6 +281,30 @@ abstract class AbstractInput
     abstract protected function buildInput();
 
     /**
+     * @return mixed|null
+     */
+    public function getValue()
+    {
+        $value = $this->value;
+        if (is_null($value) && 'create' === $this->formType) {
+            $value = $this->impermissible ?: $this->default;
+        }
+        if (isset($this->modifier) && !is_array($value)) {
+            $value = Wa::load('manager.value modifier')->{$this->modifier}($value);
+        }
+
+        return $value;
+    }
+
+    /**
+     * @param $value
+     */
+    public function setValue($value)
+    {
+        $this->value = $value;
+    }
+
+    /**
      * Set or Overwrite attribute item
      *
      * @param $key
@@ -271,12 +335,11 @@ abstract class AbstractInput
         }
     }
 
-    /**
-     * @param $value
-     */
-    public function setValue($value)
+    public function getActualName()
     {
-        $this->value = $value;
+        $name = array_get($this->attributes, 'name', $this->name);
+
+        return substr($name, 0, strpos($name, '['));
     }
 
     /**
@@ -286,7 +349,7 @@ abstract class AbstractInput
      */
     public function isValid()
     {
-        return !$this->guarded && null !== $this->name && $this->isPermissible();
+        return !$this->guarded && null !== $this->name;
     }
 
     /**
@@ -296,8 +359,18 @@ abstract class AbstractInput
      */
     public function isPermissible()
     {
-        return [] === $this->permissions
-        || Wa::panel()->isAccessible($this->module->getName(), $this->table->getName(), $this->permissions);
+        return !$this->protected && ([] === $this->permissions
+        || Wa::panel()->isAccessible($this->module->getName(), $this->table->getName(), $this->permissions));
+    }
+
+    /**
+     * Check if input is guarded
+     *
+     * @return bool
+     */
+    public function isGuarded()
+    {
+        return $this->guarded;
     }
 
     /**
@@ -327,28 +400,5 @@ abstract class AbstractInput
     public function __get($key)
     {
         return property_exists($this, $key) ? $this->{$key} : null;
-    }
-
-    /**
-     * Build input attributes
-     *
-     * @return array
-     */
-    protected function getAttributes()
-    {
-        if ([] !== $this->settings) {
-            $this->attributes = Arr::merge($this->settings, $this->attributes);
-            foreach ($this->attributes as $key => $value) {
-                if (is_object($value)) {
-                    unset($this->attributes[$key]);
-                } elseif (is_array($value)) {
-                    $this->attributes[$key] = base64_encode(serialize($value));
-                }
-            }
-        }
-
-        return Arr::merge($this->attributes, [
-                'class' => 'form-control'
-        ], 'join');
     }
 }

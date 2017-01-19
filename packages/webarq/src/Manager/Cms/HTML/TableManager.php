@@ -59,7 +59,7 @@ class TableManager extends \Webarq\Manager\HTML\TableManager
      *
      * @var array|number
      */
-    protected $pagination = 2;
+    protected $pagination = 10;
 
     /**
      * @var string

@@ -124,7 +124,9 @@ class RulesManager
      */
     protected function numericRule()
     {
-        if (null !== $this->getAttribute('numeric')) {
+        if (null !== $this->getAttribute('numeric')
+                || str_contains($this->getAttribute('db-type', 'not-found'), 'int')
+        ) {
             $this->items['numeric'] = '';
         }
     }

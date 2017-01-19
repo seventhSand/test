@@ -39,12 +39,17 @@ class FormManager
     /**
      * @var string
      */
-    protected $defaultModule;
+    protected $module;
 
     /**
      * @var string
      */
-    protected $defaultPanel;
+    protected $panel;
+
+    /**
+     * @var
+     */
+    protected $model;
 
     /**
      * Form transaction type, create or edit
@@ -139,6 +144,14 @@ class FormManager
      */
     protected $alerts = [];
 
+    /**
+     * Transaction master table.
+     * Usable for multiple table transaction
+     *
+     * @var
+     */
+    protected $master;
+
     public function __construct(AdminManager $admin, array $options = [])
     {
         $this->admin = $admin;
@@ -148,8 +161,8 @@ class FormManager
 
     protected function setup(array $options)
     {
-        $this->defaultModule = array_pull($options, 'module');
-        $this->defaultPanel = array_pull($options, 'panel');
+        $this->module = array_pull($options, 'module');
+        $this->panel = array_pull($options, 'panel');
 
         $this->setPropertyFromOptions($options);
 
@@ -172,29 +185,26 @@ class FormManager
                 $input = $this->makeInput($path, $attr);
 
                 if ($input->isValid()) {
-// Multilingual input
-                    if (true === $input->multilingual && $input->table->isMultilingual()) {
-                        $this->collections['content']['multilingual'][$input->name] = clone $input;
+                    if ($input->isPermissible()) {
+                        if (true === $input->multilingual && $input->table->isMultilingual()) {
+                            foreach (app('Wlang\Lang')->getCodes() as $code) {
+                                if (app('Wlang\Lang')->getSystem() != $code) {
+                                    $clone = clone $input;
+                                    $clone->setAttributeName($clone->name, $code);
+                                    $clone->setTitle($clone->getTitle() . ' (' . strtoupper($code) . ')');
+                                    $this->collections['s-y-s-t-e-m-m-u-l-t-i-l-i-n-g-u-a-l'][$input->name][$code]
+                                            = $clone;
+                                }
+                            }
+                        }
+
+                        $this->collectInputValidator($input);
+
+                        $this->collections[$input->name] = $input;
                     }
 
-                    $this->collectInputValidator($input);
-
-                    $this->collections['content'][$input->name] = $input;
-
-                    $this->pairs[$path] = $input;
+                    $this->pairs[$input->name] = $input;
                 }
-            }
-        }
-    }
-
-    protected function collectInputValidator(AbstractInput $input)
-    {
-// Collect validator rules
-        $this->validatorRules[$input->name] = $input->rules->toString();
-
-        if ([] !== $input->errorMessages) {
-            foreach ($input->errorMessages as $errType => $errMsg) {
-                $this->validatorMessages[$input->name . '.' . $errType] = $errMsg;
             }
         }
     }
@@ -211,9 +221,12 @@ class FormManager
         $module = Wa::module($module);
         $table = $module->getTable($table);
         $column = $table->getColumn($column);
-        $attr = Arr::merge(Arr::merge($column->unserialize(), $column->getExtra('form')), $attr) + [
+        $old = $column->unserialize();
+        $attr = Arr::merge(Arr::merge($old, $column->getExtra('form')), $attr) + [
                         'module' => $module, 'table' => $table, 'column' => $column
                 ];
+        $attr['db-type'] = $old['type'];
+        $attr['form-type'] = $this->type;
 
 // This is could be pain on the process, but due to laravel input form method behaviour is different
 // one from another, we need class helper to enable us adding consistent parameter
@@ -230,6 +243,18 @@ class FormManager
     protected function inputManagerDependencies(AbstractInput $input)
     {
         return $input;
+    }
+
+    protected function collectInputValidator(AbstractInput $input)
+    {
+// Collect validator rules
+        $this->validatorRules[$input->name] = $input->rules->toString();
+
+        if ([] !== $input->errorMessages) {
+            foreach ($input->errorMessages as $errType => $errMsg) {
+                $this->validatorMessages[$input->name . '.' . $errType] = $errMsg;
+            }
+        }
     }
 
     /**
@@ -284,34 +309,71 @@ class FormManager
         $this->post = $post;
     }
 
+    public function finalizePost()
+    {
+        $pairs = [];
+        if ([] !== $this->pairs) {
+// Multilingual inputs
+            $multilingual = array_get($this->collections, 's-y-s-t-e-m-m-u-l-t-i-l-i-n-g-u-a-l', []);
+
+            foreach ($this->pairs as $name => $input) {
+                $value = $input->getValue();
+
+                if (!is_array($value)) {
+                    $pairs[$input->table->getName()][$input->column->getName()] = $value;
+// Set translation row
+                    if (null !== ($inputs = array_get($multilingual, $name))) {
+                        foreach ($inputs as $code => $input) {
+                            $pairs['translation'][$input->table->getName(true)][$code][$input->column->getName()]
+                                    = $input->getValue();
+                        }
+                    }
+                } else {
+                    foreach ($value as $key => $str) {
+                        $pairs[$input->table->getName()][$key][$input->column->getName()] = $str;
+// @todo check translation for array row
+                    }
+                }
+            }
+        }
+
+        return $pairs;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getMaster()
+    {
+        return $this->master;
+    }
+
     /**
      * Compile form inputs
      */
     public function compile()
     {
-        if (isset($this->collections['content'])) {
-            $multilingual = array_pull($this->collections, 'content.multilingual', []);
-            foreach ($this->collections['content'] as $input) {
+        if ([] !== $this->collections) {
+// Pull out multilingual input
+            $multilingual = array_pull($this->collections, 's-y-s-t-e-m-m-u-l-t-i-l-i-n-g-u-a-l', []);
+
+            foreach ($this->collections as $input) {
 // Set input value
                 $input->setValue(array_get($this->post, $input->name));
 
                 $this->html .= $input->buildHtml();
 
 // Print out multilingual input
-                if ([] !== $multilingual && null !== ($input = array_get($multilingual, $input->name))) {
-                    foreach (app('Wlang\Lang')->getCodes() as $code) {
-                        if (app('Wlang\Lang')->getSystem() != $code) {
-                            $input->setAttributeName($input->name, $code);
-// Set input value
-                            $input->setValue(array_get($this->post, $input->getAttribute('name')));
-
-                            $input->setTitle($input->getTitle(). ' (' . strtoupper($code) .')');
-
-                            $this->html .= $input->buildHtml();
-                        }
+                if ([] !== $multilingual && null !== ($inputs = array_get($multilingual, $input->name))) {
+                    foreach ($inputs as $input) {
+                        $input->setValue(array_get($this->post, $input->getAttribute('name')));
+                        $this->html .= $input->buildHtml();
                     }
                 }
             }
+
+// Putting back multilingual into collections
+            $this->collections['s-y-s-t-e-m-m-u-l-t-i-l-i-n-g-u-a-l'] = $multilingual;
         }
     }
 
@@ -328,7 +390,7 @@ class FormManager
 
         return view($this->view, [
                 'title' => $this->title ?: trans('webarq.title.' . $this->type,
-                        ['item' => studly_case($this->defaultPanel)]
+                        ['item' => studly_case($this->panel)]
                 ),
                 'attributes' => $this->attributes,
                 'html' => $this->html,
@@ -336,5 +398,21 @@ class FormManager
                 'elements' => $this->collections,
                 'alerts' => $this->alerts
         ]);
+    }
+
+
+    /**
+     * Modify value based on modifier config
+     *
+     * @param $modifier
+     * @param $string
+     * @return mixed
+     */
+    protected function modifyValue($modifier, $string)
+    {
+        if (null !== $modifier) {
+            return Wa::load('manager.value modifier')->{$modifier}($string);
+        }
+        return $string;
     }
 }

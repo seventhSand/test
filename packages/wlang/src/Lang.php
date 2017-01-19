@@ -37,6 +37,6 @@ class Lang
 
     public function getCodes()
     {
-        return ['en', 'id'];
+        return ['en', 'id', 'fr'];
     }
 }

@@ -85,14 +85,21 @@ class FormController extends BaseController
      */
     public function actionPostCreate()
     {
+// Add post data in to form builder
         $this->builder->setPost($this->post);
 
+// Compile the builder
         $this->builder->compile();
 
+// Initiate validator
         $validator = $this->validator();
 
         if (!$validator->fails()) {
-            $manager = Wa::manager('cms.query.insert', $this->admin, \Request::input(), $this->builder->getPairs());
+            $manager = Wa::manager('cms.query.insert',
+                    $this->admin,
+                    $this->builder->finalizePost(),
+                    $this->builder->getMaster());
+
             if ($manager->execute()) {
 // Redirect to listing controller
                 return redirect($this->panel->getPermalink('listing/index'));

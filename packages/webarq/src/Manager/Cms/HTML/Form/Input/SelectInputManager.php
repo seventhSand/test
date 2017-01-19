@@ -28,7 +28,7 @@ class SelectInputManager extends AbstractInput
 
         $this->blankOption();
 
-        return \Form::select($this->name, $this->options, $this->value, $this->getAttributes());
+        return \Form::select($this->name, $this->options, $this->value, $this->attributes);
     }
 
     protected function blankOption()

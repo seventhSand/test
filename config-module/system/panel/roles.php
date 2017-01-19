@@ -13,7 +13,7 @@ return [
         'listing' => [
                 'headers' => [
                         'columns' => [
-                                'role_level' => ['label' => 'LabelQ'],
+                                'role_level' => ['label' => 'Level'],
                                 'title',
                                 'is_admin',
                                 'is_active',
@@ -64,14 +64,14 @@ return [
                                 'system.roles.role_level' => [
                                         'name' => 'level',
                                         'type' => 'text',
-                                        'title' => 'LevelQ',
+// Input title
+                                        'title' => 'Role Level',
                                         'rules' => 'max:255|min:10',
                                         'error-messages' => [
                                                 'required' => 'Role level should not be empty'
                                         ],
                                         'info' => 'For best practice, please use simple number which is easy '
-                                                . 'to remember. Eg 10, 20, ...',
-                                        'modifier' => 'test'
+                                                . 'to remember. Eg 10, 20, ...'
                                 ],
                                 'system.roles.title',
                                 'system.roles.is_admin' => [

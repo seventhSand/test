@@ -32,6 +32,7 @@ class CreateMenusClass extends Migration {
         Schema::create('menus_i18n', function(Blueprint $table)
         {
             $table->bigIncrements('id');
+            $table->char('lang_code', 2);
             $table->unsignedInteger('menu_id');
             $table->string('title', 100);
             $table->datetime('create_on');

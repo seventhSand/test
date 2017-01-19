@@ -9,7 +9,9 @@
 namespace Webarq\Model;
 
 
-class NoModel
+use Illuminate\Database\Eloquent\Model;
+
+class NoModel extends Model
 {
     /**
      * The name of the "created at" column.
