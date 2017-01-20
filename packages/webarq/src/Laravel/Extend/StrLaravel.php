@@ -72,5 +72,12 @@ class StrLaravel
         Str::macro('decodeSerialize', function($string) {
             return unserialize(base64_decode($string));
         });
+
+        /**
+         *  Remove duplicate word
+         */
+        Str::macro('filter', function($string, $separator = ' ') {
+            return implode($separator, array_flip(array_flip(explode($separator, $string))));
+        });
     }
 }

@@ -94,25 +94,25 @@ return [
                         'actions' => [
                                 'create' => [
                                         'form' => [
-                                                'system.menus.template',
                                                 'system.menus.title' => [
                                                         'referrer' => 'seo-url'
                                                 ],
+                                                'system.menus.template',
                                                 'system.menus.permalink' => [
                                                         'type' => 'text',
-                                                        'class' => 'seo-url'
+                                                        'class' => '.seo-url'
                                                 ],
                                                 'system.menus.parent_id' => [
 // Allow system to build select input, and get options from mentioned table
                                                         'type' => 'select table',
-                                                        'title' => 'Parent Menu',
+                                                        'title' => 'Pare nt Menu',
                                                         'source-table' => [
 // Table name, while not set will get current input table
                                                                 'name' => 'menus',
 // Column for select option value, and select option label
                                                                 'column' => ['id', 'title']
                                                         ],
-                                                        'blankOption' => [0 => 'This is a parent menu'],
+                                                        'blank-option' => [0 => 'This is a parent menu'],
 
                                                 ],
                                                 'system.menus.sequence'

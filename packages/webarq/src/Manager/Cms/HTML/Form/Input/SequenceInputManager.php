@@ -18,6 +18,6 @@ class SequenceInputManager extends AbstractInput
      */
     protected function buildInput()
     {
-        return \Form::text($this->name, $this->value, $this->attributes);
+        return \Form::text($this->name, $this->value, $this->attribute->toArray());
     }
 }

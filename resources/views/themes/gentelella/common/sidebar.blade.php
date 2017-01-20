@@ -19,7 +19,7 @@
         <!-- menu profile quick info -->
         <div class="profile">
             <div class="profile_pic">
-                <img src="{{URL::asset('gentella/sample/images/img.jpg')}}" alt="..." class="img-circle profile_img">
+                <img src="{{URL::asset('gentelella/sample/images/img.jpg')}}" alt="..." class="img-circle profile_img">
             </div>
             <div class="profile_info">
                 <span>{{trans('webarq.title.welcome')}},</span>

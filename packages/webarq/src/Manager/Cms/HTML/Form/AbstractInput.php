@@ -10,6 +10,7 @@ namespace Webarq\Manager\Cms\HTML\Form;
 
 
 use Illuminate\Support\Arr;
+use Illuminate\Support\Str;
 use Wa;
 use Webarq\Manager\SetPropertyManagerTrait;
 
@@ -170,11 +171,9 @@ abstract class AbstractInput
     protected $dbType;
 
     /**
-     * Force inherited class to use getAttributes method
-     *
-     * @var array
+     * @var \Webarq\Manager\Cms\HTML\Form\Input\AttributeInputManager
      */
-    protected $attributes = [];
+    protected $attribute;
 
     /**
      * @param array $options
@@ -189,9 +188,8 @@ abstract class AbstractInput
 
         $this->settings = $options;
 
-        $this->makeAttributes();
-
-        $this->fixAttributes();
+        $this->attribute = Wa::manager('cms.HTML!.form.input.attribute input', $this->settings)
+                ->insertClass('form-control');
     }
 
     protected function setRule(array &$options)
@@ -204,22 +202,9 @@ abstract class AbstractInput
     /**
      * Build input attributes
      */
-    protected function makeAttributes()
+    public function attribute()
     {
-        if ([] !== $this->settings) {
-            $this->attributes = Arr::merge($this->settings, $this->attributes);
-            foreach ($this->attributes as $key => $value) {
-                if (is_object($value)) {
-                    unset($this->attributes[$key]);
-                } elseif (is_array($value)) {
-                    $this->attributes[$key] = base64_encode(serialize($value));
-                }
-            }
-        }
-
-        $this->attributes = Arr::merge($this->attributes, [
-                'class' => 'form-control'
-        ], 'join');
+        return $this->attribute;
     }
 
     protected function fixAttributes()
@@ -304,37 +289,6 @@ abstract class AbstractInput
         $this->value = $value;
     }
 
-    /**
-     * Set or Overwrite attribute item
-     *
-     * @param $key
-     * @param $value
-     */
-    public function setAttribute($key, $value)
-    {
-        $this->attributes[$key] = $value;
-    }
-
-    /**
-     * Set attribute name
-     *
-     * @param $name
-     * @param null $langCode
-     */
-    public function setAttributeName($name, $langCode = null)
-    {
-        if (null === $langCode) {
-            $this->attributes['name'] = $name;
-        } else {
-            $names = explode('[', $name, 2);
-            $names[0] .= '_' . $langCode;
-            if (isset($names[1])) {
-                $names[0] .= '[';
-            }
-            $this->attributes['name'] = implode('', $names);
-        }
-    }
-
     public function getActualName()
     {
         $name = array_get($this->attributes, 'name', $this->name);
@@ -360,7 +314,7 @@ abstract class AbstractInput
     public function isPermissible()
     {
         return !$this->protected && ([] === $this->permissions
-        || Wa::panel()->isAccessible($this->module->getName(), $this->table->getName(), $this->permissions));
+                || Wa::panel()->isAccessible($this->module->getName(), $this->table->getName(), $this->permissions));
     }
 
     /**
@@ -379,15 +333,6 @@ abstract class AbstractInput
     public function isProtected()
     {
         return true === $this->protected;
-    }
-
-    /**
-     * @param $key
-     * @return mixed
-     */
-    public function getAttribute($key)
-    {
-        return array_get($this->attributes, $key);
     }
 
     /**

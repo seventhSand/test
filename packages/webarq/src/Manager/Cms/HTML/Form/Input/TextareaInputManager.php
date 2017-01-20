@@ -15,6 +15,6 @@ class TextareaInputManager extends AbstractInput
 {
     protected function buildInput()
     {
-        return \Form::textarea($this->name, $this->value, $this->attributes);
+        return \Form::textarea($this->name, $this->value, $this->attribute->toArray());
     }
 }

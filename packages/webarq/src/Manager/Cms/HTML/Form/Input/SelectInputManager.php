@@ -19,6 +19,8 @@ class SelectInputManager extends AbstractInput
      */
     protected $options = ['0' => 'On', '1' => 'Off'];
 
+    protected $blankOption;
+
     protected function buildInput()
     {
         if (is_callable($this->options)) {
@@ -26,22 +28,23 @@ class SelectInputManager extends AbstractInput
             $this->options = $method();
         }
 
-        $this->blankOption();
+        $this->setBlankOption();
 
-        return \Form::select($this->name, $this->options, $this->value, $this->attributes);
+        return \Form::select($this->name, $this->options, $this->value, $this->attribute->toArray());
     }
 
-    protected function blankOption()
+    protected function setBlankOption()
     {
-        if (null !== ($labelOption = array_get($this->settings, 'blankOption'))) {
-            if (true === $labelOption || 1 === $labelOption || '1' === $labelOption) {
+        if (null !== $this->blankOption) {
+            if (true === $this->blankOption || 1 === $this->blankOption || '1' === $this->blankOption) {
                 $this->options = Arr::merge(['' => config('webarq.system.input.blank-option-label')], $this->options);
             } else {
-                if (!is_array($labelOption)) {
-                    $labelOption = ['' => $labelOption];
+                $items = $this->blankOption;
+                if (!is_array($items)) {
+                    $items = ['' => $items];
                 }
 
-                $this->options = Arr::merge($labelOption, $this->options);
+                $this->options = Arr::merge($items, $this->options);
             }
         }
     }

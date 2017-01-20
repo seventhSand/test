@@ -155,6 +155,7 @@ class ArrLaravel
             return $old;
         });
 
+// Filtering array by value
         Arr::macro('filter', function (array $arr, array $allowed = []) {
             if ([] === $allowed) {
                 return array_filter($arr);
@@ -198,6 +199,7 @@ class ArrLaravel
             return false;
         });
 
+// Filter associative member from an array
         Arr::macro('unsetAssocKey', function(array $array){
             if ([] !== $array) {
                 foreach ($array as $key => $value) {

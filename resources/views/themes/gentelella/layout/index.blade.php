@@ -20,14 +20,14 @@
     <title>Default - Gentelella</title>
 
     @section('css')
-        <link href="{{URL::asset('default/vendors/bootstrap/dist/css/bootstrap.min.css')}}" rel="stylesheet">
-        <link href="{{URL::asset('default/vendors/font-awesome/css/font-awesome.min.css')}}" rel="stylesheet">
-        <link href="{{URL::asset('default/vendors/nprogress/nprogress.css')}}" rel="stylesheet">
-        <link href="{{URL::asset('default/vendors/iCheck/skins/flat/green.css')}}" rel="stylesheet">
-        <link href="{{URL::asset('default/vendors/bootstrap-progressbar/css/bootstrap-progressbar-3.3.4.min.css')}}"
+        <link href="{{URL::asset('gentelella/vendors/bootstrap/dist/css/bootstrap.min.css')}}" rel="stylesheet">
+        <link href="{{URL::asset('gentelella/vendors/font-awesome/css/font-awesome.min.css')}}" rel="stylesheet">
+        <link href="{{URL::asset('gentelella/vendors/nprogress/nprogress.css')}}" rel="stylesheet">
+        <link href="{{URL::asset('gentelella/vendors/iCheck/skins/flat/green.css')}}" rel="stylesheet">
+        <link href="{{URL::asset('gentelella/vendors/bootstrap-progressbar/css/bootstrap-progressbar-3.3.4.min.css')}}"
               rel="stylesheet">
-        <link href="{{URL::asset('default/vendors/jqvmap/dist/jqvmap.min.css')}}" rel="stylesheet"/>
-        <link href="{{URL::asset('default/build/css/custom.min.css')}}" rel="stylesheet">
+        <link href="{{URL::asset('gentelella/vendors/jqvmap/dist/jqvmap.min.css')}}" rel="stylesheet"/>
+        <link href="{{URL::asset('gentelella/build/css/custom.min.css')}}" rel="stylesheet">
     @show
 </head>
 
@@ -57,12 +57,12 @@
 </div>
 
 @section('script')
-    <script src="{{URL::asset('default/vendors/jquery/dist/jquery.min.js')}}"></script>
-    <script src="{{URL::asset('default/vendors/bootstrap/dist/js/bootstrap.min.js')}}"></script>
-    <script src="{{URL::asset('default/vendors/fastclick/lib/fastclick.js')}}"></script>
-    <script src="{{URL::asset('default/vendors/nprogress/nprogress.js')}}"></script>
-    <script src="{{URL::asset('default/vendors/dropzone/dist/min/dropzone.min.js')}}"></script>
-    <script src="{{URL::asset('default/build/js/custom.min.js')}}"></script>
+    <script src="{{URL::asset('gentelella/vendors/jquery/dist/jquery.min.js')}}"></script>
+    <script src="{{URL::asset('gentelella/vendors/bootstrap/dist/js/bootstrap.min.js')}}"></script>
+    <script src="{{URL::asset('gentelella/vendors/fastclick/lib/fastclick.js')}}"></script>
+    <script src="{{URL::asset('gentelella/vendors/nprogress/nprogress.js')}}"></script>
+    <script src="{{URL::asset('gentelella/vendors/dropzone/dist/min/dropzone.min.js')}}"></script>
+    <script src="{{URL::asset('gentelella/build/js/custom.min.js')}}"></script>
 @show
 </body>
 </html>

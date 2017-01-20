@@ -190,7 +190,7 @@ class FormManager
                             foreach (app('Wlang\Lang')->getCodes() as $code) {
                                 if (app('Wlang\Lang')->getSystem() != $code) {
                                     $clone = clone $input;
-                                    $clone->setAttributeName($clone->name, $code);
+                                    $clone->attribute()->setName($clone->name, $code);
                                     $clone->setTitle($clone->getTitle() . ' (' . strtoupper($code) . ')');
                                     $this->collections['s-y-s-t-e-m-m-u-l-t-i-l-i-n-g-u-a-l'][$input->name][$code]
                                             = $clone;
@@ -366,7 +366,7 @@ class FormManager
 // Print out multilingual input
                 if ([] !== $multilingual && null !== ($inputs = array_get($multilingual, $input->name))) {
                     foreach ($inputs as $input) {
-                        $input->setValue(array_get($this->post, $input->getAttribute('name')));
+                        $input->setValue(array_get($this->post, $input->attribute()->get('name')));
                         $this->html .= $input->buildHtml();
                     }
                 }
