@@ -11,6 +11,7 @@
 namespace Webarq\Manager\Cms\HTML\Form;
 
 use Illuminate\Support\Arr;
+use Illuminate\Support\Str;
 
 /**
  * Class RulesManager
@@ -89,9 +90,12 @@ class RulesManager
     {
         $string = 'bail';
         foreach ($this->items as $key => $option) {
-            $string .= $separator . $key;
+            $string .= $separator . (is_numeric($key) ? '' : $key);
             if ('' !== $option) {
-                $string .= ':' . $option;
+                if (!is_numeric($key)) {
+                    $string .= ':';
+                }
+                $string .= $option;
             }
         }
         return trim($string, $separator);
@@ -102,7 +106,7 @@ class RulesManager
      */
     protected function requireRule()
     {
-        if (null !== $this->getAttribute('required') || true === $this->getAttribute('notnull')) {
+        if (true === $this->getAttribute('notnull')) {
             $this->items['required'] = '';
         }
     }
@@ -170,5 +174,20 @@ class RulesManager
     protected function uniquesRule()
     {
 
+    }
+
+    protected function fileRule()
+    {
+        if (null !== ($files = $this->getAttribute('file')) && is_array($files)) {
+            array_forget($files, ['upload-dir', 'resize', 'prefix']);
+
+            foreach ($files as $key => $value) {
+                if (is_numeric($key) || 'type' === $key) {
+                    $this->items[] = $value;
+                } else {
+                    $this->items[$key] = (is_array($value) ? implode(',', $value) : $value);
+                }
+            }
+        }
     }
 }

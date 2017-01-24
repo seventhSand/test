@@ -13,7 +13,7 @@ return [
         'listing' => [
                 'headers' => [
                         'columns' => [
-                                'role_level' => ['label' => 'Level'],
+                                'role_level' => ['title' => 'Level'],
                                 'title',
                                 'is_admin',
                                 'is_active',

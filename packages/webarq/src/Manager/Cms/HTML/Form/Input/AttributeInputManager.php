@@ -109,5 +109,14 @@ class AttributeInputManager
             $this->insertClass('referrer')
                 ->set('data-referrer-target', $referrer);
         }
+
+// Attribute value should not be array
+        foreach ($this->items as $key => &$item) {
+            if(is_array($item)) {
+                $item = base64_encode(serialize($item));
+            } elseif (null === $item || false === $item) {
+                unset($this->items[$key]);
+            }
+        }
     }
 }

@@ -196,7 +196,7 @@ class TableManager extends \Webarq\Manager\HTML\TableManager
                     $this->admin,
                     $this->module->getName(),
                     $this->panel->getName(),
-                    $this->columns,
+                    array_get($this->headers, 'columns', []),
                     $this->pagination[0],
                     array_get($this->actions, 'listing', [])
             )->buildSequence($this->sequence);

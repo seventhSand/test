@@ -10,6 +10,7 @@ namespace Webarq\Manager;
 
 
 use Illuminate\Support\Traits\Macroable;
+use URL;
 
 class ValueModifierManager
 {
@@ -31,6 +32,10 @@ class ValueModifierManager
 
         static::macro('time', function($time = null){
             return date('H:i:s', strtotime($time) ?: time());
+        });
+
+        static::macro('thumb', function($path, $width = '30'){
+            return '<img src="' . URL::asset($path) . '" style="width:' . $width .'px;"/>';
         });
     }
 }

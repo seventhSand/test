@@ -68,7 +68,7 @@ return [
         ],
 
 // Active module
-        'modules' => ['system', 'client'],
+        'modules' => ['system', 'client', 'sample'],
 
 // Our laravel helper configuration
         'laravel' => [

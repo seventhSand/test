@@ -2,103 +2,196 @@
 /**
  * Created by PhpStorm.
  * User: DanielSimangunsong
- * Date: 1/18/2017
- * Time: 3:47 PM
+ * Date: 1/23/2017
+ * Time: 1:12 PM
  */
 
 namespace Webarq\Manager\Cms\Query;
 
 
-use Illuminate\Database\Eloquent\Model;
+use Request;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Wa;
-use Webarq\Info\TableInfo;
-use Webarq\Manager\AdminManager;
-use Webarq\Model\NoModel;
+use Webarq\Manager\Cms\HTML\Form\AbstractInput;
 
 class PostManager
 {
-    protected $admin;
+    /**
+     * Form type, create or edit
+     *
+     * @var
+     */
+    protected $type;
 
     /**
+     * Pre-defined post data
+     *
      * @var array
      */
     protected $post = [];
 
     /**
-     * Transaction type, create|edit
-     *
-     * @var
+     * @var array
      */
-    protected $formType;
+    protected $pairs = [];
 
     /**
-     * Transaction master table
-     *
-     * @var string
+     * @var array
      */
-    protected $master;
+    protected $collections = [];
 
     /**
-     * @param AdminManager $admin
+     * @var array
+     */
+    protected $files = [];
+
+    /**
+     * @param $type
      * @param array $post
-     * @param null $master
+     * @param array $master
+     * @param array $multilingual
      */
-    public function __construct(AdminManager $admin, array $post, $master = null)
+    public function __construct($type, array $post, array $master, array $multilingual)
     {
-        $this->admin = $admin;
+        $this->type = $type;
         $this->post = $post;
 
-        $this->setMaster($master);
-    }
+        $this->masterRow($master);
 
-    /**
-     * @param $master
-     */
-    protected function setMaster($master)
-    {
-        if ([] !== $this->post) {
-            foreach ($this->post as $table => $rows) {
-                if (!isset($master) || 0 === strpos($master, str_singular($table))) {
-                    $master = $table;
+        if ([] !== $multilingual) {
+            foreach ($multilingual as $inputs) {
+                foreach ($inputs as $code => $input) {
+                    $t = \Wl::translateTableName($input->{'table'}->getName());
+                    $value = $this->getValue($input);
+                    $this->post['translation'][$t][$code][$input->{'column'}->getName()] = $value;
                 }
             }
         }
-
-        $this->master = $master;
     }
 
-    /**
-     * @param TableInfo $table
-     * @param array $row
-     */
-    protected function addCreateTime(TableInfo $table, array &$row)
+    protected function masterRow(array $pairs)
     {
-        if (null !== $table->getCreateTimeColumn() && !isset($row[$table->getCreateTimeColumn()])) {
-            $row[$table->getCreateTimeColumn()] = date('Y-m-d H:i:s');
+        if ([] !== $pairs) {
+            foreach ($pairs as $input) {
+                $value = $this->getValue($input);
+                if (is_array($value)) {
+                    $this->multiRow($value, $input->{'table'}->getName(), $input->{'column'}->getName());
+                } else {
+                    $this->post[$input->{'table'}->getName()][$input->{'column'}->getName()] = $value;
+                }
+            }
         }
     }
 
     /**
-     * @param TableInfo $table
-     * @param array $row
+     * @param AbstractInput $input
+     * @return mixed
+     */
+    protected function getValue(AbstractInput $input)
+    {
+        if (($input->isPermissible())) {
+            if (!is_null($input->{'file'})) {
+                return $this->inputFile($input);
+            } else {
+                $value = $input->getValue();
+            }
+        } else if ($input->{'impermissible'} === Wa::getGhost()) {
+            $value = $input->{'default'};
+        } else {
+            $value = $input->{'impermissible'};
+        }
+
+        if ($value != Wa::getGhost() && !is_array($value) && !is_null($input->{'modifier'})) {
+            $value = Wa::load('manager.value modifier')->{trim($input->{'modifier'})}($value);
+        }
+
+        return $value;
+    }
+
+    /**
+     * @param AbstractInput $input
+     * @return mixed
+     */
+    protected function inputFile(AbstractInput $input)
+    {
+// File options
+        $options = (array)$input->{'file'};
+// Post File (s)
+        $file = Request::file($input->getInputName());
+        if (is_array($file)) {
+            $result = [];
+            foreach ($file as $key => $item) {
+// Init uploader
+                $uploader = $this->loadUploader(
+                        array_get($options, 'type', 'file'),
+                        $item,
+                        array_get($options, 'upload-dir', '/'),
+                        array_get($options, 'resize', [])
+                );
+// Push in to files
+                $this->files[] = $uploader;
+// Push in to post
+                $result[] = $uploader->getPathName();
+            }
+        } else {
+// Init uploader
+            $uploader = $this->loadUploader(
+                    array_get($options, 'type', 'file'),
+                    $file,
+                    array_get($options, 'upload-dir', '/'),
+                    array_get($options, 'resize', [])
+            );
+// Push in to files
+            $this->files[] = $uploader;
+
+            $result = $uploader->getPathName();
+        }
+
+        return $result;
+    }
+
+    /**
+     * @param string $type
+     * @param UploadedFile $file
+     * @param string $dir
+     * @param array $resize
+     */
+    protected function loadUploader($type, UploadedFile $file, $dir, array $resize = [])
+    {
+        $manager = Wa::manager('uploader.' . $type . ' uploader', $file, $dir)
+                ?: Wa::manager('uploader. file uploader', $file, $dir);
+
+        if ([] !== $resize) {
+            $manager->setResize($resize);
+        }
+
+        return $manager;
+    }
+
+    protected function multiRow(array $value, $table, $column)
+    {
+        foreach ($value as $key => $str) {
+// @todo check translation for array row
+            if (is_array($str)) {
+                $str = base64_encode(serialize($str));
+            }
+            $this->post[$table][$key][$column] = $str;
+        }
+    }
+
+    /**
      * @return array
      */
-    protected function addUpdateTime(TableInfo $table, array &$row)
+    public function getPost()
     {
-        if (null !== $table->getUpdateTimeColumn() && !isset($row[$table->getUpdateTimeColumn()])) {
-            $row[$table->getUpdateTimeColumn()] = date('Y-m-d H:i:s');
-        }
+        return $this->post;
     }
 
-    protected function initiateModel($table, $primary = null)
+    /**
+     * @return array
+     */
+    public function getFiles()
     {
-        return NoModel::instance($table, $primary ?: Wa::table($table)->primaryColumn()->getName());
-    }
-
-    protected function rowBinder(Model $model, array $row)
-    {
-        foreach ($row as $column => $value) {
-            $model->{$column} = $value;
-        }
+        return $this->files;
     }
 }

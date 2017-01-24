@@ -85,85 +85,30 @@ class Wa
     }
 
     /**
-     * Load class instance
+     * A shortcut method to access Webarq\Manager\ConfigManager instances
      *
-     * @param $class
-     * @param mixed $arg [,... $arg, $arg] Uncountable argument
+     * @param string $file
+     * @param mixed $default
      * @return mixed
      */
-    public function instance($class, $arg = [])
+    public function config($file, $default = null)
     {
-// Get loaded class
-        if (isset($this->instances[$class])) {
-            return $this->instances[$class];
-        } else {
-// Load new instances
-// Get actual arguments
-            $args = func_get_args();
-// Remove class argument
-            array_shift($args);
-            if ($this->getGhost() === array_get($args, 1)) {
-                $args = $args[0];
-            }
-// Get class full path
-            $fp = $this->normalizeClass($class);
-
-            if (class_exists($fp)) {
-                if (method_exists($fp, 'getInstance')) {
-                    $this->instances[$class] = $fp::getInstance($args, $this->getGhost());
-                } else {
-                    $this->instances[$class] = $this->load(false, $fp, $args, $this->getGhost());
-                }
-                return $this->instances[$class];
-            } else {
-                abort(500, 'Class ' . $class . ' not found on this system');
-            }
-        }
-    }
-
-    public function getGhost()
-    {
-        return config('webarq.system.ghost');
+        return ConfigManager::get($file, $default);
     }
 
     /**
-     * Normalize class name, it would be prefixed by Webarq\ and suffixed by lastFolderName
+     * Manager class loader
      *
-     * @param string $path
-     * @return string Full class path
+     * @param $class
+     * @param array $args , ... [$args]
+     * @return object
      */
-    public function normalizeClass($path)
+    public function manager($class, $args = [])
     {
-        $path = str_replace(['\\', '/', '_'], '.', $path);
-        $path = str_replace('-', ' ', $path);
-        $path = explode('.', $path);
-        if (count($path) > 1) {
-            $path = $this->compilePathName($path);
-            $class = implode('\\', $path);
-// Suffixed class with root name space
-            if (!ends_with($class, '$')) {
-                $class .= $path[0];
-            } else {
-                $class = substr($class, 0, -1);
-            }
-        } else {
-            $class = ucfirst(strtolower(current($path)));
-        }
-
-        return $this->space . '\\' . $class;
-    }
-
-    private function compilePathName(array $path)
-    {
-        foreach ($path as &$item) {
-// Do not modified item value
-            if (ends_with($item, '!')) {
-                $item = substr($item, 0, -1);
-            } else {
-                $item = studly_case($item);
-            }
-        }
-        return $path;
+        $args = func_get_args();
+// Remove class argument
+        array_shift($args);
+        return $this->load('manager.' . $class, $args, $this->getGhost());
     }
 
     /**
@@ -218,32 +163,58 @@ class Wa
     }
 
     /**
-     * A shortcut method to access Webarq\Manager\ConfigManager instances
+     * Normally all class using studly case string format
      *
-     * @param string $file
-     * @param mixed $default
-     * @return mixed
+     * @param string $path
+     * @return string Full class path
      */
-    public function config($file, $default = null)
+    public function normalizeClass($path)
     {
-        return ConfigManager::get($file, $default);
+        $path = str_replace(['\\', '/', '_'], '.', $path);
+        $path = str_replace('-', ' ', $path);
+        $path = explode('.', $path);
+        if (count($path) > 1) {
+            $path = $this->compilePathName($path);
+            $class = implode('\\', $path);
+// Suffixed class with root name space
+            if (!ends_with($class, '$')) {
+                $class .= $path[0];
+            } else {
+                $class = substr($class, 0, -1);
+            }
+        } else {
+            $class = ucfirst(strtolower(current($path)));
+        }
+
+        return $this->space . '\\' . $class;
     }
 
-    /**
-     * Manager class loader
-     *
-     * @param $class
-     * @param array $args , ... [$args]
-     * @return object
-     */
-    public function manager($class, $args = [])
+    private function compilePathName(array $path)
     {
-        $args = func_get_args();
-// Remove class argument
-        array_shift($args);
-        return $this->load('manager.' . $class, $args, $this->getGhost());
+        foreach ($path as &$item) {
+// Do not modified item value
+            if (ends_with($item, '!')) {
+                $item = substr($item, 0, -1);
+            } else {
+                $item = studly_case($item);
+            }
+        }
+        return $path;
     }
 
+    public function getGhost()
+    {
+        return config('webarq.system.ghost');
+    }
+
+    public function element($content, $container, array $attr = [])
+    {
+        if (is_bool($attr)) {
+            $toHtml = $attr;
+            $attr = [];
+        }
+        return $this->html('element', $content, $container, $attr)->toHtml();
+    }
 
     /**
      * HTML Manager class loader
@@ -258,15 +229,6 @@ class Wa
 // Remove class argument
         array_shift($args);
         return $this->load('manager.HTML!.' . $class, $args, $this->getGhost());
-    }
-
-    public function element($content, $container, array $attr = [])
-    {
-        if (is_bool($attr)) {
-            $toHtml = $attr;
-            $attr = [];
-        }
-        return $this->html('element', $content, $container, $attr)->toHtml();
     }
 
     /**
@@ -289,7 +251,7 @@ class Wa
                 continue;
             }
             $permission = trim($permission, '.');
-            switch(substr_count($permission, '.')) {
+            switch (substr_count($permission, '.')) {
                 case 1 :
                     $permission = $module . '.' . $permission;
                     break;
@@ -305,11 +267,60 @@ class Wa
     /**
      * Shortcut for calling modifier manager
      *
+     * @param mixed $pattern
+     * @param mixed $value
      * @return mixed
      */
-    public function modifier()
+    public function modifier($pattern = null, $value = null)
     {
-        return $this->instance('manager.modifier');
+        $class = $this->instance('manager.value modifier');
+
+        if (null !== $pattern) {
+            $params = explode(':', $pattern);
+            $method = array_pull($params, 0);
+            array_unshift($params, $value);
+
+            return call_user_func_array([$class, $method], $params);
+        }
+
+        return $class;
+    }
+
+    /**
+     * Load class instance
+     *
+     * @param $class
+     * @param mixed $arg [,... $arg, $arg] Uncountable argument
+     * @return mixed
+     */
+    public function instance($class, $arg = [])
+    {
+// Get loaded class
+        if (isset($this->instances[$class])) {
+            return $this->instances[$class];
+        } else {
+// Load new instances
+// Get actual arguments
+            $args = func_get_args();
+// Remove class argument
+            array_shift($args);
+            if ($this->getGhost() === array_get($args, 1)) {
+                $args = $args[0];
+            }
+// Get class full path
+            $fp = $this->normalizeClass($class);
+
+            if (class_exists($fp)) {
+                if (method_exists($fp, 'getInstance')) {
+                    $this->instances[$class] = $fp::getInstance($args, $this->getGhost());
+                } else {
+                    $this->instances[$class] = $this->load(false, $fp, $args, $this->getGhost());
+                }
+                return $this->instances[$class];
+            } else {
+                abort(500, 'Class ' . $class . ' not found on this system');
+            }
+        }
     }
 
     /**
@@ -335,5 +346,16 @@ class Wa
                 : ('themes.default.' . $view);
 
         return $object ? view($path) : $path;
+    }
+
+    /**
+     * @param mixed $args
+     * @return null|object
+     */
+    public function model($args)
+    {
+        $args = func_get_args();
+        $name = array_pull($args, 0);
+        return $this->load('model.' . $name, [$args, Wa::getGhost()]);
     }
 }

@@ -51,6 +51,7 @@ $(document).ready(function(){
 
     console.log('halo');
 });
+
 $(function () {
     $('.referrer').keyup(function () {
         console.log($(this).val());

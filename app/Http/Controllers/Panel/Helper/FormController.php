@@ -14,7 +14,6 @@ use Request;
 use Session;
 use Validator;
 use Wa;
-use Webarq\Manager\Cms\HTML\FormManager;
 
 class FormController extends BaseController
 {
@@ -30,7 +29,17 @@ class FormController extends BaseController
      */
     protected $post = [];
 
+    /**
+     * @var string
+     */
     protected $layout = 'form';
+
+    /**
+     * Row ID for editing
+     *
+     * @var number
+     */
+    protected $id;
 
     public function before()
     {
@@ -38,7 +47,6 @@ class FormController extends BaseController
 
         if (isset($this->admin)) {
             $this->makeBuilder();
-            $this->post = Request::input();
         }
 
         return $parent;
@@ -59,7 +67,7 @@ class FormController extends BaseController
                 'type' => $this->action
         ];
 
-        $this->builder = Wa::manager('cms.HTML!.form',\Auth::user(), $options, $this->action);
+        $this->builder = Wa::manager('cms.HTML!.form', \Auth::user(), $options, $this->action);
     }
 
     /**
@@ -86,7 +94,7 @@ class FormController extends BaseController
     public function actionPostCreate()
     {
 // Add post data in to form builder
-        $this->builder->setPost($this->post);
+        $this->builder->setvalues(Request::input());
 
 // Compile the builder
         $this->builder->compile();
@@ -95,12 +103,20 @@ class FormController extends BaseController
         $validator = $this->validator();
 
         if (!$validator->fails()) {
+            $data = Wa::manager('cms.query.post', 'create',
+                    $this->post,
+                    $this->builder->getPairs(),
+                    $this->builder->getCollection('multilingual-frm-input')
+            );
+
             $manager = Wa::manager('cms.query.insert',
                     $this->admin,
-                    $this->builder->finalizePost(),
+                    $data->getPost(),
                     $this->builder->getMaster());
 
             if ($manager->execute()) {
+// File upload handling
+                $this->uploadFiles($data->getFiles());
 // Redirect to listing controller
                 return redirect($this->panel->getPermalink('listing/index'));
             }
@@ -117,8 +133,18 @@ class FormController extends BaseController
     protected function validator()
     {
         return Validator::make(
-                $this->post, $this->builder->getValidatorRules(), $this->builder->getValidatorMessages()
+                \Request::all(), $this->builder->getValidatorRules(), $this->builder->getValidatorMessages()
         );
+    }
+
+    protected function uploadFiles(array $files)
+    {
+        if ([] !== $files) {
+            foreach ($files as $file) {
+                $file->upload();
+            }
+        }
+
     }
 
     /**
@@ -126,10 +152,8 @@ class FormController extends BaseController
      */
     public function actionGetEdit()
     {
-        $id = $this->getParam(3);
-        if (is_numeric($id)) {
+        $this->builder->setValuesFromDB($this->id ?: $this->getParam(3));
 
-        }
         $this->builder->compile();
     }
 
@@ -138,7 +162,21 @@ class FormController extends BaseController
      */
     public function actionPostEdit()
     {
+
+// Add post data in to form builder
+        $this->builder->setvalues(Request::input());
+
+// Compile the builder
         $this->builder->compile();
+
+// Initiate validator
+        $validator = $this->validator();
+
+        if (!$validator->fails()) {
+
+        } else {
+            $this->builder->setAlert($validator->errors()->getMessages(), 'warning');
+        }
     }
 
     /**
@@ -149,5 +187,10 @@ class FormController extends BaseController
         $this->layout->{'rightSection'} = $this->builder->toHtml();
 
         return parent::after();
+    }
+
+    protected function makePost()
+    {
+
     }
 }

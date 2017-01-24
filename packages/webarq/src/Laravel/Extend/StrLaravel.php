@@ -21,8 +21,7 @@ class StrLaravel
          * @param  $string
          * @return string
          */
-        Str::macro('stripVowels', function ($string)
-        {
+        Str::macro('stripVowels', function ($string) {
             return str_replace(['a', 'i', 'u', 'e', 'o', 'A', 'I', 'U', 'E', 'O'], '', $string);
         });
 
@@ -36,8 +35,7 @@ class StrLaravel
          * @example Str::prepareStatement(['some/?/?',['id','label']],['label'=>'abc','id'=>2]) will return 'some/2/abc'
          * @return mixed
          */
-        Str::macro('prepareStatement', function ($pair = array(), array $values, $wildcard = '?')
-        {
+        Str::macro('prepareStatement', function ($pair = array(), array $values, $wildcard = '?') {
             if (is_array($pair)) {
                 list($str, $params) = $pair;
 // Bundling params with match values
@@ -60,8 +58,8 @@ class StrLaravel
          *
          * @param array $items
          */
-        Str::macro('encodeSerialize', function(array $items) {
-           return base64_encode(serialize($items));
+        Str::macro('encodeSerialize', function (array $items) {
+            return base64_encode(serialize($items));
         });
 
         /**
@@ -69,15 +67,35 @@ class StrLaravel
          *
          * @param string $string
          */
-        Str::macro('decodeSerialize', function($string) {
+        Str::macro('decodeSerialize', function ($string) {
             return unserialize(base64_decode($string));
         });
 
         /**
          *  Remove duplicate word
          */
-        Str::macro('filter', function($string, $separator = ' ') {
+        Str::macro('filter', function ($string, $separator = ' ') {
             return implode($separator, array_flip(array_flip(explode($separator, $string))));
+        });
+
+        /**
+         * Human readable file size
+         * @param mixed $bytes
+         * @param false|number $precision
+         */
+        Str::macro('size', function ($bytes, $precision = 2) {
+            $units = ['B', 'KB', 'MB', 'GB', 'TB'];
+            $index = count($units) - 1;
+
+            while($index >= 1) {
+// ** is a new style for pow
+                if ($bytes >= $bytes ** $index) {
+                    break;
+                }
+                $index--;
+            }
+
+            return number_format($bytes/1024, $precision) . ' ' . $units[$index];
         });
     }
 }

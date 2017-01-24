@@ -9,7 +9,6 @@
 namespace Webarq\Manager\Cms\HTML\Table\Driver;
 
 
-use Illuminate\Support\Arr;
 use Wa;
 use DB;
 use Illuminate\Pagination\LengthAwarePaginator;
@@ -58,29 +57,46 @@ class PaginateManager extends DriverAbstractManager
      */
     protected $sequence = [];
 
+    protected $headers = [];
+
     /**
      * Create builder instance
      *
      * @param AdminManager $admin
      * @param string $module
      * @param string $panel
-     * @param array $columns
+     * @param array $headers
      * @param int|number $limit
      * @param array $actions
      */
-    public function __construct(AdminManager $admin, $module, $panel, $columns = [], $limit = 2, array $actions = [])
+    public function __construct(AdminManager $admin, $module, $panel, $headers = [], $limit = 2, array $actions = [])
     {
         $this->admin = $admin;
         $this->module = $module;
         $this->panel = $panel;
         $this->limit = $limit;
         $this->actions = $actions;
+        $this->headers = $headers;
 
-// Remove action button from columns
-        array_pop($columns);
+        $columns = $this->getColumns();
 
         $this->builder = DB::table($panel)->select([] === $columns ? '*' : $columns)
                 ->addSelect(Wa::table($panel)->primaryColumn()->getName());
+    }
+
+    /**
+     * @return array
+     */
+    protected function getColumns()
+    {
+        $columns = [];
+        if ([] !== $this->headers ) {
+            foreach ($this->headers as $key => $value) {
+                $columns[] = is_numeric($key) ? $value : $key;
+            }
+        }
+
+        return $columns;
     }
 
     /**
@@ -123,7 +139,7 @@ class PaginateManager extends DriverAbstractManager
         if ($this->get->count()) {
             $data = $this->get->toArray();
             foreach ($data['data'] as &$item) {
-                $item = (array)$item;
+                $item = $this->buildItem($item);
                 $item['actionButton'] = $this->buildActions($item);
             }
 
@@ -131,6 +147,25 @@ class PaginateManager extends DriverAbstractManager
         }
 
         return [];
+    }
+
+    /**
+     * @param array $row
+     * @return array
+     */
+    protected function buildItem($row)
+    {
+        if (!is_array($row)) {
+            $row = (array) $row;
+        }
+        foreach ($this->headers as $column => $setting) {
+            if (is_numeric($column)) continue;
+            if (null !== ($modifier = array_get($setting, 'modifier'))) {
+                $row[$column] = Wa::modifier($modifier, $row[$column]);
+            }
+        }
+
+        return $row;
     }
 
     /**

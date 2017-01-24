@@ -71,20 +71,56 @@ return [
                                                 ],
                                                 'system.admin_roles.role_id' => [
                                                         'title' => 'Role',
-                                                        'type' => 'select',
-                                                        'multiple',
-                                                        'options' => [
-                                                                1 => 'Superadmin',
-                                                                2 => 'Administrator'
+                                                        'type' => 'select table',
+                                                        'source-table' => [
+                                                                'name' => 'roles',
+                                                                'column' => ['id', 'title']
                                                         ],
+                                                        'multiple',
                                                         'rules' => 'required|array'
                                                 ],
                                                 'system.admins.create_on' => [
-                                                        'protected' => true
+                                                        'invisible' => true
                                                 ]
                                         ]
                                 ],
-                                'edit',
+                                'edit' => [
+// Permission should be an array, but its okay to set it as string when you have just one item
+// By default this permission will check with OR operator, mean when admin have any one of these,
+// then it will be passed in validator manager. Assign true in to last item, to force admin
+// having all permissions
+                                        'permissions' => ['is_system', 'activeness'],
+                                        'rules' => [],
+                                        'form' => [
+                                                'title' => 'Edit Admins',
+                                                'system.admins.username' => [
+                                                        'length' => '100',
+                                                        'name' => 'user-id'
+                                                ],
+                                                'system.admins.password' => [
+                                                        'type' => 'password',
+                                                        'modifier' => 'password',
+                                                        'ignored' => true
+                                                ],
+                                                'system.admins.email' => [
+                                                        'class' => 'email',
+                                                        'rules' => 'email'
+                                                ],
+                                                'system.admin_roles.role_id' => [
+                                                        'title' => 'Role',
+                                                        'type' => 'select table',
+                                                        'source-table' => [
+                                                                'name' => 'roles',
+                                                                'column' => ['id', 'title']
+                                                        ],
+                                                        'multiple',
+                                                        'rules' => 'required|array'
+                                                ],
+                                                'system.admins.create_on' => [
+                                                        'invisible' => true
+                                                ]
+                                        ]
+                                ],
                                 'delete',
                                 'is_system'
                         ]
@@ -94,10 +130,25 @@ return [
                         'actions' => [
                                 'create' => [
                                         'form' => [
+                                                'attributes' => [
+                                                        'enctype' => 'multipart/form-data',
+                                                ],
                                                 'system.menus.title' => [
                                                         'referrer' => 'seo-url'
                                                 ],
-                                                'system.menus.template',
+                                                'system.menus.template' => [
+                                                        'type' => 'file',
+                                                        'file' => [
+                                                                'type' => 'image',
+                                                                'mimes' => ['jpg', 'jpeg', 'png'],
+                                                                'max' => 1024,
+                                                                'upload-dir' => 'site/uploads/template',
+                                                                'resize' => [
+                                                                        'width' => 200,
+                                                                        'height' => 200,
+                                                                ]
+                                                        ]
+                                                ],
                                                 'system.menus.permalink' => [
                                                         'type' => 'text',
                                                         'class' => '.seo-url'
@@ -118,9 +169,47 @@ return [
                                                 'system.menus.sequence'
                                         ]
                                 ],
+                                'edit' => [
+                                        'form' => [
+                                                'system.menus.title' => [
+                                                        'referrer' => 'seo-url'
+                                                ],
+                                                'system.menus.template' => [
+                                                        'type' => 'file',
+                                                        'file' => [
+                                                                'type' => 'image',
+                                                                'mimes' => ['jpg', 'jpeg', 'png'],
+                                                                'max' => 1024,
+                                                                'upload-dir' => 'site/uploads/template',
+                                                                'resize' => [
+                                                                        'width' => 200,
+                                                                        'height' => 200,
+                                                                ]
+                                                        ]
+                                                ],
+                                                'system.menus.permalink' => [
+                                                        'type' => 'text',
+                                                        'class' => '.seo-url'
+                                                ],
+                                                'system.menus.parent_id' => [
+// Allow system to build select input, and get options from mentioned table
+                                                        'type' => 'select table',
+                                                        'title' => 'Parent Menu',
+                                                        'source-table' => [
+// Table name, while not set will get current input table
+                                                                'name' => 'menus',
+// Column for select option value, and select option label
+                                                                'column' => ['id', 'title']
+                                                        ],
+                                                        'blank-option' => [0 => 'This is a parent menu'],
+
+                                                ],
+                                                'system.menus.sequence'
+                                        ]
+                                ],
                                 'activeness',
                                 'delete'
                         ]
-                ],
+                ]
         ],
 ];

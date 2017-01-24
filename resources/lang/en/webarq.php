@@ -27,6 +27,7 @@ return [
                 'is_active' => 'Is Active',
                 'is_admin' => 'Is Admin',
                 'create' => 'Create :item',
+                'edit' => 'Edit :item',
 
                 'username' => 'User Name',
                 'first_name' => 'First Name',

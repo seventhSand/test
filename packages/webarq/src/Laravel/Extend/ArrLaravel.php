@@ -196,7 +196,7 @@ class ArrLaravel
                     return true;
                 }
             }
-            return false;
+            return false || isset($arr[$key]);
         });
 
 // Filter associative member from an array

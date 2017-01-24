@@ -14,7 +14,7 @@ use Illuminate\Support\Arr;
 use Wa;
 use Webarq\Info\TableInfo;
 
-class InsertManager extends PostManager
+class InsertManager extends QueryManager
 {
     protected $formType = 'create';
 
@@ -40,9 +40,8 @@ class InsertManager extends PostManager
 // Last inserted id
                 $id = $model->{$model->getKeyName()};
 // Translation
-                $this->translation($id,
-                        $m,
-                        array_pull($this->post, 'translation.' . $m->getName(true), []));
+                $tr = array_pull($this->post, 'translation', []);
+                $this->translation($id, $m, $tr);
 // Support rows
 
                 $this->supportData($id, $m, $this->post);
@@ -55,17 +54,28 @@ class InsertManager extends PostManager
     /**
      * @param $id
      * @param TableInfo $table
-     * @param array|null $rows
+     * @param array $rows
      */
-    protected function translation($id, TableInfo $table, array $rows = null)
+    protected function translation($id, TableInfo $table, array $rows = [])
     {
-        if ([] !== $rows) {
-            foreach ($rows as $code => $row) {
-                $row += ['create_on' => date('Y-m-d H:i:s'), 'lang_code' => $code];
-                $row[$table->getReferenceKeyName()] = $id;
-                $model = $this->initiateModel($table->getName(true), 'id');
-                $this->rowBinder($model, $row);
-                $model->save();
+        if ($table->isMultiLingual() && [] !== $rows) {
+// Table name translation
+            $t = \Wl::translateTableName($table->getName());
+            $rows = array_get($rows, $t, []);
+
+            if ([] !== $rows) {
+                foreach ($rows as $code => $row) {
+// Translation row completion
+                    $row += [
+                            'create_on' => date('Y-m-d H:i:s'),
+                            \Wl::getLangCodeColumn('name') => $code,
+                            $table->getReferenceKeyName() => $id
+                    ];
+
+                    $model = $this->initiateModel($t, 'id');
+                    $this->rowBinder($model, $row);
+                    $model->save();
+                }
             }
         }
     }

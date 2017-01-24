@@ -160,6 +160,7 @@ Route::match(['get', 'post'], $urlFormat, function () use ($paramLength, $urlFor
             }
         }
 // Call method (do not forget about method injection)
+
         $call = App::call([$class, $method], $params);
         if (!is_null($call)) {
             return $call;

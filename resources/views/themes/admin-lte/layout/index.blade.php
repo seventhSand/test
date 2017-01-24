@@ -106,7 +106,7 @@
     $.widget.bridge('uibutton', $.ui.button);
 </script>
 <!-- Bootstrap 3.3.6 -->
-<script src="{{URL::asset('admin-lte/bootstrap/js/bootstrap.min.js')}}'"></script>
+<script src="{{URL::asset('admin-lte/bootstrap/js/bootstrap.min.js')}}"></script>
 <!-- Morris.js charts -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/raphael/2.1.0/raphael-min.js"></script>
 <script src="{{URL::asset('admin-lte/plugins/morris/morris.min.js')}}"></script>
@@ -131,9 +131,9 @@
 <!-- AdminLTE App -->
 <script src="{{URL::asset('admin-lte/dist/js/app.min.js')}}"></script>
 <!-- AdminLTE dashboard demo (This is only for demo purposes) -->
-<script src="{{URL::asset('admin-lte/dist/js/pages/dashboard.js')}}"></script>
+{{--<script src="{{URL::asset('admin-lte/dist/js/pages/dashboard.js')}}"></script>--}}
 <!-- AdminLTE for demo purposes -->
-<script src="{{URL::asset('admin-lte/dist/js/demo.js')}}"></script>
+{{--<script src="{{URL::asset('admin-lte/dist/js/demo.js')}}"></script>--}}
 
 
 @section('script')

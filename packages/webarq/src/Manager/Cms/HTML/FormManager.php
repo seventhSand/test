@@ -5,7 +5,6 @@
  * Date: 1/16/2017
  * Time: 2:36 PM
  */
-
 namespace Webarq\Manager\Cms\HTML;
 
 
@@ -15,6 +14,7 @@ use Wa;
 use Webarq\Manager\AdminManager;
 use Webarq\Manager\Cms\HTML\Form\AbstractInput;
 use Webarq\Manager\SetPropertyManagerTrait;
+use Wl;
 
 
 /**
@@ -47,7 +47,9 @@ class FormManager
     protected $panel;
 
     /**
-     * @var
+     * Form model, useful to get input values
+     *
+     * @var true|array [class name, method name]|string method name|
      */
     protected $model;
 
@@ -101,11 +103,11 @@ class FormManager
     protected $message = [];
 
     /**
-     * Post data
+     * Input values
      *
      * @var array
      */
-    protected $post = [];
+    protected $values = [];
 
     /**
      * Form input collections
@@ -176,23 +178,30 @@ class FormManager
     protected function prepareCollections(array $inputs)
     {
         if ([] !== $inputs) {
+            $master = null;
             foreach ($inputs as $path => $attr) {
                 if (is_numeric($path)) {
                     $path = $attr;
                     $attr = [];
                 }
-
+// Build input
                 $input = $this->makeInput($path, $attr);
-
+// Input not found
+                if (null === $input) continue;
+// Check for master table
+                if (null === $master || 0 === strpos($master, str_singular($input->{'table'}->getName()))) {
+                    $master = $input->{'table'}->getName();
+                }
+// Process valid input
                 if ($input->isValid()) {
                     if ($input->isPermissible()) {
-                        if (true === $input->multilingual && $input->table->isMultilingual()) {
-                            foreach (app('Wlang\Lang')->getCodes() as $code) {
-                                if (app('Wlang\Lang')->getSystem() != $code) {
+                        if ($input->isMultilingual()) {
+                            foreach (Wl::getCodes() as $code) {
+                                if (Wl::getSystem() != $code) {
                                     $clone = clone $input;
                                     $clone->attribute()->setName($clone->name, $code);
                                     $clone->setTitle($clone->getTitle() . ' (' . strtoupper($code) . ')');
-                                    $this->collections['s-y-s-t-e-m-m-u-l-t-i-l-i-n-g-u-a-l'][$input->name][$code]
+                                    $this->collections['multilingual-frm-input'][$input->name][$code]
                                             = $clone;
                                 }
                             }
@@ -205,6 +214,10 @@ class FormManager
 
                     $this->pairs[$input->name] = $input;
                 }
+            }
+
+            if (null === $this->master) {
+                $this->master = $master;
             }
         }
     }
@@ -219,6 +232,9 @@ class FormManager
         list($module, $table, $column) = explode('.', $path, 3);
 // load info class manager
         $module = Wa::module($module);
+        if (!$module->hasTable($table)) {
+            return null;
+        }
         $table = $module->getTable($table);
         $column = $table->getColumn($column);
         $old = $column->unserialize();
@@ -227,10 +243,11 @@ class FormManager
                 ];
         $attr['db-type'] = $old['type'];
         $attr['form-type'] = $this->type;
-
+// Input type
+        $type = isset($attr['file']) ? 'file' : array_get($attr, 'type', 'null');
 // This is could be pain on the process, but due to laravel input form method behaviour is different
 // one from another, we need class helper to enable us adding consistent parameter
-        $input = Wa::load('manager.cms.HTML!.form.input.' . array_get($attr, 'type', 'null') . ' input', $attr)
+        $input = Wa::load('manager.cms.HTML!.form.input.' . $type . ' input', $attr)
                 ?: Wa::load('manager.cms.HTML!.form.input.default input', $attr);
 
         return $this->inputManagerDependencies($input);
@@ -255,6 +272,35 @@ class FormManager
                 $this->validatorMessages[$input->name . '.' . $errType] = $errMsg;
             }
         }
+    }
+
+    /**
+     * @param null|number $id
+     */
+    public function setValuesFromDB($id = null)
+    {
+        if (is_numeric($id) && 'edit' === $this->type) {
+            if (true === $this->model) {
+                $this->values = Wa::model(str_singular($this->panel))->formRowFinder($id);
+            } elseif (is_array($this->model)) {
+                $this->values = Wa::model($this->model[0])->{$this->model[1]}($id);
+            } elseif (is_string($this->model)) {
+                $this->values = Wa::model(str_singular($this->panel))->{$this->model}($id);
+            } else {
+                $this->values = Wa::load('manager.cms.HTML!.form.model$', $id, $this->collections, $this->master)
+                        ->getData();
+            }
+        }
+    }
+
+    /**
+     * @param null $key
+     * @param null $default
+     * @return mixed
+     */
+    public function getCollection($key = null, $default = null)
+    {
+        return array_get($this->collections, $key, $default);
     }
 
     /**
@@ -302,42 +348,11 @@ class FormManager
     /**
      * Set post data form data
      *
-     * @param array $post
+     * @param array $values
      */
-    public function setPost(array $post = [])
+    public function setValues(array $values = [])
     {
-        $this->post = $post;
-    }
-
-    public function finalizePost()
-    {
-        $pairs = [];
-        if ([] !== $this->pairs) {
-// Multilingual inputs
-            $multilingual = array_get($this->collections, 's-y-s-t-e-m-m-u-l-t-i-l-i-n-g-u-a-l', []);
-
-            foreach ($this->pairs as $name => $input) {
-                $value = $input->getValue();
-
-                if (!is_array($value)) {
-                    $pairs[$input->table->getName()][$input->column->getName()] = $value;
-// Set translation row
-                    if (null !== ($inputs = array_get($multilingual, $name))) {
-                        foreach ($inputs as $code => $input) {
-                            $pairs['translation'][$input->table->getName(true)][$code][$input->column->getName()]
-                                    = $input->getValue();
-                        }
-                    }
-                } else {
-                    foreach ($value as $key => $str) {
-                        $pairs[$input->table->getName()][$key][$input->column->getName()] = $str;
-// @todo check translation for array row
-                    }
-                }
-            }
-        }
-
-        return $pairs;
+        $this->values = Arr::merge($this->values, $values);
     }
 
     /**
@@ -355,25 +370,25 @@ class FormManager
     {
         if ([] !== $this->collections) {
 // Pull out multilingual input
-            $multilingual = array_pull($this->collections, 's-y-s-t-e-m-m-u-l-t-i-l-i-n-g-u-a-l', []);
+            $multilingual = array_pull($this->collections, 'multilingual-frm-input', []);
 
             foreach ($this->collections as $input) {
 // Set input value
-                $input->setValue(array_get($this->post, $input->name));
+                $input->setValue(array_get($this->values, $input->getInputName()));
 
                 $this->html .= $input->buildHtml();
 
 // Print out multilingual input
                 if ([] !== $multilingual && null !== ($inputs = array_get($multilingual, $input->name))) {
                     foreach ($inputs as $input) {
-                        $input->setValue(array_get($this->post, $input->attribute()->get('name')));
+                        $input->setValue(array_get($this->values, $input->getInputName()));
                         $this->html .= $input->buildHtml();
                     }
                 }
             }
 
 // Putting back multilingual into collections
-            $this->collections['s-y-s-t-e-m-m-u-l-t-i-l-i-n-g-u-a-l'] = $multilingual;
+            $this->collections['multilingual-frm-input'] = $multilingual;
         }
     }
 

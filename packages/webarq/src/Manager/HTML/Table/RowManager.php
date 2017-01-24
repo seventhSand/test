@@ -58,7 +58,7 @@ class RowManager implements Htmlable
         }
 
         if ('head' === $this->type) {
-            $value = array_get($attributes, 'label', $value);
+            $value = array_get($attributes, 'title', $value);
         }
 
         $this->cells[] = Wa::html('element', $value, $container, $attributes);

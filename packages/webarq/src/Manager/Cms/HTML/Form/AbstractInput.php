@@ -150,7 +150,12 @@ abstract class AbstractInput
     /**
      * @var bool
      */
-    protected $protected = false;
+    protected $ignored = false;
+
+    /**
+     * @var bool
+     */
+    protected $invisible = false;
 
     /**
      * @var array
@@ -180,6 +185,8 @@ abstract class AbstractInput
      */
     public function __construct(array $options = [])
     {
+        $this->impermissible = Wa::getGhost();
+
         array_forget($options, ['form', 'master']);
 
         $this->setRule($options);
@@ -190,10 +197,16 @@ abstract class AbstractInput
 
         $this->attribute = Wa::manager('cms.HTML!.form.input.attribute input', $this->settings)
                 ->insertClass('form-control');
+
+        if (Arr::inArray($this->settings, 'multiple')) {
+            $this->attribute->setName($this->name . '[]');
+        }
     }
 
     protected function setRule(array &$options)
     {
+        $options['notnull'] = array_pull($options, 'required', array_get($options, 'notnull'));
+
         $this->rules = Wa::manager('cms.HTML!.form.rules', $options);
 
         array_forget($options, 'rules');
@@ -205,17 +218,6 @@ abstract class AbstractInput
     public function attribute()
     {
         return $this->attribute;
-    }
-
-    protected function fixAttributes()
-    {
-        if (!is_array($this->permissions)) {
-            $this->permissions = [$this->permissions];
-        }
-
-        if (Arr::inArray($this->attributes, 'multiple') || 'multiple' === array_get($this->attributes, 'multiple')) {
-            $this->attributes['name'] = $this->name . '[]';
-        }
     }
 
     /**
@@ -236,7 +238,8 @@ abstract class AbstractInput
         return view($view, [
                 'title' => $this->getTitle(),
                 'input' => $this->buildInput(),
-                'attribute' => Arr::merge((array)$attr, ['class' => 'form-group'], 'join')
+                'attribute' => Arr::merge((array)$attr, ['class' => 'form-group'], 'join'),
+                'info' => $this->info
         ])->render();
     }
 
@@ -266,19 +269,24 @@ abstract class AbstractInput
     abstract protected function buildInput();
 
     /**
+     * @return mixed
+     */
+    public function getInputName()
+    {
+        $name = $this->attribute->get('name', $this->name);
+        if (false !== ($pos = strpos($name, '['))) {
+            return substr($name, 0, $pos);
+        }
+
+        return $name;
+    }
+
+    /**
      * @return mixed|null
      */
     public function getValue()
     {
-        $value = $this->value;
-        if (is_null($value) && 'create' === $this->formType) {
-            $value = $this->impermissible ?: $this->default;
-        }
-        if (isset($this->modifier) && !is_array($value)) {
-            $value = Wa::load('manager.value modifier')->{$this->modifier}($value);
-        }
-
-        return $value;
+        return $this->value;
     }
 
     /**
@@ -287,13 +295,6 @@ abstract class AbstractInput
     public function setValue($value)
     {
         $this->value = $value;
-    }
-
-    public function getActualName()
-    {
-        $name = array_get($this->attributes, 'name', $this->name);
-
-        return substr($name, 0, strpos($name, '['));
     }
 
     /**
@@ -313,7 +314,7 @@ abstract class AbstractInput
      */
     public function isPermissible()
     {
-        return !$this->protected && ([] === $this->permissions
+        return !$this->invisible && ([] === $this->permissions
                 || Wa::panel()->isAccessible($this->module->getName(), $this->table->getName(), $this->permissions));
     }
 
@@ -330,9 +331,14 @@ abstract class AbstractInput
     /**
      * @return bool
      */
-    public function isProtected()
+    public function isIgnored()
     {
-        return true === $this->protected;
+        return true === $this->ignored;
+    }
+
+    public function isMultilingual()
+    {
+        return true === $this->multilingual && $this->table->isMultilingual();
     }
 
     /**
@@ -345,5 +351,17 @@ abstract class AbstractInput
     public function __get($key)
     {
         return property_exists($this, $key) ? $this->{$key} : null;
+    }
+
+    public function __clone()
+    {
+        $this->attribute = clone $this->attribute;
+    }
+
+    protected function fixAttributes()
+    {
+        if (!is_array($this->permissions)) {
+            $this->permissions = [$this->permissions];
+        }
     }
 }

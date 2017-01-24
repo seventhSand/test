@@ -207,12 +207,11 @@ class TableInfo
     /**
      * Get table name
      *
-     * @param bool $translate
      * @return string
      */
-    public function getName($translate = false)
+    public function getName()
     {
-        return $translate ? $this->name . '_i18n' : $this->name;
+        return $this->name;
     }
 
     /**
@@ -232,7 +231,7 @@ class TableInfo
      */
     public function isMultiLingual()
     {
-        return $this->multilingual && class_exists('Wlang\Lang');
+        return $this->multilingual && class_exists('Wl');
     }
 
     /**

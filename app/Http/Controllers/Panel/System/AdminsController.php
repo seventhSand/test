@@ -22,4 +22,9 @@ class AdminsController extends BaseController
     {
         return 'Create';
     }
+
+    public function actionGetCreate()
+    {
+// Action create
+    }
 }

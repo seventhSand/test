@@ -12,6 +12,7 @@ class ComposerStaticInit9783833f56e279fba97fce6d32fe6aa0
         '667aeda72477189d0494fecd327c3641' => __DIR__ . '/..' . '/symfony/var-dumper/Resources/functions/dump.php',
         '2c102faa651ef8ea5874edb585946bce' => __DIR__ . '/..' . '/swiftmailer/swiftmailer/lib/swift_required.php',
         '5255c38a0faeba867671b61dfda6d864' => __DIR__ . '/..' . '/paragonie/random_compat/lib/random.php',
+        'a0edc8309cc5e1d60e3047b5df6b7052' => __DIR__ . '/..' . '/guzzlehttp/psr7/src/functions_include.php',
         'bd9634f2d41831496de0d3dfe4c94881' => __DIR__ . '/..' . '/symfony/polyfill-php56/bootstrap.php',
         'e7223560d890eab89cda23685e711e2c' => __DIR__ . '/..' . '/psy/psysh/src/Psy/functions.php',
         'f0906e6318348a765ffb6eb24e0d0938' => __DIR__ . '/..' . '/laravel/framework/src/Illuminate/Foundation/helpers.php',
@@ -30,8 +31,8 @@ class ComposerStaticInit9783833f56e279fba97fce6d32fe6aa0
         ),
         'W' => 
         array (
-            'Wlang\\' => 6,
             'Webmozart\\Assert\\' => 17,
+            'Webarq\\Lang\\' => 12,
             'Webarq\\' => 7,
         ),
         'S' => 
@@ -62,6 +63,8 @@ class ComposerStaticInit9783833f56e279fba97fce6d32fe6aa0
         array (
             'Psy\\' => 4,
             'Psr\\Log\\' => 8,
+            'Psr\\Http\\Message\\' => 17,
+            'Psr\\Cache\\' => 10,
             'PhpParser\\' => 10,
         ),
         'M' => 
@@ -70,11 +73,17 @@ class ComposerStaticInit9783833f56e279fba97fce6d32fe6aa0
         ),
         'L' => 
         array (
+            'League\\Flysystem\\Cached\\' => 24,
             'League\\Flysystem\\' => 17,
         ),
         'I' => 
         array (
+            'Intervention\\Image\\' => 19,
             'Illuminate\\' => 11,
+        ),
+        'G' => 
+        array (
+            'GuzzleHttp\\Psr7\\' => 16,
         ),
         'F' => 
         array (
@@ -91,6 +100,11 @@ class ComposerStaticInit9783833f56e279fba97fce6d32fe6aa0
             'Collective\\Html\\' => 16,
             'ClassPreloader\\' => 15,
             'Carbon\\' => 7,
+        ),
+        'B' => 
+        array (
+            'Barryvdh\\elFinderFlysystemDriver\\' => 33,
+            'Barryvdh\\Elfinder\\' => 18,
         ),
         'A' => 
         array (
@@ -109,13 +123,13 @@ class ComposerStaticInit9783833f56e279fba97fce6d32fe6aa0
         array (
             0 => __DIR__ . '/..' . '/dnoegel/php-xdg-base-dir/src',
         ),
-        'Wlang\\' => 
-        array (
-            0 => __DIR__ . '/../..' . '/packages/wlang/src',
-        ),
         'Webmozart\\Assert\\' => 
         array (
             0 => __DIR__ . '/..' . '/webmozart/assert/src',
+        ),
+        'Webarq\\Lang\\' => 
+        array (
+            0 => __DIR__ . '/../..' . '/packages/lang/src',
         ),
         'Webarq\\' => 
         array (
@@ -201,6 +215,14 @@ class ComposerStaticInit9783833f56e279fba97fce6d32fe6aa0
         array (
             0 => __DIR__ . '/..' . '/psr/log/Psr/Log',
         ),
+        'Psr\\Http\\Message\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/psr/http-message/src',
+        ),
+        'Psr\\Cache\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/psr/cache/src',
+        ),
         'PhpParser\\' => 
         array (
             0 => __DIR__ . '/..' . '/nikic/php-parser/lib/PhpParser',
@@ -209,13 +231,25 @@ class ComposerStaticInit9783833f56e279fba97fce6d32fe6aa0
         array (
             0 => __DIR__ . '/..' . '/monolog/monolog/src/Monolog',
         ),
+        'League\\Flysystem\\Cached\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/league/flysystem-cached-adapter/src',
+        ),
         'League\\Flysystem\\' => 
         array (
             0 => __DIR__ . '/..' . '/league/flysystem/src',
         ),
+        'Intervention\\Image\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/intervention/image/src/Intervention/Image',
+        ),
         'Illuminate\\' => 
         array (
             0 => __DIR__ . '/..' . '/laravel/framework/src/Illuminate',
+        ),
+        'GuzzleHttp\\Psr7\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/guzzlehttp/psr7/src',
         ),
         'Faker\\' => 
         array (
@@ -244,6 +278,14 @@ class ComposerStaticInit9783833f56e279fba97fce6d32fe6aa0
         'Carbon\\' => 
         array (
             0 => __DIR__ . '/..' . '/nesbot/carbon/src/Carbon',
+        ),
+        'Barryvdh\\elFinderFlysystemDriver\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/barryvdh/elfinder-flysystem-driver/src',
+        ),
+        'Barryvdh\\Elfinder\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/barryvdh/laravel-elfinder/src',
         ),
         'App\\' => 
         array (
@@ -294,13 +336,13 @@ class ComposerStaticInit9783833f56e279fba97fce6d32fe6aa0
     );
 
     public static $classMap = array (
-        'CreateAdminRolesClass' => __DIR__ . '/../..' . '/database/migrations/2017_01_05_090911_create_admin_roles_class.php',
-        'CreateAdminsClass' => __DIR__ . '/../..' . '/database/migrations/2017_01_05_090911_create_admins_class.php',
-        'CreateConfigurationsClass' => __DIR__ . '/../..' . '/database/migrations/2017_01_05_090911_create_configurations_class.php',
-        'CreateHistoriesClass' => __DIR__ . '/../..' . '/database/migrations/2017_01_05_090911_create_histories_class.php',
-        'CreateMenusClass' => __DIR__ . '/../..' . '/database/migrations/2017_01_05_090911_create_menus_class.php',
-        'CreatePermissionsClass' => __DIR__ . '/../..' . '/database/migrations/2017_01_05_090911_create_permissions_class.php',
-        'CreateRolesClass' => __DIR__ . '/../..' . '/database/migrations/2017_01_05_090911_create_roles_class.php',
+        'CreateAdminRolesClass' => __DIR__ . '/../..' . '/database/migrations/2017_01_19_073623_create_admin_roles_class.php',
+        'CreateAdminsClass' => __DIR__ . '/../..' . '/database/migrations/2017_01_19_073623_create_admins_class.php',
+        'CreateConfigurationsClass' => __DIR__ . '/../..' . '/database/migrations/2017_01_19_073623_create_configurations_class.php',
+        'CreateHistoriesClass' => __DIR__ . '/../..' . '/database/migrations/2017_01_19_073623_create_histories_class.php',
+        'CreateMenusClass' => __DIR__ . '/../..' . '/database/migrations/2017_01_19_073623_create_menus_class.php',
+        'CreatePermissionsClass' => __DIR__ . '/../..' . '/database/migrations/2017_01_19_073623_create_permissions_class.php',
+        'CreateRolesClass' => __DIR__ . '/../..' . '/database/migrations/2017_01_19_073623_create_roles_class.php',
         'DatabaseSeeder' => __DIR__ . '/../..' . '/database/seeds/DatabaseSeeder.php',
         'File_Iterator' => __DIR__ . '/..' . '/phpunit/php-file-iterator/src/Iterator.php',
         'File_Iterator_Facade' => __DIR__ . '/..' . '/phpunit/php-file-iterator/src/Facade.php',
@@ -749,6 +791,7 @@ class ComposerStaticInit9783833f56e279fba97fce6d32fe6aa0
         'PHP_Token_XOR_EQUAL' => __DIR__ . '/..' . '/phpunit/php-token-stream/src/Token.php',
         'PHP_Token_YIELD' => __DIR__ . '/..' . '/phpunit/php-token-stream/src/Token.php',
         'PHP_Token_YIELD_FROM' => __DIR__ . '/..' . '/phpunit/php-token-stream/src/Token.php',
+        'RecursiveCallbackFilterIterator' => __DIR__ . '/..' . '/studio-42/elfinder/php/elFinderVolumeLocalFileSystem.class.php',
         'SebastianBergmann\\CodeCoverage\\CodeCoverage' => __DIR__ . '/..' . '/phpunit/php-code-coverage/src/CodeCoverage.php',
         'SebastianBergmann\\CodeCoverage\\CoveredCodeNotExecutedException' => __DIR__ . '/..' . '/phpunit/php-code-coverage/src/Exception/CoveredCodeNotExecutedException.php',
         'SebastianBergmann\\CodeCoverage\\Driver\\Driver' => __DIR__ . '/..' . '/phpunit/php-code-coverage/src/Driver/Driver.php',
@@ -830,6 +873,29 @@ class ComposerStaticInit9783833f56e279fba97fce6d32fe6aa0
         'SebastianBergmann\\Version' => __DIR__ . '/..' . '/sebastian/version/src/Version.php',
         'TestCase' => __DIR__ . '/../..' . '/tests/TestCase.php',
         'Text_Template' => __DIR__ . '/..' . '/phpunit/php-text-template/src/Template.php',
+        'elFinder' => __DIR__ . '/..' . '/studio-42/elfinder/php/elFinder.class.php',
+        'elFinderConnector' => __DIR__ . '/..' . '/studio-42/elfinder/php/elFinderConnector.class.php',
+        'elFinderLibGdBmp' => __DIR__ . '/..' . '/studio-42/elfinder/php/libs/GdBmp.php',
+        'elFinderPlugin' => __DIR__ . '/..' . '/studio-42/elfinder/php/elFinderPlugin.php',
+        'elFinderPluginAutoResize' => __DIR__ . '/..' . '/studio-42/elfinder/php/plugins/AutoResize/plugin.php',
+        'elFinderPluginAutoRotate' => __DIR__ . '/..' . '/studio-42/elfinder/php/plugins/AutoRotate/plugin.php',
+        'elFinderPluginNormalizer' => __DIR__ . '/..' . '/studio-42/elfinder/php/plugins/Normalizer/plugin.php',
+        'elFinderPluginSanitizer' => __DIR__ . '/..' . '/studio-42/elfinder/php/plugins/Sanitizer/plugin.php',
+        'elFinderPluginWatermark' => __DIR__ . '/..' . '/studio-42/elfinder/php/plugins/Watermark/plugin.php',
+        'elFinderSession' => __DIR__ . '/..' . '/studio-42/elfinder/php/elFinderSession.php',
+        'elFinderSessionInterface' => __DIR__ . '/..' . '/studio-42/elfinder/php/elFinderSessionInterface.php',
+        'elFinderVolumeBox' => __DIR__ . '/..' . '/studio-42/elfinder/php/elFinderVolumeBox.class.php',
+        'elFinderVolumeDriver' => __DIR__ . '/..' . '/studio-42/elfinder/php/elFinderVolumeDriver.class.php',
+        'elFinderVolumeDropbox' => __DIR__ . '/..' . '/studio-42/elfinder/php/elFinderVolumeDropbox.class.php',
+        'elFinderVolumeFTP' => __DIR__ . '/..' . '/studio-42/elfinder/php/elFinderVolumeFTP.class.php',
+        'elFinderVolumeFlysystem' => __DIR__ . '/..' . '/barryvdh/elfinder-flysystem-driver/elFinderVolumeFlysystem.php',
+        'elFinderVolumeFlysystemGoogleDriveCache' => __DIR__ . '/..' . '/studio-42/elfinder/php/elFinderFlysystemGoogleDriveNetmount.php',
+        'elFinderVolumeFlysystemGoogleDriveNetmount' => __DIR__ . '/..' . '/studio-42/elfinder/php/elFinderFlysystemGoogleDriveNetmount.php',
+        'elFinderVolumeGoogleDrive' => __DIR__ . '/..' . '/studio-42/elfinder/php/elFinderVolumeGoogleDrive.class.php',
+        'elFinderVolumeGroup' => __DIR__ . '/..' . '/studio-42/elfinder/php/elFinderVolumeGroup.class.php',
+        'elFinderVolumeLocalFileSystem' => __DIR__ . '/..' . '/studio-42/elfinder/php/elFinderVolumeLocalFileSystem.class.php',
+        'elFinderVolumeMySQL' => __DIR__ . '/..' . '/studio-42/elfinder/php/elFinderVolumeMySQL.class.php',
+        'elFinderVolumeOneDrive' => __DIR__ . '/..' . '/studio-42/elfinder/php/elFinderVolumeOneDrive.class.php',
     );
 
     public static function getInitializer(ClassLoader $loader)
