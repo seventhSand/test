@@ -17,6 +17,11 @@ return [
                 'upload' => ':admin upload :media',
         ],
 
+        'messages' => [
+                'invalid-update' => 'There is no data to update',
+                'success-update' => 'Congratulations. Your data has been updated',
+        ],
+
         'title' => [
                 'welcome' => 'Welcome',
                 'title' => 'Title',

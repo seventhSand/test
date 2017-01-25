@@ -37,6 +37,13 @@ class RulesManager
     protected $attributes = [];
 
     /**
+     * Input value
+     *
+     * @var mixed
+     */
+    protected $value;
+
+    /**
      * Create RulesManager instance
      *
      * Calling all methods which are ended with "Rule" string
@@ -78,6 +85,40 @@ class RulesManager
                 }
             }
         }
+    }
+
+    /**
+     * Rule item getter
+     *
+     * @param $key
+     * @param null $default
+     * @return mixed
+     */
+    public function getItem($key, $default = null)
+    {
+        return array_get($this->items, $key, $default);
+    }
+
+    /**
+     * Rule item setter
+     *
+     * @param $key
+     * @param $str
+     */
+    public function setItem($key, $str)
+    {
+        $this->items[$key] = $str;
+    }
+
+    /**
+     * @param $value
+     * @return $this
+     */
+    public function setValue($value)
+    {
+        $this->value = $value;
+
+        return $this;
     }
 
     /**
@@ -163,7 +204,12 @@ class RulesManager
         if (null !== ($unique = $this->getAttribute('unique'))) {
             if (true === $unique) {
                 $unique = $this->getAttribute('table')->getName() . ',' . $this->getAttribute('column')->getName();
+                if (null !== $this->value) {
+                    $unique .= ',' . $this->value;
+                    dd($unique);
+                }
             }
+
             $this->items['unique'] = $unique;
         }
     }

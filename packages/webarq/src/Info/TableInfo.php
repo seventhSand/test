@@ -80,9 +80,20 @@ class TableInfo
      */
     protected $serialize;
 
+    /**
+     * @var string
+     */
     protected $createTimeColumn;
 
+    /**
+     * @var string
+     */
     protected $updateTimeColumn;
+
+    /**
+     * @var array
+     */
+    protected $foreign = [];
 
     /**
      * Create TableInfo instance
@@ -280,6 +291,16 @@ class TableInfo
     public function getUpdateTimeColumn()
     {
         return $this->updateTimeColumn;
+    }
+
+    public function getForeignColumn()
+    {
+        return array_keys($this->foreign);
+    }
+
+    public function isFlushUpdate()
+    {
+        return true === $this->getExtra('flush-update');
     }
 }
 

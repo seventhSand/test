@@ -1,0 +1,32 @@
+<?php
+/**
+ * Created by PhpStorm.
+ * User: DanielSimangunsong
+ * Date: 1/25/2017
+ * Time: 3:48 PM
+ */
+
+return [
+        ['master' => 'id'],
+        ['master' => 'label', 'name' => 'title', 'multilingual' => true],
+        ['master' => 'label', 'name' => 'file', 'multilingual' => true],
+        ['master' => 'description', 'multilingual' => true],
+        ['master' => 'sequence'],
+        'timestamps' => true,
+// Use this as class model, i.o the generated one
+// By default model name is singularisation of table name
+//        'model' => 'media',
+// Model directory
+        'model-dir' => 'sample',
+        'foreign' => [
+/**
+ * @todo print foreign syntax on generated migration file
+ * Format: column_name => references table name:references column name (by default using id)
+ * Also these foreign keys will be using while updating table
+ **/
+//                'admin_id' => 'admins:id',
+//                'role_id' => 'roles:id'
+        ],
+// Delete row by master table references key before updating table
+//        'flush-update' => true
+];

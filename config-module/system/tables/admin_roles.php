@@ -13,5 +13,13 @@ return [
         'history' => [
                 'insert' => ['assigned', 'roles.title', 'admins.username'],
                 'update' => ['unsigned', 'roles.title', 'admins.username']
-        ]
+        ],
+        'foreign' => [
+// @todo print foreign syntax on generated migration file
+// Format: column_name => references table name:references column name (by default using id)
+                'admin_id' => 'admins:id',
+                'role_id' => 'roles:id'
+        ],
+//
+        'flush-update' => true
 ];

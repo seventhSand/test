@@ -9,22 +9,12 @@
 namespace App\Http\Controllers\Panel\System;
 
 
-use App\Http\Controllers\Panel\BaseController;
+use App\Http\Controllers\Panel\Helper\ListingController;
 
-class AdminsController extends BaseController
+class AdminsController extends ListingController
 {
     public function actionGetIndex()
     {
-        return 'Admins listing`';
-    }
-
-    public function actionGetPublish()
-    {
-        return 'Create';
-    }
-
-    public function actionGetCreate()
-    {
-// Action create
+        return parent::actionGetIndex();
     }
 }

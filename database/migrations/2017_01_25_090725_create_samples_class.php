@@ -4,7 +4,7 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
 
-class CreateMediaClass extends Migration {
+class CreateSamplesClass extends Migration {
     /**
      * Run the migrations.
      *
@@ -12,7 +12,7 @@ class CreateMediaClass extends Migration {
      */
     public function up()
     {
-        Schema::create('media', function(Blueprint $table)
+        Schema::create('samples', function(Blueprint $table)
         {
             $table->increments('id');
             $table->string('title', 100);
@@ -23,11 +23,11 @@ class CreateMediaClass extends Migration {
             $table->datetime('last_update')->nullable();
         });
 
-        Schema::create('media_i18n', function(Blueprint $table)
+        Schema::create('samples_i18n', function(Blueprint $table)
         {
             $table->bigIncrements('id');
             $table->char('lang_code', 2);
-            $table->unsignedInteger('medium_id');
+            $table->unsignedInteger('sample_id');
             $table->string('title', 100);
             $table->string('file', 100);
             $table->text('description')->nullable();
@@ -42,8 +42,8 @@ class CreateMediaClass extends Migration {
      */
     public function down()
     {
-        Schema::drop('media');
+        Schema::drop('samples');
 
-        Schema::drop('media_i18n');
+        Schema::drop('samples_i18n');
     }
 }

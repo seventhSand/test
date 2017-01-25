@@ -71,7 +71,7 @@ abstract class QueryManager
      * @param TableInfo $table
      * @param array $row
      */
-    protected function addCreateTime(TableInfo $table, array &$row)
+    protected function addCreateTime(TableInfo $table, array &$row = [])
     {
         if (null !== $table->getCreateTimeColumn() && !isset($row[$table->getCreateTimeColumn()])) {
             $row[$table->getCreateTimeColumn()] = date('Y-m-d H:i:s');
@@ -83,7 +83,7 @@ abstract class QueryManager
      * @param array $row
      * @return array
      */
-    protected function addUpdateTime(TableInfo $table, array &$row)
+    protected function addUpdateTime(TableInfo $table, array &$row = [])
     {
         if (null !== $table->getUpdateTimeColumn() && !isset($row[$table->getUpdateTimeColumn()])) {
             $row[$table->getUpdateTimeColumn()] = date('Y-m-d H:i:s');
@@ -100,5 +100,35 @@ abstract class QueryManager
         foreach ($row as $column => $value) {
             $model->{$column} = $value;
         }
+    }
+
+    /**
+     * @param Model $model
+     * @param array $where
+     * @return Model
+     */
+    protected function buildWhere(Model $model, array $where)
+    {
+        foreach ($where as $column => $value) {
+            if (is_array($value)) {
+                if (is_numeric($column)) {
+                    $model = $model->where(function ($query) use ($value) {
+                        foreach ($value as $key => $str) {
+                            if (is_array($str)) {
+                                $query->orWhereIn($key, $str);
+                            } else {
+                                $query->orWhere($key, $str);
+                            }
+                        }
+                    });
+                } else {
+                    $model = $model->whereIn($column, $value);
+                }
+            } else {
+                $model = $model->where($column, $value);
+            }
+        }
+
+        return $model;
     }
 }

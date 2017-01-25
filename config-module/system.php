@@ -78,9 +78,6 @@ return [
                                                         ],
                                                         'multiple',
                                                         'rules' => 'required|array'
-                                                ],
-                                                'system.admins.create_on' => [
-                                                        'invisible' => true
                                                 ]
                                         ]
                                 ],
@@ -95,11 +92,13 @@ return [
                                                 'title' => 'Edit Admins',
                                                 'system.admins.username' => [
                                                         'length' => '100',
-                                                        'name' => 'user-id'
+                                                        'name' => 'user-id',
+                                                        'readonly'
                                                 ],
                                                 'system.admins.password' => [
                                                         'type' => 'password',
                                                         'modifier' => 'password',
+                                                        'notnull' => false,
                                                         'ignored' => true
                                                 ],
                                                 'system.admins.email' => [
@@ -114,10 +113,7 @@ return [
                                                                 'column' => ['id', 'title']
                                                         ],
                                                         'multiple',
-                                                        'rules' => 'required|array'
-                                                ],
-                                                'system.admins.create_on' => [
-                                                        'invisible' => true
+                                                        'rules' => 'required|array',
                                                 ]
                                         ]
                                 ],

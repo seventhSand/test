@@ -23,23 +23,28 @@ class FormController extends BaseController
     protected $builder;
 
     /**
-     * Post data
+     * @var string
+     */
+    protected $layout = 'form';
+
+    /**
+     * Final post data
      *
      * @var array
      */
     protected $post = [];
 
     /**
-     * @var string
-     */
-    protected $layout = 'form';
-
-    /**
-     * Row ID for editing
+     * URL segment for id
      *
      * @var number
      */
-    protected $id;
+    protected $idSegment = 3;
+
+    /**
+     * @var
+     */
+    protected $model;
 
     public function before()
     {
@@ -61,11 +66,17 @@ class FormController extends BaseController
                         $this->panel->getName(), 'form/' . $this->action
                 )
         );
+        if ('edit' === $this->action) {
+            $options['action'] .= '/' . $this->getParam($this->idSegment);
+        }
+
         $options += [
                 'module' => $this->module->getName(),
                 'panel' => $this->panel->getName(),
                 'type' => $this->action
         ];
+
+        $this->model = array_pull($options, 'model');
 
         $this->builder = Wa::manager('cms.HTML!.form', \Auth::user(), $options, $this->action);
     }
@@ -152,7 +163,7 @@ class FormController extends BaseController
      */
     public function actionGetEdit()
     {
-        $this->builder->setValuesFromDB($this->id ?: $this->getParam(3));
+        $this->builder->dataModeling($this->getParam($this->idSegment));
 
         $this->builder->compile();
     }
@@ -162,6 +173,8 @@ class FormController extends BaseController
      */
     public function actionPostEdit()
     {
+// Set master ID
+        $this->builder->setEditingRowId($this->getParam($this->idSegment));
 
 // Add post data in to form builder
         $this->builder->setvalues(Request::input());
@@ -173,7 +186,29 @@ class FormController extends BaseController
         $validator = $this->validator();
 
         if (!$validator->fails()) {
+            $data = Wa::manager('cms.query.post', 'edit',
+                    $this->post,
+                    $this->builder->getPairs(),
+                    $this->builder->getCollection('multilingual-frm-input')
+            );
 
+            $manager = Wa::manager('cms.query.update',
+                    $this->admin,
+                    $data->getPost(),
+                    $this->builder->getMaster()
+            )->setId($this->getParam($this->idSegment));
+
+            $count = $manager->execute();
+            if ($count) {
+// File upload handling
+                $this->uploadFiles($data->getFiles());
+// Set messages
+                \Session::flash('transaction', [[trans('webarq.messages.success-update')], 'success']);
+
+                return redirect(Request::url());
+            } else {
+                $this->builder->setAlert([trans('webarq.messages.invalid-update')], 'warning');
+            }
         } else {
             $this->builder->setAlert($validator->errors()->getMessages(), 'warning');
         }

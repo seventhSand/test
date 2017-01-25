@@ -48,32 +48,33 @@ class PostManager
     /**
      * @param $type
      * @param array $post
-     * @param array $master
-     * @param array $multilingual
+     * @param array $inputs
+     * @param array $multilingualInputs
      */
-    public function __construct($type, array $post, array $master, array $multilingual)
+    public function __construct($type, array $post, array $inputs, array $multilingualInputs)
     {
         $this->type = $type;
         $this->post = $post;
 
-        $this->masterRow($master);
+        $this->masterRow($inputs);
 
-        if ([] !== $multilingual) {
-            foreach ($multilingual as $inputs) {
-                foreach ($inputs as $code => $input) {
-                    $t = \Wl::translateTableName($input->{'table'}->getName());
-                    $value = $this->getValue($input);
-                    $this->post['translation'][$t][$code][$input->{'column'}->getName()] = $value;
-                }
-            }
-        }
+        $this->translationRow($multilingualInputs);
     }
 
+    /**
+     * Collect master data
+     *
+     * @param array $pairs
+     */
     protected function masterRow(array $pairs)
     {
         if ([] !== $pairs) {
             foreach ($pairs as $input) {
                 $value = $this->getValue($input);
+// Value not set and should be ignored
+                if ($this->isIgnored($input, $value)) {
+                    continue;
+                }
                 if (is_array($value)) {
                     $this->multiRow($value, $input->{'table'}->getName(), $input->{'column'}->getName());
                 } else {
@@ -95,14 +96,18 @@ class PostManager
             } else {
                 $value = $input->getValue();
             }
-        } else if ($input->{'impermissible'} === Wa::getGhost()) {
-            $value = $input->{'default'};
         } else {
-            $value = $input->{'impermissible'};
+            $value = $input->isIgnored() ? null : $input->getImpermissible();
         }
 
-        if ($value != Wa::getGhost() && !is_array($value) && !is_null($input->{'modifier'})) {
-            $value = Wa::load('manager.value modifier')->{trim($input->{'modifier'})}($value);
+        if (!$this->isIgnored($input, $value) && !is_null($input->{'modifier'})) {
+            if (is_array($value)) {
+                foreach ($value as &$str) {
+                    $str = Wa::load('manager.value modifier')->{trim($input->{'modifier'})}($str);
+                }
+            } else {
+                $value = Wa::load('manager.value modifier')->{trim($input->{'modifier'})}($value);
+            }
         }
 
         return $value;
@@ -111,6 +116,7 @@ class PostManager
     /**
      * @param AbstractInput $input
      * @return mixed
+     * @todo Testing array file input
      */
     protected function inputFile(AbstractInput $input)
     {
@@ -134,6 +140,10 @@ class PostManager
                 $result[] = $uploader->getPathName();
             }
         } else {
+            if (null === $file) {
+                return null;
+            }
+
 // Init uploader
             $uploader = $this->loadUploader(
                     array_get($options, 'type', 'file'),
@@ -168,6 +178,36 @@ class PostManager
         return $manager;
     }
 
+    /**
+     * Check if given input is ignored or not
+     *
+     * @param AbstractInput $input
+     * @param $value
+     * @return bool
+     */
+    protected function isIgnored(AbstractInput $input, $value)
+    {
+        return Wa::getGhost() === $value
+        || ($this->isEmpty($value) && $input->isIgnored())
+        || $input->attribute()->has('readonly');
+    }
+
+    /**
+     * Check if given value is empty or not
+     *
+     * @param $value
+     * @return bool
+     */
+    protected function isEmpty($value)
+    {
+        return (!is_array($value) && ('' === trim($value) || null === $value)) || [] === $value;
+    }
+
+    /**
+     * @param array $value
+     * @param $table
+     * @param $column
+     */
     protected function multiRow(array $value, $table, $column)
     {
         foreach ($value as $key => $str) {
@@ -176,6 +216,27 @@ class PostManager
                 $str = base64_encode(serialize($str));
             }
             $this->post[$table][$key][$column] = $str;
+        }
+    }
+
+    /**
+     * Collect translation data
+     *
+     * @param array $inputs
+     */
+    protected function translationRow(array $inputs)
+    {
+        if ([] !== $inputs) {
+            foreach ($inputs as $inputs) {
+                foreach ($inputs as $code => $input) {
+                    $t = \Wl::translateTableName($input->{'table'}->getName());
+                    $value = $this->getValue($input);
+                    if ($this->isIgnored($input, $value)) {
+                        continue;
+                    }
+                    $this->post['translation'][$t][$code][$input->{'column'}->getName()] = $value;
+                }
+            }
         }
     }
 

@@ -51,18 +51,25 @@ class Model
     protected function compile()
     {
         if ([] !== $this->inputs) {
-            $multilingual = array_pull($this->inputs, 'multilingual-frm-input');
+            $pulls = array_pull($this->inputs, 'multilingual-frm-input', []);
+            $trans = [];
 
             foreach ($this->inputs as $name => $input) {
-                $columns[$input->{'table'}->getName()][$name] = $input->{'column'}->getName();
-                if (isset($multilingual[$name]) && $input->isMultilingual()) {
-                    
+                $collections[$input->{'table'}->getName()][$name] = $input->{'column'}->getName();
+                if (isset($pulls[$name]) && $input->{'table'}->isMultilingual()) {
+                    $trans[\Wl::translateTableName($input->{'table'}->getName())][$name]
+                            = $input->{'column'}->getName();
+                    $trans['referenceKey'][\Wl::translateTableName($input->{'table'}->getName())] =
+                            $input->{'table'}->getReferenceKeyName();
                 }
             }
 
-// Master data
-            $this->masterData(array_pull($columns, $this->master, []));
+// Master table data
+            $this->masterData(array_pull($collections, $this->master, []));
+// Relational table data
+            $this->relationalData($collections);
 // Translation data
+            $this->translationData($trans);
         }
     }
 
@@ -70,7 +77,10 @@ class Model
     {
         $data = $this->rowFinder($this->master, Wa::table($this->master)->primaryColumn()->getName(), $columns);
         if (null !== $data) {
-            $this->doPairing($data->first(), $columns);
+            $row = $data->first();
+            foreach ($columns as $input => $column) {
+                $this->data[$input] = $row->{$column};
+            }
         }
     }
 
@@ -84,16 +94,54 @@ class Model
         }
     }
 
-    protected function doPairing($row, array $pairs)
+    /**
+     * @param array $collections
+     */
+    protected function relationalData(array $collections)
     {
-        foreach ($pairs as $input => $column) {
-            $this->data[$input] = $row->{$column};
+        if ([] !== $collections) {
+            foreach ($collections as $table => $groups) {
+                $get = $this->rowFinder($table, Wa::table($this->master)->getReferenceKeyName(), $groups);
+                if ($get->count()) {
+                    foreach ($groups as $name => $column) {
+                        if (true === $this->inputs[$name]->attribute()->isMultiple()) {
+                            foreach ($get as $item) {
+                                $this->data[$name][] = $item->{$column};
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 
-    protected function translationData()
+    /**
+     * @param array $collections
+     * @todo Testing array input
+     */
+    protected function translationData(array $collections)
     {
-
+        if ([] !== $collections) {
+            $referenceKeys = array_pull($collections, 'referenceKey');
+            foreach ($collections as $table => $groups) {
+                $l = \Wl::getLangCodeColumn('name');
+                $s = $this->rowFinder($table, $referenceKeys[$table], $groups + [$l, 'id']);
+                $c = $s->count();
+                if (1 === $c) {
+                    foreach ($s as $item) {
+                        foreach ($groups as $input => $column) {
+                            $this->data[$input . '_' . $item->{$l}] = $item->{$column};
+                        }
+                    }
+                } elseif ($c > 1) {
+                    foreach ($s as $item) {
+                        foreach ($groups as $input => $column) {
+                            $this->data[$input . '_' . $item->{$l}][] = $item->{$column};
+                        }
+                    }
+                }
+            }
+        }
     }
 
     public function getData()

@@ -9,6 +9,7 @@
 namespace Webarq\Manager\Cms\HTML\Form\Input;
 
 
+use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 
 class AttributeInputManager
@@ -53,6 +54,11 @@ class AttributeInputManager
         }
     }
 
+    public function isMultiple()
+    {
+        return Arr::inArray($this->items, 'multiple');
+    }
+
     /**
      * @param $key
      * @param null $default
@@ -61,6 +67,15 @@ class AttributeInputManager
     public function get($key, $default = null)
     {
         return array_get($this->items, $key, $default);
+    }
+
+    /**
+     * @param $key
+     * @return bool
+     */
+    public function has($key)
+    {
+        return Arr::inArray($this->items, $key);
     }
 
     /**

@@ -8,9 +8,9 @@
 
 return [
         'title' => 'Samples',
-        'tables' => ['media'],
+        'tables' => ['samples'],
         'panels' => [
-                'media' => [
+                'samples' => [
                         'listing' => [
                                 'headers' => [
                                         'columns' => [
@@ -63,15 +63,15 @@ return [
                                                         'enctype' => 'multipart/form-data'
                                                 ],
 // Add form title
-                                                'title' => 'Create Media',
+                                                'title' => 'Create Sample',
 // Following by input key => attributes
 // Input key should be following "moduleName.tableName.columnName" format name
-                                                'sample.media.title' => [
+                                                'sample.samples.title' => [
                                                         'length' => '100',
 // Added input information
 //                                                        'info' => 'Some info here'
                                                 ],
-                                                'sample.media.file' => [
+                                                'sample.samples.file' => [
                                                         'permissions' => 'upload',
 // Value for impermissible input
 //                                                        'impermissible' => 'some-value',
@@ -87,8 +87,8 @@ return [
                                                         ],
                                                         'info' => 'oer'
                                                 ],
-                                                'sample.media.description',
-                                                'sample.media.sequence' => [
+                                                'sample.samples.description',
+                                                'sample.samples.sequence' => [
 // Do not show input on the form
 //                                                        'invisible' => true
                                                 ]
@@ -97,18 +97,19 @@ return [
                                 'edit' => [
 // Transaction form if any
                                         'form' => [
+                                                'model' => 'test',
 // Add attribute form
                                                 'attributes' => [
                                                         'enctype' => 'multipart/form-data'
                                                 ],
 // Add form title
-                                                'title' => 'Create Media',
+                                                'title' => 'Edit Sample',
 // Following by input key => attributes
 // Input key should be following "moduleName.tableName.columnName" format name
-                                                'sample.media.title' => [
-                                                        'length' => '100',
+                                                'sample.samples.title' => [
+                                                        'length' => '100'
                                                 ],
-                                                'sample.media.file' => [
+                                                'sample.samples.file' => [
                                                         'permissions' => 'upload',
 // Un-required input, "required" key could be replaced with "notnull"
                                                         'required' => false,
@@ -127,8 +128,8 @@ return [
 // Ignored when field is empty
                                                         'ignored' => true
                                                 ],
-                                                'sample.media.description',
-                                                'sample.media.sequence'
+                                                'sample.samples.description',
+                                                'sample.samples.sequence'
                                         ]
                                 ],
                                 'delete'

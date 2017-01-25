@@ -185,8 +185,6 @@ abstract class AbstractInput
      */
     public function __construct(array $options = [])
     {
-        $this->impermissible = Wa::getGhost();
-
         array_forget($options, ['form', 'master']);
 
         $this->setRule($options);
@@ -269,6 +267,16 @@ abstract class AbstractInput
     abstract protected function buildInput();
 
     /**
+     * Get impermissible value, or return default value while not set
+     *
+     * @return mixed
+     */
+    public function getImpermissible()
+    {
+        return $this->impermissible ?: $this->default;
+    }
+
+    /**
      * @return mixed
      */
     public function getInputName()
@@ -294,6 +302,8 @@ abstract class AbstractInput
      */
     public function setValue($value)
     {
+        $this->rules->setValue($value);
+
         $this->value = $value;
     }
 

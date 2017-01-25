@@ -28,6 +28,7 @@ trait SetPropertyManagerTrait
         if (true === $correction) {
             foreach ($options as $key => $value) {
                 if (is_numeric($key)) {
+// Remove numeric key member
                     unset($options[$key]);
                     $key = $value;
                 }

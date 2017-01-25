@@ -101,9 +101,9 @@ return [
                 ['role_id' => 1, 'module' => 'system', 'panel' => 'menus', 'permission' => 'activeness', 'create_on' => '2016-12:21 10:00'],
                 ['role_id' => 1, 'module' => 'system', 'panel' => 'menus', 'permission' => 'index', 'create_on' => '2016-12:21 10:00'],
 
-                ['role_id' => 1, 'module' => 'sample', 'panel' => 'media', 'permission' => 'create', 'create_on' => '2016-12:21 10:00'],
-                ['role_id' => 1, 'module' => 'sample', 'panel' => 'media', 'permission' => 'edit', 'create_on' => '2016-12:21 10:00'],
-                ['role_id' => 1, 'module' => 'sample', 'panel' => 'media', 'permission' => 'index', 'create_on' => '2016-12:21 10:00'],
-                ['role_id' => 1, 'module' => 'sample', 'panel' => 'media', 'permission' => 'upload', 'create_on' => '2016-12:21 10:00'],
+                ['role_id' => 1, 'module' => 'sample', 'panel' => 'samples', 'permission' => 'create', 'create_on' => '2016-12:21 10:00'],
+                ['role_id' => 1, 'module' => 'sample', 'panel' => 'samples', 'permission' => 'edit', 'create_on' => '2016-12:21 10:00'],
+                ['role_id' => 1, 'module' => 'sample', 'panel' => 'samples', 'permission' => 'index', 'create_on' => '2016-12:21 10:00'],
+                ['role_id' => 1, 'module' => 'sample', 'panel' => 'samples', 'permission' => 'upload', 'create_on' => '2016-12:21 10:00'],
         ]
 ];
