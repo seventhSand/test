@@ -101,6 +101,8 @@ class CreateManager extends InstallerAbstract
                     $str .= Wa::manager('installer.definition', Wa::load('info.column', $attrColumn))
                             ->getDefinition();
                 } elseif ($column->getExtra('multilingual')) {
+                    $column = clone $column;
+
                     $str .= Wa::manager('installer.definition', $column)->getDefinition();
                 }
             }
@@ -139,8 +141,9 @@ class CreateManager extends InstallerAbstract
 
     private function createModelOrNot(TableInfo $table)
     {
-        if (true === ($class = $table->getExtra('model', true)) || (is_string($class) && !is_numeric($class))) {
-            $path = $table->getExtra('model-dir', 'Model');
+        $class = $table->getModel();
+        if (null !== $class) {
+            $path = $table->getModelDir();
             $namespace = 'Webarq\Model';
             if ('Model' !== $path) {
                 $dirs = explode('/', $path);
@@ -157,10 +160,13 @@ class CreateManager extends InstallerAbstract
                 $path = 'Model' . $path;
             }
 // Class Name
-            $class = studly_case(is_string($class) ? $class : str_singular($table->getName())) . 'Model';
+            $class = studly_case($class) . 'Model';
             if (!file_exists(__DIR__ . '/../../' . $path . '/' . $class . '.php')) {
                 $str = '<?php' . PHP_EOL . PHP_EOL;
                 $str .= 'namespace ' . $namespace . ';' . PHP_EOL . PHP_EOL . PHP_EOL;
+                if ('Model' !== $path) {
+                    $str .= 'use Webarq\Model\AbstractListingModel;' . PHP_EOL . PHP_EOL;
+                }
                 $str .= 'class ' . $class . ' extends AbstractListingModel' . PHP_EOL;
                 $str .= '{' . PHP_EOL;
                 $str .= '    protected $table = \'' . $table->getName() . '\';' . PHP_EOL;

@@ -6,6 +6,11 @@
  * Time: 12:18 PM
  */
 
+/*
+ * By default, uri formatted in "{directory segment}/{module segment}/{panel segment}/{action segment}/{parameters ...}
+ */
+
+
 /**
  * @param string $class
  * @param string $string
@@ -47,9 +52,11 @@ if ($paramLength > 0) {
 Route::match(['get', 'post'], $urlFormat, function () use ($paramLength, $urlFormat) {
 // Original params
     $params = '/' !== Request::path()
-            ? array_filter(
-                    explode('/', strtolower(Request::path())), function($value) { return trim($value) !== ''; })
+            ? array_filter(explode('/', strtolower(Request::path())), function ($value) {
+                return trim($value) !== '';
+            })
             : [];
+
     $directory = array_pull($params, 0, 'Site');
     $module = array_pull($params, 1, 'System');
     $panel = array_pull($params, 2, config('webarq.system.default-controller', 'base'));
@@ -74,8 +81,9 @@ Route::match(['get', 'post'], $urlFormat, function () use ($paramLength, $urlFor
     $panel1 = studly_case($panel);
     $action1 = studly_case($action);
 // Controller action prefix
-// File controller should be under App/Http/Controllers/$directory
+// File controller should be under App/Http/Controllers/{$directory}
     $namespace = 'App' . $sep . 'Http' . $sep . 'Controllers' . $sep . $directory1 . $sep;
+// Relative path in to directory
     $root = '..' . $sep . 'app' . $sep . 'Http' . $sep . 'Controllers' . $sep . $directory . $sep;
     $method = null;
 // Starting by checking if segment panel is a directory
@@ -143,7 +151,8 @@ Route::match(['get', 'post'], $urlFormat, function () use ($paramLength, $urlFor
 // Yay, found a class
     if (isset($class)) {
         if (is_null($method)) {
-            $action = isset($action) && isset($inAdminPage) ? 'forbidden' : config('webarq.system.default-action');
+            $action = isset($action) && isset($inAdminPage) && null !== Request::segment(2)
+                    ? 'forbidden' : config('webarq.system.default-action');
             $method = config('webarq.system.action-prefix') . ucfirst(strtolower(Request::method()))
                     . studly_case($action);
         }
@@ -159,8 +168,8 @@ Route::match(['get', 'post'], $urlFormat, function () use ($paramLength, $urlFor
                 return $before;
             }
         }
-// Call method (do not forget about method injection)
 
+// Call method (do not forget about method injection)
         $call = App::call([$class, $method], $params);
         if (!is_null($call)) {
             return $call;

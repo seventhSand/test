@@ -201,7 +201,7 @@ abstract class AbstractInput
         }
     }
 
-    protected function setRule(array &$options)
+    protected function setRule(array &$options = [])
     {
         $options['notnull'] = array_pull($options, 'required', array_get($options, 'notnull'));
 
@@ -324,8 +324,9 @@ abstract class AbstractInput
      */
     public function isPermissible()
     {
-        return !$this->invisible && ([] === $this->permissions
-                || Wa::panel()->isAccessible($this->module->getName(), $this->table->getName(), $this->permissions));
+        return !$this->invisible && (
+                [] === $this->permissions || Wa::panel()->isAccessible(
+                        $this->module, $this->module->getPanel($this->table->getName()), $this->permissions));
     }
 
     /**
@@ -348,7 +349,7 @@ abstract class AbstractInput
 
     public function isMultilingual()
     {
-        return true === $this->multilingual && $this->table->isMultilingual();
+        return !empty($this->multilingual) && $this->table->isMultilingual();
     }
 
     /**
@@ -366,12 +367,14 @@ abstract class AbstractInput
     public function __clone()
     {
         $this->attribute = clone $this->attribute;
-    }
 
-    protected function fixAttributes()
-    {
-        if (!is_array($this->permissions)) {
-            $this->permissions = [$this->permissions];
+        if (true === $this->multilingual) {
+            $this->setRule();
+        } elseif (!is_numeric($this->multilingual)) {
+            $options = is_array($this->multilingual) ? $this->multilingual : ['rules' => $this->multilingual];
+            $this->setRule($options);
+
+            $this->setPropertyFromOptions($options);
         }
     }
 }

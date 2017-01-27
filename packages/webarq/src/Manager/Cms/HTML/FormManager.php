@@ -13,6 +13,7 @@ use Illuminate\Support\Arr;
 use Wa;
 use Webarq\Manager\AdminManager;
 use Webarq\Manager\Cms\HTML\Form\AbstractInput;
+use Webarq\Manager\Cms\HTML\Form\RulesManager;
 use Webarq\Manager\SetPropertyManagerTrait;
 use Wl;
 
@@ -110,16 +111,11 @@ class FormManager
     protected $values = [];
 
     /**
-     * @var array
-     */
-    protected $inputs = [];
-
-    /**
-     * Form input collections
+     * Form inputs
      *
      * @var array
      */
-    protected $collections = [];
+    protected $inputs = [];
 
     /**
      * @var array
@@ -180,14 +176,14 @@ class FormManager
 
         $this->setPropertyFromOptions($options);
 
-        $this->prepareCollections($options);
+        $this->prepareInputs($options);
     }
 
     /**
      * @param array $inputs
      * @todo Support row grouping, following [[path1 => array setting, path2 => array setting] ...] format
      */
-    protected function prepareCollections(array $inputs)
+    protected function prepareInputs(array $inputs)
     {
         if ([] !== $inputs) {
             $master = null;
@@ -208,23 +204,20 @@ class FormManager
                 if ($input->isValid()) {
                     if ($input->isPermissible()) {
                         $this->inputs[$input->getInputName()] = $input;
-                        $this->collections[$input->name] = $input;
-
                         if ($input->isMultilingual()) {
                             foreach (Wl::getCodes() as $code) {
                                 if (Wl::getSystem() != $code) {
                                     $clone = clone $input;
                                     $clone->attribute()->setName($clone->name, $code);
                                     $clone->setTitle($clone->getTitle() . ' (' . strtoupper($code) . ')');
-                                    $this->collections['multilingual-frm-input'][$input->name][$code]
-                                            = $clone;
                                     $this->inputs[$clone->getInputName()] = $clone;
+                                    $this->pairs['multilingual'][$input->name][$code] = $clone;
                                 }
                             }
                         }
                     }
 
-                    $this->pairs[$input->name] = $input;
+                    $this->pairs[$input->getInputName()] = $input;
                 }
             }
 
@@ -275,6 +268,16 @@ class FormManager
     }
 
     /**
+     * @param mixed $key
+     * @param mixed $default
+     * @return mixed
+     */
+    public function getValue($key = null, $default = null)
+    {
+        return array_get($this->values, $key, $default);
+    }
+
+    /**
      * Set post data form data
      *
      * @param array $values
@@ -289,20 +292,22 @@ class FormManager
      */
     public function dataModeling($id = null)
     {
-        if (is_numeric($id) && 'edit' === $this->type) {
-            if (true === $this->model) {
-                $this->values = Wa::model(str_singular($this->panel))->formRowFinder($id);
-            } elseif (is_array($this->model)) {
-                $this->values = Wa::model($this->model[0])->{$this->model[1]}($id);
-            } elseif (is_string($this->model)) {
-                $this->values = Wa::model(str_singular($this->panel))->{$this->model}($id);
-            } else {
-                $this->values = Wa::load('manager.cms.HTML!.form.model$', $id, $this->collections, $this->master)
-                        ->getData();
-            }
-
-            $this->setEditingRowId($id);
+        if (true === $this->model) {
+            $this->values = Wa::table($this->panel)->model()->formRowFinder($id);
+        } elseif (is_array($this->model)) {
+            $this->values = Wa::model($this->model[0])->{$this->model[1]}($id);
+        } elseif (is_string($this->model)) {
+            $this->values = Wa::table($this->panel)->model()->{$this->model}($id);
+        } else {
+            $this->values = Wa::load('manager.cms.HTML!.form.model$', $id, $this->pairs, $this->master)
+                    ->getData();
         }
+
+        if (is_array($this->values)) {
+            $this->html .= Form::hidden('remote-value', base64_encode(serialize($this->values)));
+        }
+
+        $this->setEditingRowId($id);
     }
 
     /**
@@ -321,16 +326,6 @@ class FormManager
     public function getInput($key = null, $default = null)
     {
         return array_get($this->inputs, $key, $default);
-    }
-
-    /**
-     * @param null $key
-     * @param null $default
-     * @return mixed
-     */
-    public function getCollection($key = null, $default = null)
-    {
-        return array_get($this->collections, $key, $default);
     }
 
     /**
@@ -388,11 +383,9 @@ class FormManager
      */
     public function compile()
     {
-        if ([] !== $this->collections) {
-// Pull out multilingual input
-            $multilingual = array_pull($this->collections, 'multilingual-frm-input', []);
+        if ([] !== $this->inputs) {
 
-            foreach ($this->collections as $input) {
+            foreach ($this->inputs as $input) {
 // Set input value
                 $input->setValue(array_get($this->values, $input->getInputName()));
 // Modify unique rule
@@ -403,29 +396,29 @@ class FormManager
                 $this->collectInputValidator($input);
 
                 $this->html .= $input->buildHtml();
-
-// Print out multilingual input
-                if ([] !== $multilingual && null !== ($inputs = array_get($multilingual, $input->name))) {
-                    foreach ($inputs as $input) {
-                        $input->setValue(array_get($this->values, $input->getInputName()));
-                        $this->html .= $input->buildHtml();
-                    }
-                }
             }
+        }
 
-// Putting back multilingual into collections
-            $this->collections['multilingual-frm-input'] = $multilingual;
+        if (null !== \Request::input('remote-value')) {
+            $this->html .= Form::hidden('remote-value', \Request::input('remote-value'));
         }
     }
 
+    /**
+     * Get input rules
+     *
+     * @param AbstractInput $input
+     */
     protected function collectInputValidator(AbstractInput $input)
     {
+        if ($input->{'rules'} instanceof RulesManager) {
 // Collect validator rules
-        $this->validatorRules[$input->getInputName()] = $input->rules->toString();
+            $this->validatorRules[$input->getInputName()] = $input->rules->toString();
 
-        if ([] !== $input->errorMessages) {
-            foreach ($input->errorMessages as $errType => $errMsg) {
-                $this->validatorMessages[$input->name . '.' . $errType] = $errMsg;
+            if ([] !== $input->errorMessages) {
+                foreach ($input->errorMessages as $errType => $errMsg) {
+                    $this->validatorMessages[$input->name . '.' . $errType] = $errMsg;
+                }
             }
         }
     }
@@ -448,7 +441,7 @@ class FormManager
                 'attributes' => $this->attributes,
                 'html' => $this->html,
 // In case you want to build your own elements html structure
-                'elements' => $this->collections,
+                'elements' => $this->inputs,
                 'alerts' => $this->alerts ?: \Session::get('transaction', [])
         ]);
     }

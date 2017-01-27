@@ -13,13 +13,8 @@ use App\Http\Controllers\Panel\BaseController;
 
 class DashboardController extends BaseController
 {
-    public function hasPermission()
-    {
-        return true;
-    }
-
     public function actionGetIndex()
     {
-
+        $this->layout->{'rightSection'} = 'Put your content here ...';
     }
 }

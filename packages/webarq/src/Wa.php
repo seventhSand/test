@@ -164,6 +164,7 @@ class Wa
 
     /**
      * Normally all class using studly case string format
+     * ".", "\", and "/" will be use as directory separator
      *
      * @param string $path
      * @return string Full class path
@@ -349,13 +350,11 @@ class Wa
     }
 
     /**
-     * @param mixed $args
+     * @param string $name
      * @return null|object
      */
-    public function model($args)
+    public function model($name)
     {
-        $args = func_get_args();
-        $name = array_pull($args, 0);
-        return $this->load('model.' . $name, [$args, Wa::getGhost()]);
+        return $this->load('model.' . $name);
     }
 }

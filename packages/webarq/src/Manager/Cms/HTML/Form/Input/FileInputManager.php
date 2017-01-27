@@ -20,4 +20,14 @@ class FileInputManager extends AbstractInput
         return \Form::file($this->name, $this->attribute()->toArray());
     }
 
+    public function __clone()
+    {
+        parent::__clone();
+
+        if (null !== $this->file) {
+            $opt = ['file' => $this->file];
+            $this->setRule($opt);
+        }
+    }
+
 }

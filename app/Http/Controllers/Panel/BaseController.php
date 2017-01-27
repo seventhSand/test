@@ -13,6 +13,8 @@ use App\Http\Controllers\Webarq;
 use Auth;
 use URL;
 use Wa;
+use Webarq\Info\ModuleInfo;
+use Webarq\Info\PanelInfo;
 
 class BaseController extends Webarq
 {
@@ -57,28 +59,13 @@ class BaseController extends Webarq
             if ('login' !== $this->action && 'auth' !== $this->controller) {
                 return redirect(URL::panel('system/admins/auth/login'));
             }
-        } elseif (!$this->isAccessible()) {
-            return $this->actionGetForbidden();
-        } elseif (!is_object($this->module) || !is_object($this->panel)) {
+        } elseif (null !== \Request::segment(2) && (
+                        !$this->isAccessible() || !is_object($this->module) || !is_object($this->panel))
+        ) {
             return $this->actionGetForbidden();
         }
 
         return parent::before();
-    }
-
-    /**
-     * @return mixed
-     */
-    protected function isAccessible()
-    {
-        return Wa::panel()->isAccessible($this->getModule(), $this->getPanel(), $this->action);
-    }
-
-    /**
-     * @return string
-     */
-    public function actionGetIndex()
-    {
     }
 
     /**
@@ -93,5 +80,22 @@ class BaseController extends Webarq
         if (!is_object($this->panel)) {
             $this->setPanel($this->getParam(2));
         }
+    }
+
+    /**
+     * @return mixed
+     */
+    protected function isAccessible()
+    {
+        return $this->module instanceof ModuleInfo && $this->panel instanceof PanelInfo
+        && Wa::panel()->isAccessible($this->module, $this->panel, $this->action);
+    }
+
+    /**
+     * @return string
+     */
+    public function actionGetIndex()
+    {
+        $this->layout->{'rightSection'} = 'You are in home';
     }
 }

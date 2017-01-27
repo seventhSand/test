@@ -96,6 +96,16 @@ class TableInfo
     protected $foreign = [];
 
     /**
+     * @var
+     */
+    protected $model;
+
+    /**
+     * @var
+     */
+    protected $modelDir;
+
+    /**
      * Create TableInfo instance
      *
      * @param $name
@@ -107,6 +117,7 @@ class TableInfo
         $this->serialize = serialize($options);
         $this->name = $name;
         $this->module = $module;
+
         $this->setup($options);
     }
 
@@ -119,11 +130,10 @@ class TableInfo
     {
         if ([] !== $configs) {
             foreach ($configs as $i => $value) {
-// This is a column
                 if (is_numeric($i)) {
                     $this->setColumn($value);
-                } elseif (property_exists($this, $i)) {
-                    $this->{$i} = $value;
+                } elseif (property_exists($this, ($m = lcfirst(studly_case($i))))) {
+                    $this->{$m} = $value;
                 } else {
                     switch ($i) {
                         case 'timestamps':
@@ -246,18 +256,6 @@ class TableInfo
     }
 
     /**
-     * Get table extra information by given $key
-     *
-     * @param $key
-     * @param null $default
-     * @return mixed
-     */
-    public function getExtra($key, $default = null)
-    {
-        return array_get($this->extra, $key, $default);
-    }
-
-    /**
      * Unserialize table options which already serialized
      *
      * @return array|string
@@ -301,6 +299,51 @@ class TableInfo
     public function isFlushUpdate()
     {
         return true === $this->getExtra('flush-update');
+    }
+
+    /**
+     * Get table extra information by given $key
+     *
+     * @param $key
+     * @param null $default
+     * @return mixed
+     */
+    public function getExtra($key, $default = null)
+    {
+        return array_get($this->extra, $key, $default);
+    }
+
+    /**
+     * Initiate table model if exist
+     */
+    public function model()
+    {
+        if (null !== ($class = $this->getModel())) {
+            if (null !== $this->modelDir) {
+                $class = $this->modelDir . '.' . $class;
+            }
+            return Wa::model($class);
+        }
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getModel()
+    {
+        if (null === $this->model || true === $this->model) {
+            return str_singular($this->name);
+        } elseif (is_string($this->model)) {
+            return $this->model;
+        }
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getModelDir()
+    {
+        return $this->modelDir;
     }
 }
 

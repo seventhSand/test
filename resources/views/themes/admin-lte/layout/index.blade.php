@@ -43,8 +43,7 @@
         <link rel="stylesheet"
               href="{{URL::asset('admin-lte/plugins/bootstrap-wysihtml5/bootstrap3-wysihtml5.min.css')}}">
 
-        @section('css')
-        @show
+        @stack('css')
 
                 <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
         <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
@@ -136,8 +135,7 @@
 {{--<script src="{{URL::asset('admin-lte/dist/js/demo.js')}}"></script>--}}
 
 
-@section('script')
-@show
+@stack('script')
 </body>
 </html>
 

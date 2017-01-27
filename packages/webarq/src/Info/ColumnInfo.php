@@ -327,4 +327,15 @@ class ColumnInfo
         return str_contains($this->type, 'int')
         || in_array($this->type, ['decimal', 'float', 'double', 'numeric', 'real']);
     }
+
+    public function __clone()
+    {
+        $multilingual = $this->getExtra('multilingual');
+
+        if (is_array($multilingual)) {
+            $this->setPropertyFromOptions($multilingual);
+        } elseif (true === $multilingual) {
+            $this->notnull = false;
+        }
+    }
 }

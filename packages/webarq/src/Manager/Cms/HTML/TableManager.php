@@ -134,7 +134,7 @@ class TableManager extends \Webarq\Manager\HTML\TableManager
 // Build header action, while create actions should be on header
 //        $html = $this->buildHeaderActions(array_get($this->actions, 'header', []));
         $html = Wa::panel()->generateActionButton(
-                array_get($this->actions, 'header', []), $this->module->getName(), $this->panel->getName());
+                array_get($this->actions, 'header', []), $this->module, $this->panel);
         $this->setup();
 
         $html .= parent::toHtml();

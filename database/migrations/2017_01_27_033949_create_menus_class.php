@@ -34,7 +34,7 @@ class CreateMenusClass extends Migration {
             $table->bigIncrements('id');
             $table->char('lang_code', 2);
             $table->unsignedInteger('menu_id');
-            $table->string('title', 100);
+            $table->string('title', 100)->nullable();
             $table->datetime('create_on');
         });
     }

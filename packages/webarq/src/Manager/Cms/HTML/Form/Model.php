@@ -51,7 +51,7 @@ class Model
     protected function compile()
     {
         if ([] !== $this->inputs) {
-            $pulls = array_pull($this->inputs, 'multilingual-frm-input', []);
+            $pulls = array_pull($this->inputs, 'multilingual', []);
             $trans = [];
 
             foreach ($this->inputs as $name => $input) {
@@ -75,9 +75,10 @@ class Model
 
     protected function masterData(array $columns)
     {
-        $data = $this->rowFinder($this->master, Wa::table($this->master)->primaryColumn()->getName(), $columns);
-        if (null !== $data) {
-            $row = $data->first();
+        $row = $this
+                ->rowFinder($this->master, Wa::table($this->master)->primaryColumn()->getName(), $columns)
+                ->first();
+        if (null !== $row) {
             foreach ($columns as $input => $column) {
                 $this->data[$input] = $row->{$column};
             }

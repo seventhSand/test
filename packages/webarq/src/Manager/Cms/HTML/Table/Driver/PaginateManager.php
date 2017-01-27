@@ -174,7 +174,9 @@ class PaginateManager extends DriverAbstractManager
      */
     protected function buildActions(array $item)
     {
-        return Wa::panel()->generateActionButton($this->actions, $this->module, $this->panel, $item);
+        $m = Wa::module($this->module);
+        $p = $m->getPanel($this->panel);
+        return Wa::panel()->generateActionButton($this->actions, $m, $p, $item);
     }
 
     /**

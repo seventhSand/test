@@ -10,6 +10,7 @@ namespace Webarq\Manager\Cms;
 
 
 use Wa;
+use Webarq\Info\ModuleInfo;
 use Webarq\Info\PanelInfo;
 use Webarq\Manager\AdminManager;
 
@@ -54,12 +55,12 @@ class PanelManager
                 $module = Wa::load('info.module', $module);
                 if ([] !== ($panels = $module->getPanels())) {
                     foreach ($panels as $panel) {
-                        if ($this->isAccessible($module->getName(), $panel->getName())) {
-                            $this->menus[$module->getTitle()][$panel->getName()] = [
-                                    $panel->getTitle(),
-                                    $this->generateURL($panel->getPermalink(), $module->getName(), $panel->getName(),
-                                            $this->getAction($panel))
-                            ];
+                        if ($this->isAccessible($module, $panel)) {
+                            $action = false !== $panel->getListing() && null !== $panel->getListing() ? 'listing' : '';
+                            $link = $this->generateURL($panel->getPermalink(),
+                                    $module->getName(), $panel->getName(), $action
+                            );
+                            $this->menus[$module->getTitle()][$panel->getName()] = [$panel->getTitle(), $link];
                         }
                     }
                 }
@@ -70,12 +71,12 @@ class PanelManager
     /**
      * Check if given module, panel, action path is accessible by current admin
      *
-     * @param $module
-     * @param null $panel
+     * @param ModuleInfo $module
+     * @param PanelInfo $panel
      * @param null|string|array $action
      * @return true
      */
-    public function isAccessible($module, $panel = null, $action = null)
+    public function isAccessible(ModuleInfo $module, PanelInfo $panel = null, $action = null)
     {
         if (!is_null($action)) {
             if (!is_array($action)) {
@@ -90,19 +91,18 @@ class PanelManager
 
                 switch (substr_count($item, '.')) {
                     case 1 :
-                        $item = $module . '.' . $item;
+                        $item = $module->getName() . '.' . $item;
                         break;
                     case 0 :
-                        $item = $module . '.' . $panel . '.' . $item;
+                        $item = $module->getName() . '.' . $panel->getName() . '.' . $item;
                         break;
                 }
             }
         } else {
-            $action = $module . (isset($panel) ? '.' . $panel : '');
+            $action = $module->getName() . (null !== $panel->getName() ? '.' . $panel->getName() : '');
         }
 
-        return ('system' === $module && 'dashboard' === $panel)
-        || $this->admin->hasPermission($action);
+        return !$panel->isGuarded() || $this->admin->hasPermission($action);
     }
 
     /**
@@ -117,7 +117,7 @@ class PanelManager
     {
         list($permalink, $params) = $this->getPermalinkAndParams($permalink, $action, $panel);
 
-        return \URL::panel(\URL::detect($permalink, $module, $panel, $this->suffixed($action)))
+        return \URL::panel(\URL::detect($permalink, $module, $panel, $this->makeAction($action, $permalink)))
         . $this->suffixedParam($params, $rows);
     }
 
@@ -155,10 +155,11 @@ class PanelManager
     }
 
     /**
-     * @param $action
+     * @param mixed $action
+     * @param mixed $permalink
      * @return string
      */
-    protected function suffixed($action)
+    protected function makeAction($action, $permalink)
     {
         switch ($action) {
             case 'create':
@@ -167,6 +168,9 @@ class PanelManager
                 return 'form/' . $action;
 
             default:
+                if (null === $permalink) {
+                    $action .= '/' . config('webarq.system.default-action');
+                }
                 return $action;
 
         }
@@ -189,21 +193,6 @@ class PanelManager
 
         return $str;
 
-    }
-
-    /**
-     * @param PanelInfo $panel
-     * @return string
-     */
-    protected function getAction(PanelInfo $panel)
-    {
-        if (false !== $panel->getListing() && null !== $panel->getListing()) {
-            $action = 'listing/';
-        } else {
-            $action = '';
-        }
-
-        return $action . config('webarq.system.default-action');
     }
 
     /**
@@ -254,12 +243,12 @@ class PanelManager
 
     /**
      * @param array $actions
-     * @param $module
-     * @param $panel
+     * @param ModuleInfo $module
+     * @param PanelInfo $panel
      * @param array $row
      * @return string
      */
-    public function generateActionButton($actions = [], $module, $panel, array $row = [])
+    public function generateActionButton($actions = [], ModuleInfo $module, PanelInfo $panel, array $row = [])
     {
 // Keep actions as array
         if (!is_array($actions)) {
@@ -269,9 +258,9 @@ class PanelManager
         $html = '';
 
         if ([] !== $actions) {
-            foreach ($actions as $action => $setting) {
+            foreach ($actions as $action => $options) {
 // Button permissions
-                $permissions = array_pull($setting, 'permissions', []);
+                $permissions = array_pull($options, 'permissions', []);
                 if (!is_array($permissions)) {
                     $permissions = [$permissions];
                 }
@@ -279,13 +268,13 @@ class PanelManager
 
                 if ($this->isAccessible($module, $panel, $permissions)) {
 // Pull out rules from button settings
-                    $rules = array_pull($setting, 'rules', []);
+                    $rules = array_pull($options, 'rules', []);
 
                     if (Wa::manager('cms.rule', $this->admin, $rules, $row)->isValid()) {
-                        $setting['permalink'] = $this->generateURL(array_get($setting, 'permalink'),
-                                $module, $panel, $action, $row);
+                        $options['permalink'] = $this->generateURL(array_get($options, 'permalink'),
+                                $module->getName(), $panel->getName(), $action, $row);
 
-                        $html .= Wa::manager('cms.HTML!.table.button', $setting + ['type' => $action])->toHtml();
+                        $html .= Wa::manager('cms.HTML!.table.button', $options + ['type' => $action])->toHtml();
                     }
                 }
             }

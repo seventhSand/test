@@ -33,6 +33,10 @@ return [
 // Set as an array in [limit, view file name] format
                                 'pagination' => 3,
                         ],
+// Is panel guarded and check if current admin has the permissions
+// to accessing the panel it self
+// By default it will be set in to true
+                        'guarded' => true,
 // Panel allowed action
                         'actions' => [
                                 'activeness' => [
@@ -68,6 +72,12 @@ return [
 // Input key should be following "moduleName.tableName.columnName" format name
                                                 'sample.samples.title' => [
                                                         'length' => '100',
+// Multilingual input
+// 1      : will inherited source input rules
+// true   : will ignored source input rules
+// string : in laravel format
+// array  : will overwrite property
+//                                                        'multilingual' => 1,
 // Added input information
 //                                                        'info' => 'Some info here'
                                                 ],
@@ -84,20 +94,20 @@ return [
                                                                         'width' => 200,
                                                                         'height' => 200,
                                                                 ]
-                                                        ],
-                                                        'info' => 'oer'
+                                                        ]
                                                 ],
                                                 'sample.samples.description',
                                                 'sample.samples.sequence' => [
 // Do not show input on the form
 //                                                        'invisible' => true
-                                                ]
+                                                ],
                                         ]
                                 ],
                                 'edit' => [
 // Transaction form if any
                                         'form' => [
-                                                'model' => 'test',
+// Data remote getter model
+//                                                'model' => true,
 // Add attribute form
                                                 'attributes' => [
                                                         'enctype' => 'multipart/form-data'
@@ -134,6 +144,6 @@ return [
                                 ],
                                 'delete'
                         ]
-                ]
+                ],
         ]
 ];

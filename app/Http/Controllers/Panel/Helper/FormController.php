@@ -60,6 +60,7 @@ class FormController extends BaseController
     protected function makeBuilder()
     {
         $options = $this->panel->getAction($this->action . '.form', []);
+
         $options['action'] = \URL::panel(
                 \URL::detect(
                         array_pull($options, 'permalink'), $this->module->getName(),
@@ -75,8 +76,6 @@ class FormController extends BaseController
                 'panel' => $this->panel->getName(),
                 'type' => $this->action
         ];
-
-        $this->model = array_pull($options, 'model');
 
         $this->builder = Wa::manager('cms.HTML!.form', \Auth::user(), $options, $this->action);
     }
@@ -105,7 +104,7 @@ class FormController extends BaseController
     public function actionPostCreate()
     {
 // Add post data in to form builder
-        $this->builder->setvalues(Request::input());
+        $this->builder->setvalues(Request::all());
 
 // Compile the builder
         $this->builder->compile();
@@ -114,16 +113,10 @@ class FormController extends BaseController
         $validator = $this->validator();
 
         if (!$validator->fails()) {
-            $data = Wa::manager('cms.query.post', 'create',
-                    $this->post,
-                    $this->builder->getPairs(),
-                    $this->builder->getCollection('multilingual-frm-input')
-            );
+//
+            $data = Wa::manager('cms.query.post', 'create', $this->post, $this->builder->getPairs());
 
-            $manager = Wa::manager('cms.query.insert',
-                    $this->admin,
-                    $data->getPost(),
-                    $this->builder->getMaster());
+            $manager = Wa::manager('cms.query.insert', $this->admin, $data->getPost(), $this->builder->getMaster());
 
             if ($manager->execute()) {
 // File upload handling
@@ -148,11 +141,26 @@ class FormController extends BaseController
         );
     }
 
+    /**
+     * File uploader
+     *
+     * @param array $files
+     */
     protected function uploadFiles(array $files)
     {
+        $remote = Request::input('remote-value', []);
+        if (!is_array($remote)) {
+            $remote = unserialize(base64_decode($remote));
+        }
+
         if ([] !== $files) {
-            foreach ($files as $file) {
+            foreach ($files as $key => $file) {
+// Upload file
                 $file->upload();
+// Unlink old file
+                if (!is_numeric($key) && isset($remote[$key]) && is_file($remote[$key])) {
+                    unlink($remote[$key]);
+                }
             }
         }
 
@@ -164,6 +172,12 @@ class FormController extends BaseController
     public function actionGetEdit()
     {
         $this->builder->dataModeling($this->getParam($this->idSegment));
+
+        $val = $this->builder->getValue();
+
+        if (!is_array($val) || [] === $val) {
+            return $this->actionGetForbidden();
+        }
 
         $this->builder->compile();
     }
@@ -177,7 +191,7 @@ class FormController extends BaseController
         $this->builder->setEditingRowId($this->getParam($this->idSegment));
 
 // Add post data in to form builder
-        $this->builder->setvalues(Request::input());
+        $this->builder->setvalues(Request::all());
 
 // Compile the builder
         $this->builder->compile();
@@ -186,17 +200,10 @@ class FormController extends BaseController
         $validator = $this->validator();
 
         if (!$validator->fails()) {
-            $data = Wa::manager('cms.query.post', 'edit',
-                    $this->post,
-                    $this->builder->getPairs(),
-                    $this->builder->getCollection('multilingual-frm-input')
-            );
+            $data = Wa::manager('cms.query.post', 'edit', $this->post, $this->builder->getPairs());
 
-            $manager = Wa::manager('cms.query.update',
-                    $this->admin,
-                    $data->getPost(),
-                    $this->builder->getMaster()
-            )->setId($this->getParam($this->idSegment));
+            $manager = Wa::manager('cms.query.update', $this->admin, $data->getPost(), $this->builder->getMaster())
+                    ->setId($this->getParam($this->idSegment));
 
             $count = $manager->execute();
             if ($count) {
@@ -222,10 +229,5 @@ class FormController extends BaseController
         $this->layout->{'rightSection'} = $this->builder->toHtml();
 
         return parent::after();
-    }
-
-    protected function makePost()
-    {
-
     }
 }

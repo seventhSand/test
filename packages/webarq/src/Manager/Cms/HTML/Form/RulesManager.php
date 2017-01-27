@@ -67,8 +67,7 @@ class RulesManager
      */
     protected function finalize()
     {
-// Check if some rule is set in attributes, and if set we will use that,
-// as new rule value
+// Check if rules attributes is given
         if (null !== ($rule = array_get($this->attributes, 'rules'))) {
             $items = explode('|', $rule);
             foreach ($items as $item) {

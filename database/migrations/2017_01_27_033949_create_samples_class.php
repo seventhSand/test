@@ -19,6 +19,7 @@ class CreateSamplesClass extends Migration {
             $table->string('file', 100);
             $table->text('description')->nullable();
             $table->unsignedInteger('sequence');
+            $table->char('is_active', 1)->default(1)->nullable();
             $table->datetime('create_on');
             $table->datetime('last_update')->nullable();
         });
@@ -28,8 +29,8 @@ class CreateSamplesClass extends Migration {
             $table->bigIncrements('id');
             $table->char('lang_code', 2);
             $table->unsignedInteger('sample_id');
-            $table->string('title', 100);
-            $table->string('file', 100);
+            $table->string('title', 100)->nullable();
+            $table->string('file', 100)->nullable();
             $table->text('description')->nullable();
             $table->datetime('create_on');
         });

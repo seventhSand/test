@@ -33,43 +33,28 @@ class PostManager
     /**
      * @var array
      */
-    protected $pairs = [];
-
-    /**
-     * @var array
-     */
-    protected $collections = [];
-
-    /**
-     * @var array
-     */
     protected $files = [];
 
     /**
      * @param $type
      * @param array $post
      * @param array $inputs
-     * @param array $multilingualInputs
      */
-    public function __construct($type, array $post, array $inputs, array $multilingualInputs)
+    public function __construct($type, array $post, array $inputs)
     {
         $this->type = $type;
         $this->post = $post;
 
-        $this->masterRow($inputs);
+// Pull out translation inputs
+        $translation = array_pull($inputs, 'multilingual');
 
-        $this->translationRow($multilingualInputs);
-    }
+        if ([] !== $inputs) {
+            foreach ($inputs as $input) {
 
-    /**
-     * Collect master data
-     *
-     * @param array $pairs
-     */
-    protected function masterRow(array $pairs)
-    {
-        if ([] !== $pairs) {
-            foreach ($pairs as $input) {
+                if (isset($this->post[$input->{'table'}->getName()][$input->{'column'}->getName()])) {
+                    continue;
+                }
+
                 $value = $this->getValue($input);
 // Value not set and should be ignored
                 if ($this->isIgnored($input, $value)) {
@@ -81,6 +66,8 @@ class PostManager
                     $this->post[$input->{'table'}->getName()][$input->{'column'}->getName()] = $value;
                 }
             }
+
+            $this->translationRow($translation);
         }
     }
 
@@ -123,7 +110,7 @@ class PostManager
 // File options
         $options = (array)$input->{'file'};
 // Post File (s)
-        $file = Request::file($input->getInputName());
+        $file = array_get($this->post, $input->getInputName(), Request::file($input->getInputName()));
         if (is_array($file)) {
             $result = [];
             foreach ($file as $key => $item) {
@@ -152,7 +139,7 @@ class PostManager
                     array_get($options, 'resize', [])
             );
 // Push in to files
-            $this->files[] = $uploader;
+            $this->files[$input->getInputName()] = $uploader;
 
             $result = $uploader->getPathName();
         }
@@ -211,10 +198,16 @@ class PostManager
     protected function multiRow(array $value, $table, $column)
     {
         foreach ($value as $key => $str) {
+
+            if (isset($this->post[$table][$key][$column])) {
+                continue;
+            }
+
 // @todo check translation for array row
             if (is_array($str)) {
                 $str = base64_encode(serialize($str));
             }
+
             $this->post[$table][$key][$column] = $str;
         }
     }

@@ -81,6 +81,13 @@ class PanelInfo
     protected $module;
 
     /**
+     * Is panel guarded
+     *
+     * @var bool
+     */
+    protected $guarded = true;
+
+    /**
      * Create PanelInfo instance
      *
      * @param string $name Panel name
@@ -96,16 +103,25 @@ class PanelInfo
         $this->setPropertyFromOptions($options, true);
 
         $this->attributes = $options;
+
+        if ([] !== $this->actions) {
+            foreach ($this->actions as $key => $options) {
+                if (is_numeric($key)) {
+                    unset($this->actions[$key]);
+                    $this->actions[$options] = [];
+                }
+            }
+        }
     }
 
     /**
      * Get panel action
      *
-     * @param $key
+     * @param null|string $key
      * @param null $default
      * @return mixed
      */
-    public function getAction($key, $default = null)
+    public function getAction($key = null, $default = null)
     {
         return array_get($this->actions, $key, $default);
     }
@@ -163,5 +179,10 @@ class PanelInfo
         return is_null($action)
                 ? $this->permalink
                 : \URL::panel(\URL::detect($this->permalink, $this->module, $this->name, $action));
+    }
+
+    public function isGuarded()
+    {
+        return true === $this->guarded;
     }
 }

@@ -9,9 +9,12 @@
 return [
         ['master' => 'id'],
         ['master' => 'label', 'name' => 'title', 'multilingual' => true],
-        ['master' => 'label', 'name' => 'file', 'multilingual' => true],
+        ['master' => 'label', 'name' => 'file', 'multilingual' => [
+                'notnull' => false
+        ]],
         ['master' => 'description', 'multilingual' => true],
         ['master' => 'sequence'],
+        ['master' => 'bool', 'name' => 'is_active'],
         'timestamps' => true,
 // Use this as class model, i.o the generated one
 // By default model name is singularisation of table name

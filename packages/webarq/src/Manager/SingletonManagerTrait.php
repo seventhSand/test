@@ -51,6 +51,7 @@ trait SingletonManagerTrait
         if (is_array($name)) {
             $name = \File::name(get_called_class());
         }
+        $class = get_called_class();
 
         if (!isset(self::$instances[$name]) || !self::$instances[$name] instanceof self) {
             switch(count($args)) {
@@ -76,7 +77,8 @@ trait SingletonManagerTrait
                     $obj = new self($args[0], $args[1], $args[2], $args[3], $args[4], $args[5], $args[6]);
                     break;
                 default:
-                    $obj = new self($args);
+                    $obj = new \ReflectionClass($class);
+                    $obj = $obj->newInstanceArgs($args);
                     break;
             }
             self::$instances[$name] = $obj;

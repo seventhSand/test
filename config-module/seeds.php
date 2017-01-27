@@ -5,19 +5,19 @@
  * Date: 12/15/2016
  * Time: 3:23 PM
  */
-//redAlderGreatDane
-//$arr = [
-//        'name' => 'DBA',
-//        'email' => 'zoidsimangunsong@gmail.com',
-//        'reminder' => 'polygon',
-//        'level' => 0
-//];
+
 return [
         'configurations' => [
                 [
                         'id' => 1,
+// hash('sha1', 'redAlderGreatDane')
                         'key' => '48d35125f4a3c2c005d5b0697463c4651704b427',
-                        'setting' => '318c16c276f9a80cef60793f9f18e51407bb087c',
+// Crypt::encrypt(['name' => 'Dba', 'email' => 'zoidsimangunsong@gmail.com', 'secret' => 'rubik-cube', 'daemon' => true])
+                        'setting' => 'eyJpdiI6IkIrakorZmc0aXhCYjhwSTg5cHhWOFE9PSIsInZhbHVlIjoiS0NibVBuSUpOeWxWWk8zNnV'
+                                . 'oS1pZRkZXQVJpY3NxNllDUWlwNTVGb3dyWUt2XC9GOXZQMmJxQVF6cThWcWxPQitUU25ObHRCQnFjNUw1S1'
+                                . 'BCZ2JTZVFTNE8xSWtPXC9pbFNncjJLN3R1bmFlWFlqQnoyNkRzRzBvSUpzVHZoNkpoWmRsSGtORytZXC9JR'
+                                . 'kw2N1I2bEdueEJOR0lFNjRUWGc5U2FZYk1jME9nb1E4PSIsIm1hYyI6ImJhMWJjMjM1ZWU0MGE0ZmQxNGZl'
+                                . 'M2U2MDZhY2EyZjRiNzFjMjBiYTRjYWEwMWQ4M2ZiMTBhMTVkYzRmNDMzN2EifQ==',
                         'create_on' => '2016-12:21 10:00'
                 ]
         ],

@@ -24,6 +24,7 @@ return [
                         'title' => 'Dashboard',
 // Disable listing
                         'listing' => false,
+                        'guarded' => false
                 ],
                 'configurations' => [
                         'permalink' => true,
@@ -74,7 +75,7 @@ return [
                                                         'type' => 'select table',
                                                         'source-table' => [
                                                                 'name' => 'roles',
-                                                                'column' => ['id', 'title']
+                                                                'column' => ['id', 'title'],
                                                         ],
                                                         'multiple',
                                                         'rules' => 'required|array'
