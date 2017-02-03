@@ -42,7 +42,7 @@ class AdminManager extends WatchdogAbstractManager
 
     public function __construct()
     {
-        $this->setTable(Wa::table('admins'));
+        $this->setTable('admins');
 
         $this->model = new AdminModel();
     }
@@ -61,6 +61,7 @@ class AdminManager extends WatchdogAbstractManager
                 $credentials = $admin->id;
             }
         }
+
         if (is_numeric($credentials)) {
             $admin = $this->model->find($credentials);
             $this->setRolesAndLevels($admin->roles);

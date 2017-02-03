@@ -11,17 +11,18 @@
 |
 */
 Route::get('/', function () {
-//    Auth::attempt(['username' => 'superadmin']);
     return view('welcome');
-});
-
-Route::get('/form', function () {
-    return view('webarq.samples.form');
-});
-
-Route::get('/list', function () {
-    return view('webarq.samples.table');
 });
 
 // !!!"Webarq" routing should be load in the end
 include 'webarq.php';
+
+if (config('elfinder.route.prefix') !== Request::segment(1)) {
+    Route::group(['prefix' => config('webarq.system.panel-url-prefix', 'admin-cp'), 'middleware' => 'panel'], function () {
+        webarqAutoRoute('Panel');
+    });
+
+    webarqAutoRoute('Site');
+}
+
+

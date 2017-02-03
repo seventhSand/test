@@ -13,8 +13,19 @@ use App\Http\Controllers\Webarq;
 
 class BaseController extends Webarq
 {
-    public function actionGetTab()
+
+    /**
+     * @param array $params
+     */
+    public function __construct(array $params = [])
     {
-        return view('samples.tab');
+        $this->themes = config('webarq.site.themes', 'default');
+
+        parent::__construct($params);
+    }
+
+    public function actionGetIndex()
+    {
+
     }
 }

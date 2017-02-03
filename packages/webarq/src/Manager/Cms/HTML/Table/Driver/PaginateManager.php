@@ -12,25 +12,10 @@ namespace Webarq\Manager\Cms\HTML\Table\Driver;
 use Wa;
 use DB;
 use Illuminate\Pagination\LengthAwarePaginator;
-use Webarq\Manager\AdminManager;
-use Webarq\Manager\HTML\Table\Driver\DriverAbstractManager;
+use Webarq\Info\TableInfo;
 
-class PaginateManager extends DriverAbstractManager
+class PaginateManager extends AbstractManager
 {
-    /**
-     * @var AdminManager
-     */
-    protected $admin;
-
-    /**
-     * @var string
-     */
-    protected $panel;
-
-    /**
-     * @var string
-     */
-    protected $module;
 
     /**
      * @var \Illuminate\Database\Query\Builder
@@ -50,53 +35,26 @@ class PaginateManager extends DriverAbstractManager
     /**
      * @var array
      */
-    protected $actions = [];
+    protected $sequence = [];
 
     /**
      * @var array
      */
-    protected $sequence = [];
-
-    protected $headers = [];
+    protected $data = [];
 
     /**
      * Create builder instance
      *
-     * @param AdminManager $admin
-     * @param string $module
-     * @param string $panel
-     * @param array $headers
+     * @param TableInfo $table
+     * @param array $columns
      * @param int|number $limit
-     * @param array $actions
      */
-    public function __construct(AdminManager $admin, $module, $panel, $headers = [], $limit = 2, array $actions = [])
+    public function __construct(TableInfo $table, array $columns = [], $limit = 2)
     {
-        $this->admin = $admin;
-        $this->module = $module;
-        $this->panel = $panel;
         $this->limit = $limit;
-        $this->actions = $actions;
-        $this->headers = $headers;
 
-        $columns = $this->getColumns();
-
-        $this->builder = DB::table($panel)->select([] === $columns ? '*' : $columns)
-                ->addSelect(Wa::table($panel)->primaryColumn()->getName());
-    }
-
-    /**
-     * @return array
-     */
-    protected function getColumns()
-    {
-        $columns = [];
-        if ([] !== $this->headers ) {
-            foreach ($this->headers as $key => $value) {
-                $columns[] = is_numeric($key) ? $value : $key;
-            }
-        }
-
-        return $columns;
+        $this->builder = DB::table($table->getName())->select([] === $columns ? '*' : $columns)
+                ->addSelect($table->primaryColumn()->getName());
     }
 
     /**
@@ -122,11 +80,14 @@ class PaginateManager extends DriverAbstractManager
     }
 
     /**
-     * @inheritdoc
+     * @param null|string $view
+     * @return string
      */
-    public function sampling()
+    public function paginate($view = null)
     {
-        return [];
+        if ($this->get instanceof LengthAwarePaginator) {
+            return $this->get->render($view);
+        }
     }
 
     /**
@@ -137,56 +98,9 @@ class PaginateManager extends DriverAbstractManager
         $this->get = $this->builder->paginate($this->limit);
 
         if ($this->get->count()) {
-            $data = $this->get->toArray();
-            foreach ($data['data'] as &$item) {
-                $item = $this->buildItem($item);
-                $item['actionButton'] = $this->buildActions($item);
-            }
-
-            return $data['data'];
+            return array_get($this->get->toArray(), 'data', []);
         }
 
         return [];
-    }
-
-    /**
-     * @param array $row
-     * @return array
-     */
-    protected function buildItem($row)
-    {
-        if (!is_array($row)) {
-            $row = (array) $row;
-        }
-        foreach ($this->headers as $column => $setting) {
-            if (is_numeric($column)) continue;
-            if (null !== ($modifier = array_get($setting, 'modifier'))) {
-                $row[$column] = Wa::modifier($modifier, $row[$column]);
-            }
-        }
-
-        return $row;
-    }
-
-    /**
-     * @param array $item
-     * @return string
-     */
-    protected function buildActions(array $item)
-    {
-        $m = Wa::module($this->module);
-        $p = $m->getPanel($this->panel);
-        return Wa::panel()->generateActionButton($this->actions, $m, $p, $item);
-    }
-
-    /**
-     * @param null|string $view
-     * @return string
-     */
-    public function paginate($view = null)
-    {
-        if ($this->get instanceof LengthAwarePaginator) {
-            return $this->get->render($view);
-        }
     }
 }

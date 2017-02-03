@@ -30,6 +30,10 @@ return [
 //                'admin_id' => 'admins:id',
 //                'role_id' => 'roles:id'
         ],
+// Table histories, will be useful while do some database transaction like create, edit, etc
+        'histories' => [
+                'item' => 'title'
+        ],
 // Delete row by master table references key before updating table
 //        'flush-update' => true
 ];

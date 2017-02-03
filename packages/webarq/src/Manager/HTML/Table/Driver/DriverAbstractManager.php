@@ -38,7 +38,12 @@ abstract class DriverAbstractManager
      */
     public function getData($key = null)
     {
-        if ([] === $this->data && null !== ($rows = $this->getRows()) && is_array($rows) && [] !== $rows) {
+        if (!isset($this->data['rows'])
+                && [] === $this->data
+                && null !== ($rows = $this->getRows())
+                && is_array($rows) && [] !== $rows
+        ) {
+            $this->data['rows'] = [];
             foreach ($rows as $iteration => $row) {
                 foreach ($row as $column => $value) {
                     if (!isset($this->data['head'][$column])) {
@@ -49,7 +54,7 @@ abstract class DriverAbstractManager
             }
         }
 
-        return isset($key) ? array_get($this->data, $key, []) : $this->data;
+        return array_get($this->data, $key, []);
     }
 
     /**
@@ -64,5 +69,21 @@ abstract class DriverAbstractManager
      *
      * @return mixed
      */
-    abstract protected function sampling();
+
+
+    /**
+     * @inheritDoc
+     */
+    public function sampling()
+    {
+        $this->data = [
+                'head' => ['No', 'Name' => ['style' => 'background-color:#333'], 'Email', 'Status'],
+                'rows' => [
+                        [1, 'John Doe', 'john.doe@mail.dev', 'Father'],
+                        [2, 'Jane Doe', 'sarah.doe@mail.dev', 'Mother'],
+                        [3, 'Janie Doe', 'janie.doe@mail.dev', 'Daughter'],
+                        [4, 'Richard Miles', 'miles.richard@mail.dev', 'Cousin']
+                ]
+        ];
+    }
 }

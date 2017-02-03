@@ -11,13 +11,11 @@
 namespace Webarq\Laravel;
 
 
-use Auth;
 use File;
-use Illuminate\Hashing\BcryptHasher;
-use Request;
-use Webarq\Wa;
-
 use Illuminate\Support\ServiceProvider;
+use Webarq\Wa;
+use Request;
+
 
 class WaProvider extends ServiceProvider
 {
@@ -34,20 +32,9 @@ class WaProvider extends ServiceProvider
                 app('Webarq\Laravel\Extend\\' . File::name($file));
             }
         }
-        $this->addAuthProvider();
-    }
 
-    private function addAuthProvider()
-    {
-// Get class manager
-        $manager = 0 === strpos(Request::path(), config('webarq.system.panel-url-prefix'))
-                ? 'Webarq\Manager\AdminManager'
-                : 'Webarq\Manager\MemberManager';
-// Enable watchdog provider in to authentication
-        Auth::provider('watchdog', function () use ($manager) {
-//            dd(\Request::path());
-// Return an instance of Illuminate\Contracts\Auth\UserProvider...
-            return new WatchdogProvider(new BcryptHasher(), new $manager);
+        view()->composer('*', function () {
+            $id = (\Auth::id());
         });
     }
 
@@ -58,9 +45,7 @@ class WaProvider extends ServiceProvider
      */
     public function register()
     {
-
         $this->registerWEBARQ();
-//        $this->registerThemes();
     }
 
     /**
@@ -74,18 +59,6 @@ class WaProvider extends ServiceProvider
             return new Wa($app);
         });
     }
-
-//    /**
-//     * Register the Themes instance.
-//     *
-//     * @return void
-//     */
-//    protected function registerThemes()
-//    {
-//        $this->app->singleton('themes', function ($app) {
-//            return new Themes($app);
-//        });
-//    }
 
     /**
      * Get the services provided by the provider.

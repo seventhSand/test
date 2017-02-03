@@ -12,6 +12,7 @@ namespace Webarq\Manager\Cms;
 use Wa;
 use Webarq\Info\ModuleInfo;
 use Webarq\Info\PanelInfo;
+use Webarq\Info\TableInfo;
 use Webarq\Manager\AdminManager;
 
 /**
@@ -56,10 +57,7 @@ class PanelManager
                 if ([] !== ($panels = $module->getPanels())) {
                     foreach ($panels as $panel) {
                         if ($this->isAccessible($module, $panel)) {
-                            $action = false !== $panel->getListing() && null !== $panel->getListing() ? 'listing' : '';
-                            $link = $this->generateURL($panel->getPermalink(),
-                                    $module->getName(), $panel->getName(), $action
-                            );
+                            $link = $this->listingURL($panel);
                             $this->menus[$module->getTitle()][$panel->getName()] = [$panel->getTitle(), $link];
                         }
                     }
@@ -78,7 +76,7 @@ class PanelManager
      */
     public function isAccessible(ModuleInfo $module, PanelInfo $panel = null, $action = null)
     {
-        if (!is_null($action)) {
+        if (!is_null($action) && 'index' !== $action) {
             if (!is_array($action)) {
                 $action = [$action];
             }
@@ -106,6 +104,26 @@ class PanelManager
     }
 
     /**
+     * @param PanelInfo $panel
+     * @return string
+     */
+    public function listingURL(PanelInfo $panel)
+    {
+        $module = Wa::module($panel->getModule());
+        if (null !== $module) {
+            $action = false !== $panel->getListing() && null !== $panel->getListing() ? 'listing' : '';
+            $link = $this->generateURL(
+                    $panel->getPermalink(),
+                    $module->getName(),
+                    $panel->getName(),
+                    $action
+            );
+
+            return $link;
+        }
+    }
+
+    /**
      * @param $permalink
      * @param $module
      * @param $panel
@@ -115,7 +133,8 @@ class PanelManager
      */
     public function generateURL($permalink, $module, $panel, $action = '', array $rows = [])
     {
-        list($permalink, $params) = $this->getPermalinkAndParams($permalink, $action, $panel);
+        list($permalink, $params) = $this->getPermalinkAndParams(
+                $permalink, $action, Wa::table(Wa::module($module)->getPanel($panel)->getTable()));
 
         return \URL::panel(\URL::detect($permalink, $module, $panel, $this->makeAction($action, $permalink)))
         . $this->suffixedParam($params, $rows);
@@ -124,10 +143,10 @@ class PanelManager
     /**
      * @param string $permalink
      * @param string $action
-     * @param string $panel
+     * @param TableInfo|null $table
      * @return array
      */
-    protected function getPermalinkAndParams($permalink, $action, $panel)
+    protected function getPermalinkAndParams($permalink, $action, TableInfo $table = null)
     {
         $params = [];
 // Injected params
@@ -142,8 +161,8 @@ class PanelManager
         }
 
 // Default params
-        if ([] === $params && null !== ($panel = Wa::table($panel))) {
-            $params[] = $panel->primaryColumn()->getName();
+        if ([] === $params && null !== $table) {
+            $params[] = $table->primaryColumn()->getName();
             switch ($action) {
                 case 'activeness':
                     $params[] = 'is_active';

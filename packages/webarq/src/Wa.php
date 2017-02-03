@@ -357,4 +357,20 @@ class Wa
     {
         return $this->load('model.' . $name);
     }
+
+    /**
+     * @param $str
+     * @return string|\Symfony\Component\Translation\TranslatorInterface
+     */
+    public function trans($str)
+    {
+        $trans = trans($str);
+        if ($str === $trans) {
+            if (false !== strpos($str, '.')) {
+                $str = trim(strrchr($str, '.'), '.');
+            }
+            $trans = title_case(str_replace(['_', '-'], ' ', $str));
+        }
+        return $trans;
+    }
 }

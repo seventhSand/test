@@ -10,8 +10,16 @@ return [
         'title' => 'Samples',
         'tables' => ['samples'],
         'panels' => [
-                'samples' => [
+// How to name our panels key member:
+// 1. tableName => [settings]
+// 2. title => ["table" => "tableName"], ... another settings]
+// 3. title:tableName => [settings]
+// and we use the third way on this example
+                'sample:samples' => [
+// Instead of using key as the title, just set the name that fitting your need
+//                        'title' => 'Sample',
                         'listing' => [
+//                                'table' => 'samples',
                                 'headers' => [
                                         'columns' => [
                                                 'title',
@@ -24,14 +32,18 @@ return [
 // Column is selected, but not shown on the list
 //                                                        'guarded' => true
                                                 ]
-                                        ]
+                                        ],
+// Add container head (normally is thead)
+                                        'container' => 'thead'
                                 ],
 // Default listing sequence, give array for multiple column sequence
                                 'sequence' => 'sequence',
 // Searchable column, give array for multiple column sequence
                                 'searchable' => 'title',
 // Set as an array in [limit, view file name] format
-                                'pagination' => 3,
+                                'pagination' => 1,
+// Enable data driver
+//                                'driver' => ['json']
                         ],
 // Is panel guarded and check if current admin has the permissions
 // to accessing the panel it self
@@ -84,7 +96,7 @@ return [
                                                 'sample.samples.file' => [
                                                         'permissions' => 'upload',
 // Value for impermissible input
-//                                                        'impermissible' => 'some-value',
+                                                        'impermissible' => '',
                                                         'file' => [
                                                                 'type' => 'image',
                                                                 'mimes' => ['jpg', 'jpeg', 'png'],
@@ -142,7 +154,16 @@ return [
                                                 'sample.samples.sequence'
                                         ]
                                 ],
-                                'delete'
+                                'delete',
+                                'export' => [
+                                        'placement' => ['header', 'listing'],
+// Limit options, number of limit or array of [offset, number of limit]
+//                                        'limit' => 10,
+//                                        'columns' => ['id'],
+//                                        'where' => ['id' => '3'],
+// Raw data getter model (string model name or a callback)
+//                                        'model' => 'modelName',
+                                ],
                         ]
                 ],
         ]

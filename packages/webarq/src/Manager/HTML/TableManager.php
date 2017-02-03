@@ -110,7 +110,11 @@ class TableManager implements Htmlable
      */
     public function addHead($container = 'thead', $attributes = [])
     {
-        return $this->addRows(array_merge(['head'], [$container, $attributes]));
+        if (is_array($container)) {
+            list($container, $attributes) = $container;
+        }
+
+        return $this->addRows(['head', $container, $attributes]);
     }
 
     /**
@@ -160,7 +164,8 @@ class TableManager implements Htmlable
     public function setContainer($key, $value, array $attributes = [])
     {
         if (!is_array($key)) {
-            $this->componentContainer[$key] = [$value, $attributes];
+            $this->componentContainer[$key] = [$value, Arr::merge(
+                    array_get($this->componentContainer, $key . '.1', []), $attributes)];
         } else {
             $this->componentContainer = $key + $this->componentContainer;
         }
@@ -169,7 +174,7 @@ class TableManager implements Htmlable
     }
 
     /**
-     * To use driver sampling data give bool true in to $arg
+     * To use driver sampling data give bool true as second parameter
      *
      * @param string $type
      * @param mixed $args [, ... $args]
@@ -177,17 +182,18 @@ class TableManager implements Htmlable
      */
     public function driver($type, $args = null)
     {
-        if (isset($args)) {
-            $args = func_get_args();
+// Check if using sampling data
+        $sampling = false;
+// Get arguments
+        $args = func_get_args();
 // Remove type arguments
-            array_shift($args);
+        array_shift($args);
+// Remove second parameter while true
+        if (true === array_get($args, 0)) {
+            $sampling = array_pull($args, 0);
         }
 
-        if (Wa::getGhost() === array_get($args, 1)) {
-            $args = array_shift($args);
-        }
-
-        $this->setDriver(Wa::load('manager.html.table.driver.' . $type, $args, Wa::getGhost()));
+        $this->setDriver(Wa::load('manager.html.table.driver.' . $type, $args, Wa::getGhost()), $sampling);
 
         return $this->driver;
     }
@@ -195,11 +201,16 @@ class TableManager implements Htmlable
     /**
      * Set table manager driver
      *
-     * @param DriverAbstractManager $driver
+     * @param DriverAbstractManager|null $driver
+     * @param bool|false $sampling
      */
-    protected function setDriver(DriverAbstractManager $driver)
+    protected function setDriver(DriverAbstractManager $driver = null, $sampling = false)
     {
         $this->driver = $driver;
+
+        if ($sampling) {
+            $this->driver->sampling();
+        }
     }
 
     /**
@@ -241,7 +252,8 @@ class TableManager implements Htmlable
      */
     protected function compileDriver()
     {
-        if (!isset($this->head) && is_array($this->driver->getData('head'))) {
+// Check if head has been set before
+        if (null === $this->head && is_array($this->driver->getData('head'))) {
             $head = $this->addHead()->addRow();
             foreach ($this->driver->getData('head') as $column => $attributes) {
                 if (is_numeric($column)) {
@@ -253,7 +265,7 @@ class TableManager implements Htmlable
 
                 $this->columns[] = $column;
 
-                $head->addCell($column, array_pull($attributes, 'container'), $attributes);
+                $head->addCell(title_case($column), array_pull($attributes, 'container'), $attributes);
             }
         }
 

@@ -68,6 +68,23 @@
                 <div class="col-md-12">
                     <div class="box">
                         <div class="box-body">
+                            @if (isset($alerts) && [] !== $alerts)
+                                <div class="alert alert-{{array_get($alerts, 1, 'warning')}}">
+                                    <h4>
+                                        <i class="icon fa fa-warning"></i>
+                                        {{title_case(array_get($alerts, 1, 'warning'))}}!
+                                    </h4>
+                                    @set(localMessages, array_get($alerts, 0, []))
+                                    @if (is_array($localMessages))
+                                        @foreach ($localMessages as $tmpMessage)
+                                            {{ $tmpMessage }}
+                                        @endforeach
+                                    @else
+                                        {{ $localMessages }}
+                                    @endif
+                                </div>
+                            @endif
+
                             @if (isset($rightSection))
                                 {!! $rightSection !!}
                             @endif

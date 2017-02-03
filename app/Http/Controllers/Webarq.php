@@ -51,21 +51,17 @@ class Webarq extends Controller
     protected $layout = 'index';
 
     /**
-     * @param string $controller
-     * @param string $module
-     * @param string $panel
-     * @param string $action
      * @param array $params
      */
-    public function __construct($controller, $module, $panel, $action, array $params = [])
+    public function __construct(array $params = [])
     {
-        $this->controller = $controller;
-
-        $this->setModule($module);
-        $this->setPanel($panel);
-
-        $this->action = $action;
         $this->params = $params;
+        $this->controller = $this->getParam('controller');
+        $this->action = $this->getParam('action');
+
+        $this->setModule($this->getParam('module'));
+
+        $this->setPanel($this->getParam('panel'));
 
         $this->setLayout($this->layout);
     }
@@ -164,5 +160,4 @@ class Webarq extends Controller
     {
         return $this->layout;
     }
-
 }

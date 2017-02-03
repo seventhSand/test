@@ -89,21 +89,21 @@ return [
                 ['role_id' => 1, 'module' => 'system', 'panel' => 'admins', 'permission' => 'create', 'create_on' => '2016-12:21 10:00'],
                 ['role_id' => 1, 'module' => 'system', 'panel' => 'admins', 'permission' => 'edit', 'create_on' => '2016-12:21 10:00'],
                 ['role_id' => 1, 'module' => 'system', 'panel' => 'admins', 'permission' => 'activeness', 'create_on' => '2016-12:21 10:00'],
-                ['role_id' => 1, 'module' => 'system', 'panel' => 'admins', 'permission' => 'index', 'create_on' => '2016-12:21 10:00'],
+                ['role_id' => 1, 'module' => 'system', 'panel' => 'admins', 'permission' => 'delete', 'create_on' => '2016-12:21 10:00'],
 
                 ['role_id' => 1, 'module' => 'system', 'panel' => 'roles', 'permission' => 'create', 'create_on' => '2016-12:21 10:00'],
                 ['role_id' => 1, 'module' => 'system', 'panel' => 'roles', 'permission' => 'edit', 'create_on' => '2016-12:21 10:00'],
                 ['role_id' => 1, 'module' => 'system', 'panel' => 'roles', 'permission' => 'activeness', 'create_on' => '2016-12:21 10:00'],
-                ['role_id' => 1, 'module' => 'system', 'panel' => 'roles', 'permission' => 'index', 'create_on' => '2016-12:21 10:00'],
 
                 ['role_id' => 1, 'module' => 'system', 'panel' => 'menus', 'permission' => 'create', 'create_on' => '2016-12:21 10:00'],
                 ['role_id' => 1, 'module' => 'system', 'panel' => 'menus', 'permission' => 'edit', 'create_on' => '2016-12:21 10:00'],
                 ['role_id' => 1, 'module' => 'system', 'panel' => 'menus', 'permission' => 'activeness', 'create_on' => '2016-12:21 10:00'],
-                ['role_id' => 1, 'module' => 'system', 'panel' => 'menus', 'permission' => 'index', 'create_on' => '2016-12:21 10:00'],
+                ['role_id' => 1, 'module' => 'system', 'panel' => 'menus', 'permission' => 'delete', 'create_on' => '2016-12:21 10:00'],
 
-                ['role_id' => 1, 'module' => 'sample', 'panel' => 'samples', 'permission' => 'create', 'create_on' => '2016-12:21 10:00'],
-                ['role_id' => 1, 'module' => 'sample', 'panel' => 'samples', 'permission' => 'edit', 'create_on' => '2016-12:21 10:00'],
-                ['role_id' => 1, 'module' => 'sample', 'panel' => 'samples', 'permission' => 'index', 'create_on' => '2016-12:21 10:00'],
-                ['role_id' => 1, 'module' => 'sample', 'panel' => 'samples', 'permission' => 'upload', 'create_on' => '2016-12:21 10:00'],
+                ['role_id' => 1, 'module' => 'sample', 'panel' => 'sample:samples', 'permission' => 'create', 'create_on' => '2016-12:21 10:00'],
+                ['role_id' => 1, 'module' => 'sample', 'panel' => 'sample:samples', 'permission' => 'edit', 'create_on' => '2016-12:21 10:00'],
+                ['role_id' => 1, 'module' => 'sample', 'panel' => 'sample:samples', 'permission' => 'upload', 'create_on' => '2016-12:21 10:00'],
+                ['role_id' => 1, 'module' => 'sample', 'panel' => 'sample:samples', 'permission' => 'delete', 'create_on' => '2016-12:21 10:00'],
+                ['role_id' => 1, 'module' => 'sample', 'panel' => 'sample:samples', 'permission' => 'export', 'create_on' => '2016-12:21 10:00']
         ]
 ];

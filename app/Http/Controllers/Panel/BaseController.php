@@ -24,22 +24,13 @@ class BaseController extends Webarq
     protected $admin;
 
     /**
-     * @inheritdoc
-     */
-    protected $themes;
-
-    /**
-     * @param string $controller
-     * @param string $module
-     * @param string $panel
-     * @param string $action
      * @param array $params
      */
-    public function __construct($controller, $module, $panel, $action, array $params = [])
+    public function __construct(array $params = [])
     {
         $this->themes = config('webarq.system.themes', 'default');
 
-        parent::__construct($controller, $module, $panel, $action, $params);
+        parent::__construct($params);
 
         $this->admin = Auth::user();
 
@@ -53,9 +44,7 @@ class BaseController extends Webarq
      */
     public function before()
     {
-        $this->setModulePanel();
-
-        if (!isset($this->admin)) {
+        if (null === $this->admin) {
             if ('login' !== $this->action && 'auth' !== $this->controller) {
                 return redirect(URL::panel('system/admins/auth/login'));
             }
@@ -66,20 +55,6 @@ class BaseController extends Webarq
         }
 
         return parent::before();
-    }
-
-    /**
-     * Set module panel from active url params
-     */
-    protected function setModulePanel()
-    {
-        if (!is_object($this->module)) {
-            $this->setModule($this->getParam(1));
-        }
-
-        if (!is_object($this->panel)) {
-            $this->setPanel($this->getParam(2));
-        }
     }
 
     /**
@@ -97,5 +72,18 @@ class BaseController extends Webarq
     public function actionGetIndex()
     {
         $this->layout->{'rightSection'} = 'You are in home';
+    }
+
+    public function after()
+    {
+// Send session transaction in to layout
+        $this->layout->with('alerts', \Session::get('transaction', []));
+
+        return parent::after();
+    }
+
+    protected function setTransactionMessage($message, $type = 'warning')
+    {
+        \Session::flash('transaction', is_array($message) ? $message : [$message, $type]);
     }
 }

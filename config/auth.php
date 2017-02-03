@@ -13,10 +13,10 @@ return [
     |
     */
 
-    'defaults' => [
-        'guard' => 'webarq',
-        'passwords' => 'users',
-    ],
+        'defaults' => [
+                'guard' => 'webarq',
+                'passwords' => 'users',
+        ],
 
     /*
     |--------------------------------------------------------------------------
@@ -35,22 +35,22 @@ return [
     |
     */
 
-    'guards' => [
-        'web' => [
-            'driver' => 'session',
-            'provider' => 'users',
-        ],
+        'guards' => [
+                'web' => [
+                        'driver' => 'session',
+                        'provider' => 'users',
+                ],
 
-        'api' => [
-            'driver' => 'token',
-            'provider' => 'users',
-        ],
+                'api' => [
+                        'driver' => 'token',
+                        'provider' => 'users',
+                ],
 
-        'webarq' => [
-            'driver' => 'session',
-            'provider' => 'webarqs'
-        ]
-    ],
+                'webarq' => [
+                        'driver' => 'session',
+                        'provider' => 'webarq'
+                ]
+        ],
 
     /*
     |--------------------------------------------------------------------------
@@ -69,21 +69,21 @@ return [
     |
     */
 
-    'providers' => [
-        'users' => [
-            'driver' => 'eloquent',
-            'model' => App\User::class,
-        ],
+        'providers' => [
+                'users' => [
+                        'driver' => 'eloquent',
+                        'model' => App\User::class,
+                ],
 
-        'webarqs' => [
-            'driver' => 'watchdog'
-        ],
+                'webarq' => [
+                        'driver' => 'watchdog'
+                ],
 
-        // 'users' => [
-        //     'driver' => 'database',
-        //     'table' => 'users',
-        // ],
-    ],
+            // 'users' => [
+            //     'driver' => 'database',
+            //     'table' => 'users',
+            // ],
+        ],
 
     /*
     |--------------------------------------------------------------------------
@@ -100,12 +100,12 @@ return [
     |
     */
 
-    'passwords' => [
-        'users' => [
-            'provider' => 'users',
-            'table' => 'password_resets',
-            'expire' => 60,
+        'passwords' => [
+                'users' => [
+                        'provider' => 'users',
+                        'table' => 'password_resets',
+                        'expire' => 60,
+                ],
         ],
-    ],
 
 ];

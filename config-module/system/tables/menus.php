@@ -17,8 +17,8 @@ return [
         ['master' => 'falseBool', 'name' => 'is_system'],
         ['master' => 'sequence'],
         'timestamps' => true,
-        'history' => [
+        'histories' => [
                 'group' => 'menu',
-                'object' => 'title'
+                'item' => 'title'
         ]
 ];

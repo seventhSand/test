@@ -88,6 +88,13 @@ class PanelInfo
     protected $guarded = true;
 
     /**
+     * Panel primary table
+     *
+     * @var string
+     */
+    protected $table;
+
+    /**
      * Create PanelInfo instance
      *
      * @param string $name Panel name
@@ -112,6 +119,10 @@ class PanelInfo
                 }
             }
         }
+
+        $this->setTitle();
+
+        $this->setTable();
     }
 
     /**
@@ -141,7 +152,41 @@ class PanelInfo
      */
     public function getTitle()
     {
+        if (null === $this->title) {
+            $this->title = ucfirst($this->name);
+            if (false !== ($var = strpos())) {
+
+            }
+        }
         return $this->title ?: ucfirst($this->name);
+    }
+
+    /**
+     *
+     */
+    protected function setTitle()
+    {
+        if (!isset($this->title)) {
+            $this->title = $str = $this->name;
+            if (str_contains($str, ':')) {
+                list($this->title, $this->table) = explode(':', $str, 2);
+            }
+        }
+    }
+
+    /**
+     * @return string
+     */
+    public function getTable()
+    {
+        return $this->table;
+    }
+
+    protected function setTable()
+    {
+        if (null === $this->table) {
+            $this->table = $this->name;
+        }
     }
 
     /**

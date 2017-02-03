@@ -8,11 +8,10 @@
 
 return [
         ['master' => 'id'],
+        ['master' => 'int', 'name' => 'parent_id', 'notnull' => true],
         ['master' => 'smallInt', 'name' => 'role_level', 'notnull' => true],
         ['master' => 'shortLabel', 'name' => 'action', 'notnull' => true],
         ['master' => 'shortLabel', 'name' => 'actor', 'notnull' => true],
-        ['master' => 'label', 'name' => 'table_name', 'notnull' => true],
-        ['master' => 'bigInt', 'name' => 'table_id', 'notnull' => true],
-        ['master' => 'longDescription', 'name' => 'properties', 'notnull' => true],
+        ['master' => 'description', 'name' => 'properties', 'notnull' => true],
         ['master' => 'createOn']
 ];

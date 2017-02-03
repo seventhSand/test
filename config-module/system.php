@@ -35,7 +35,7 @@ return [
                         'listing' => [
                                 'headers' => [
                                         'columns' => ['username', 'email', 'is_system', 'is_active']
-                                ]
+                                ],
                         ],
 // Panel allowed action
                         'actions' => [
@@ -133,19 +133,7 @@ return [
                                                 'system.menus.title' => [
                                                         'referrer' => 'seo-url'
                                                 ],
-                                                'system.menus.template' => [
-                                                        'type' => 'file',
-                                                        'file' => [
-                                                                'type' => 'image',
-                                                                'mimes' => ['jpg', 'jpeg', 'png'],
-                                                                'max' => 1024,
-                                                                'upload-dir' => 'site/uploads/template',
-                                                                'resize' => [
-                                                                        'width' => 200,
-                                                                        'height' => 200,
-                                                                ]
-                                                        ]
-                                                ],
+                                                'system.menus.template',
                                                 'system.menus.permalink' => [
                                                         'type' => 'text',
                                                         'class' => '.seo-url'
@@ -171,19 +159,7 @@ return [
                                                 'system.menus.title' => [
                                                         'referrer' => 'seo-url'
                                                 ],
-                                                'system.menus.template' => [
-                                                        'type' => 'file',
-                                                        'file' => [
-                                                                'type' => 'image',
-                                                                'mimes' => ['jpg', 'jpeg', 'png'],
-                                                                'max' => 1024,
-                                                                'upload-dir' => 'site/uploads/template',
-                                                                'resize' => [
-                                                                        'width' => 200,
-                                                                        'height' => 200,
-                                                                ]
-                                                        ]
-                                                ],
+                                                'system.menus.template',
                                                 'system.menus.permalink' => [
                                                         'type' => 'text',
                                                         'class' => '.seo-url'

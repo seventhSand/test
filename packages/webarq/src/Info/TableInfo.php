@@ -106,6 +106,11 @@ class TableInfo
     protected $modelDir;
 
     /**
+     * @var null|\Webarq\Info\ColumnInfo
+     */
+    protected $sequence;
+
+    /**
      * Create TableInfo instance
      *
      * @param $name
@@ -171,6 +176,10 @@ class TableInfo
             $this->multilingual = true;
         }
 
+        if ('sequence' === $column->getExtra('master')) {
+            $this->sequence = $column;
+        }
+
         $this->columns[$column->getName()] = $column;
     }
 
@@ -212,6 +221,10 @@ class TableInfo
      */
     public function getHistories()
     {
+        if (!is_array($this->histories)) {
+            $this->histories = [];
+        }
+
         return $this->histories;
     }
 
@@ -344,6 +357,14 @@ class TableInfo
     public function getModelDir()
     {
         return $this->modelDir;
+    }
+
+    /**
+     * @return null|ColumnInfo
+     */
+    public function getSequence()
+    {
+        return $this->sequence;
     }
 }
 

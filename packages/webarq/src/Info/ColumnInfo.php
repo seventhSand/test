@@ -318,6 +318,18 @@ class ColumnInfo
     }
 
     /**
+     * Check if column is multilingual
+     *
+     * @return bool
+     */
+    public function isMultilingual()
+    {
+        $value = $this->getExtra('multilingual');
+
+        return true === $value || (is_array($value) && [] !== $value);
+    }
+
+    /**
      * Check if column data type is integer
      *
      * @return bool

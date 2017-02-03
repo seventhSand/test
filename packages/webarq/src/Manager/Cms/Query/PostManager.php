@@ -13,6 +13,7 @@ use Request;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Wa;
 use Webarq\Manager\Cms\HTML\Form\AbstractInput;
+use Webarq\Manager\Cms\HTML\Form\Input\FileInputManager;
 
 class PostManager
 {
@@ -78,7 +79,7 @@ class PostManager
     protected function getValue(AbstractInput $input)
     {
         if (($input->isPermissible())) {
-            if (!is_null($input->{'file'})) {
+            if ($input instanceof FileInputManager) {
                 return $this->inputFile($input);
             } else {
                 $value = $input->getValue();

@@ -10,9 +10,14 @@ return [
         ['master' => 'id'],
         ['master' => 'int', 'name' => 'admin_id', 'reference' => 'admins.id', 'uniques' => true],
         ['master' => 'int', 'name' => 'role_id', 'uniques' => true],
-        'history' => [
-                'insert' => ['assigned', 'roles.title', 'admins.username'],
-                'update' => ['unsigned', 'roles.title', 'admins.username']
+        'histories' => [
+                'create' => ['assigned', 'roles.title', 'admins.username'],
+                'update' => ['unsigned', 'roles.title', 'admins.username'],
+                'delete' => [
+                        'action' => 'unassigned',
+                        'item' => 'roles.title',
+                        'from' => 'admins.username'
+                ]
         ],
         'foreign' => [
 // @todo print foreign syntax on generated migration file

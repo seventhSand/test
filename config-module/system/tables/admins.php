@@ -16,7 +16,7 @@ return [
 // This table has create & edit timestamp column. Add it automatically
         'timestamps' => true,
 // For log admin
-        'history' => [
-                'object' => 'username'
+        'histories' => [
+                'item' => 'username'
         ]
 ];

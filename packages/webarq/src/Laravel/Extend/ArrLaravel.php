@@ -200,7 +200,7 @@ class ArrLaravel
         });
 
 // Filter associative member from an array
-        Arr::macro('unsetAssocKey', function(array $array){
+        Arr::macro('unsetAssocKey', function (array $array) {
             if ([] !== $array) {
                 foreach ($array as $key => $value) {
                     if (!is_numeric($key)) {
@@ -209,6 +209,14 @@ class ArrLaravel
                 }
             }
             return $array;
+        });
+
+        Arr::macro('serialize', function (array $array) {
+            return base64_encode(serialize($array));
+        });
+
+        Arr::macro('deserialize', function ($str) {
+            return unserialize(base64_decode($str));
         });
     }
 }

@@ -145,7 +145,7 @@ class FormManager
     /**
      * @var array
      */
-    protected $alerts;
+    protected $alerts = [];
 
     /**
      * Transaction master table.
@@ -243,17 +243,14 @@ class FormManager
         $table = $module->getTable($table);
         $column = $table->getColumn($column);
         $old = $column->unserialize();
-        $attr = Arr::merge(Arr::merge($old, $column->getExtra('form')), $attr) + [
-                        'module' => $module, 'table' => $table, 'column' => $column
-                ];
-        $attr['db-type'] = $old['type'];
-        $attr['form-type'] = $this->type;
+        $attr = Arr::merge(Arr::merge($old, $column->getExtra('form')), $attr);
+        $attr = ['table' => $table, 'column' => $column, 'db-type' => $old['type'], 'form-type' => $this->type] + $attr;
 // Input type
         $type = isset($attr['file']) ? 'file' : array_get($attr, 'type', 'null');
 // This is could be pain on the process, but due to laravel input form method behaviour is different
 // one from another, we need class helper to enable us adding consistent parameter
-        $input = Wa::load('manager.cms.HTML!.form.input.' . $type . ' input', $attr)
-                ?: Wa::load('manager.cms.HTML!.form.input.default input', $attr);
+        $input = Wa::load('manager.cms.HTML!.form.input.' . $type . ' input', $module, $module->getPanel($this->panel), $attr)
+                ?: Wa::load('manager.cms.HTML!.form.input.default input', $module, $module->getPanel($this->panel), $attr);
 
         return $this->inputManagerDependencies($input);
     }
@@ -442,7 +439,7 @@ class FormManager
                 'html' => $this->html,
 // In case you want to build your own elements html structure
                 'elements' => $this->inputs,
-                'alerts' => $this->alerts ?: \Session::get('transaction', [])
+                'alerts' => $this->alerts
         ]);
     }
 

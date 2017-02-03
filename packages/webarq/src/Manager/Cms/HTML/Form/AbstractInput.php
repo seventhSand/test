@@ -12,6 +12,8 @@ namespace Webarq\Manager\Cms\HTML\Form;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 use Wa;
+use Webarq\Info\ModuleInfo;
+use Webarq\Info\PanelInfo;
 use Webarq\Manager\SetPropertyManagerTrait;
 
 abstract class AbstractInput
@@ -110,11 +112,14 @@ abstract class AbstractInput
     protected $column;
 
     /**
-     * Input module
-     *
-     * @var string
+     * @var ModuleInfo
      */
     protected $module;
+
+    /**
+     * @var PanelInfo
+     */
+    protected $panel;
 
     /**
      * Input default value
@@ -133,9 +138,9 @@ abstract class AbstractInput
     /**
      * Impermissible default value
      *
-     * @var
+     * @var mixed
      */
-    protected $impermissible;
+    protected $impermissible = 'x0x0x1';
 
     /**
      * @var
@@ -181,10 +186,14 @@ abstract class AbstractInput
     protected $attribute;
 
     /**
+     * @param ModuleInfo $module
+     * @param PanelInfo $panel
      * @param array $options
      */
-    public function __construct(array $options = [])
+    public function __construct(ModuleInfo $module, PanelInfo $panel, array $options = [])
     {
+        $this->module = $module;
+        $this->panel = $panel;
         array_forget($options, ['form', 'master']);
 
         $this->setRule($options);
@@ -273,7 +282,7 @@ abstract class AbstractInput
      */
     public function getImpermissible()
     {
-        return $this->impermissible ?: $this->default;
+        return 'x0x0x1' !== $this->impermissible ? $this->impermissible : $this->default;
     }
 
     /**
@@ -326,7 +335,7 @@ abstract class AbstractInput
     {
         return !$this->invisible && (
                 [] === $this->permissions || Wa::panel()->isAccessible(
-                        $this->module, $this->module->getPanel($this->table->getName()), $this->permissions));
+                        $this->module, $this->panel, $this->permissions));
     }
 
     /**

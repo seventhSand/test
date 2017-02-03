@@ -25,8 +25,6 @@ class JsonManager extends DriverAbstractManager
     {
         if (is_callable($string)) {
             $string($this);
-        } elseif (true === $string) {
-            $this->sampling();
         } elseif (URL::isValidUrl($string)) {
             $this->setURL($string);
         } else {
@@ -37,29 +35,13 @@ class JsonManager extends DriverAbstractManager
     /**
      * @inheritDoc
      */
-    protected function sampling()
+    public function sampling()
     {
         $this->setString(json_encode([
                 ['id' => 1, 'name' => 'John Doe'],
                 ['id' => 2, 'name' => 'Sarah Doe'],
-                ['name' => '?', 'id' => 3]
+                ['name' => '??', 'id' => 3]
         ]));
-    }
-
-    /**
-     * @inheritDoc sampling
-     */
-    protected function sampling2()
-    {
-        $this->data = [
-                'head' => ['No', 'Name' => ['style' => 'background-color:#333'], 'Email', 'Status'],
-                'rows' => [
-                        [1, 'John Doe', 'john.doe@mail.dev', 'Father'],
-                        [2, 'Jane Doe', 'sarah.doe@mail.dev', 'Mother'],
-                        [3, 'Janie Doe', 'janie.doe@mail.dev', 'Daughter'],
-                        [4, 'Richard Miles', 'miles.richard@mail.dev', 'Cousin']
-                ]
-        ];
     }
 
     /**

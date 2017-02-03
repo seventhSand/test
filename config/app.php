@@ -178,11 +178,11 @@ return [
                 App\Providers\EventServiceProvider::class,
                 App\Providers\RouteServiceProvider::class,
 
+                Webarq\Laravel\AuthProvider::class,
                 Webarq\Laravel\WaProvider::class,
                 Webarq\Lang\Laravel\WlProvider::class,
                 Collective\Html\HtmlServiceProvider::class,
-                Intervention\Image\ImageServiceProvider::class,
-                Barryvdh\Elfinder\ElfinderServiceProvider::class
+                Intervention\Image\ImageServiceProvider::class
         ],
 
     /*

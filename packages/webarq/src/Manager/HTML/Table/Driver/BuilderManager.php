@@ -49,11 +49,6 @@ class BuilderManager extends DriverAbstractManager
         return $this->builder;
     }
 
-    public function sampling()
-    {
-        return [];
-    }
-
     /**
      * @inheritdoc
      */

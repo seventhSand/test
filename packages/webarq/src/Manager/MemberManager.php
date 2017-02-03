@@ -9,7 +9,20 @@
 namespace Webarq\Manager;
 
 
-class MemberManager
+class MemberManager extends WatchdogAbstractManager
 {
+    /**
+     * Identify admin
+     * @param array|number $credentials
+     * @return $this
+     */
+    public function identify($credentials = [])
+    {
+        return $this;
+    }
 
+    protected function setProfile(array $data)
+    {
+        $this->profile = $data;
+    }
 }

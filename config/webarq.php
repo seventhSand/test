@@ -18,6 +18,9 @@ return [
                 'name' => 'WEBARQ Laravel CMS',
         ],
 
+// Active module
+        'modules' => ['system', 'library', 'client', 'sample'],
+
 // Site configuration
         'site' => [
                 'name' => 'WEBARQ',
@@ -27,7 +30,8 @@ return [
                         'keyword' => 'Separate,with,comma',
                         'title' => 'Some title'
                 ],
-                'offline' => false
+                'offline' => false,
+                'themes' => 'fe-sample'
         ],
 
 // System default configuration
@@ -66,9 +70,6 @@ return [
                         ]
                 ]
         ],
-
-// Active module
-        'modules' => ['system', 'client', 'sample'],
 
 // Our laravel helper configuration
         'laravel' => [

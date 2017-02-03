@@ -10,7 +10,6 @@ namespace Webarq\Manager;
 
 
 use Illuminate\Contracts\Auth\Authenticatable;
-use Webarq\Info\TableInfo;
 
 abstract class WatchdogAbstractManager implements Authenticatable
 {
@@ -42,7 +41,7 @@ abstract class WatchdogAbstractManager implements Authenticatable
      */
     public function getKey()
     {
-        return array_get($this->profile, $this->table->primaryColumn()->getName());
+        return array_get($this->profile, 'id');
     }
 
     /**
@@ -60,9 +59,9 @@ abstract class WatchdogAbstractManager implements Authenticatable
         return $this->table;
     }
 
-    protected function setTable(TableInfo $tableInfo)
+    protected function setTable($table)
     {
-        $this->table = $tableInfo;
+        $this->table = $table;
     }
 
     abstract protected function setProfile(array $data);

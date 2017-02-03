@@ -9,6 +9,7 @@
 namespace Webarq\Model;
 
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 
 class NoModel extends Model
@@ -94,4 +95,37 @@ class NoModel extends Model
     /*
      | End of table of model modification
      */
+
+    /**
+     * @param array $options
+     * @return NoModel
+     */
+    public function optionQueryBuilder(array $options)
+    {
+        $model = clone $this;
+        $model = $model->select(array_get($options, 'columns', '*'));
+// Build limit query
+        if (null !== ($var = array_get($options, 'limit'))) {
+            if (is_array($var)) {
+                $model->offset($var[0])->limit($var[1]);
+            } else {
+                $model->limit($var);
+            }
+        }
+
+        if ([] !== ($var = array_get($options, 'where', []))) {
+            $this->whereQueryBuilder($model, $var);
+        }
+
+        return $model;
+    }
+
+    public function whereQueryBuilder(Builder $model, array $where)
+    {
+        foreach ($where as $column => $value) {
+            $model->where($column, $value);
+        }
+
+        return $this;
+    }
 }

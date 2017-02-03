@@ -35,22 +35,13 @@ class FormController extends BaseController
     protected $post = [];
 
     /**
-     * URL segment for id
-     *
-     * @var number
-     */
-    protected $idSegment = 3;
-
-    /**
      * @var
      */
     protected $model;
 
     public function before()
     {
-        $parent = parent::before();
-
-        if (isset($this->admin)) {
+        if (null === ($parent = parent::before()) && isset($this->admin)) {
             $this->makeBuilder();
         }
 
@@ -68,7 +59,7 @@ class FormController extends BaseController
                 )
         );
         if ('edit' === $this->action) {
-            $options['action'] .= '/' . $this->getParam($this->idSegment);
+            $options['action'] .= '/' . $this->getParam(1);
         }
 
         $options += [
@@ -171,7 +162,7 @@ class FormController extends BaseController
      */
     public function actionGetEdit()
     {
-        $this->builder->dataModeling($this->getParam($this->idSegment));
+        $this->builder->dataModeling($this->getParam(1));
 
         $val = $this->builder->getValue();
 
@@ -188,7 +179,7 @@ class FormController extends BaseController
     public function actionPostEdit()
     {
 // Set master ID
-        $this->builder->setEditingRowId($this->getParam($this->idSegment));
+        $this->builder->setEditingRowId($this->getParam(1));
 
 // Add post data in to form builder
         $this->builder->setvalues(Request::all());
@@ -203,14 +194,14 @@ class FormController extends BaseController
             $data = Wa::manager('cms.query.post', 'edit', $this->post, $this->builder->getPairs());
 
             $manager = Wa::manager('cms.query.update', $this->admin, $data->getPost(), $this->builder->getMaster())
-                    ->setId($this->getParam($this->idSegment));
+                    ->setId($this->getParam(1));
 
             $count = $manager->execute();
             if ($count) {
 // File upload handling
                 $this->uploadFiles($data->getFiles());
 // Set messages
-                \Session::flash('transaction', [[trans('webarq.messages.success-update')], 'success']);
+                $this->setTransactionMessage(Wa::trans('webarq.messages.success-update'), 'success');
 
                 return redirect(Request::url());
             } else {
