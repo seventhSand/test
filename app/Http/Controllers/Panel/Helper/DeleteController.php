@@ -12,6 +12,7 @@ namespace App\Http\Controllers\Panel\Helper;
 use App\Http\Controllers\Panel\BaseController;
 use DB;
 use Wa;
+use Webarq\Info\PanelInfo;
 
 class DeleteController extends BaseController
 {
@@ -25,16 +26,11 @@ class DeleteController extends BaseController
      */
     protected $options = [];
 
-    public function before()
+    public function actionGetIndex()
     {
         $this->id = $this->getParam('1');
         $this->options = $this->panel->getAction('delete');
 
-        return parent::before();
-    }
-
-    public function actionGetIndex()
-    {
         if (!is_numeric($this->id)) {
             return $this->actionGetForbidden();
         }

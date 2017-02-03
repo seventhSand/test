@@ -15,7 +15,6 @@ use Wa;
 
 class ActivenessController extends BaseController
 {
-
     public function actionGetIndex()
     {
         $id = $this->getParam(1);

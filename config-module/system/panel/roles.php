@@ -27,8 +27,6 @@ return [
                 'sequence' => 'role_level',
 // Searchable column, give array for multiple column sequence
                 'searchable' => 'label',
-// Set as an array in [limit, view file name] format
-                'pagination' => 3,
         ],
 // Panel allowed action
         'actions' => [

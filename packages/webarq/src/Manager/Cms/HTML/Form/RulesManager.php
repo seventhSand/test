@@ -180,7 +180,7 @@ class RulesManager
      */
     protected function maxRule()
     {
-        if (null !== ($max = $this->getAttribute('max')) && is_numeric($max)) {
+        if (null !== ($max = $this->getAttribute('max', $this->getAttribute('length'))) && is_numeric($max)) {
             $this->items['max'] = $max;
         }
     }

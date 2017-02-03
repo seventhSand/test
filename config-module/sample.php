@@ -36,14 +36,17 @@ return [
 // Add container head (normally is thead)
                                         'container' => 'thead'
                                 ],
+                                'filter' => [
+
+                                ],
 // Default listing sequence, give array for multiple column sequence
                                 'sequence' => 'sequence',
 // Searchable column, give array for multiple column sequence
                                 'searchable' => 'title',
 // Set as an array in [limit, view file name] format
-                                'pagination' => 1,
+                                'pagination' => 100
 // Enable data driver
-//                                'driver' => ['json']
+//                                'driver' => ['json'],
                         ],
 // Is panel guarded and check if current admin has the permissions
 // to accessing the panel it self
