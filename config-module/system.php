@@ -22,13 +22,39 @@ return [
                         'class' => 'dashboard',
 // When not set, will translate group name
                         'title' => 'Dashboard',
-// Disable listing
-                        'listing' => false,
                         'guarded' => false
                 ],
                 'configurations' => [
-                        'permalink' => true,
-                        'listing' => false,
+                        'type' => 'configuration',
+                        'actions' => [
+                                'edit' => [
+                                        'form' => [
+                                                'attributes' => [
+                                                        'enctype' => 'multipart/form-data'
+                                                ],
+                                                'favicon' => [
+                                                        'file' => [
+                                                                'type' => 'image',
+                                                                'mimes' => ['png', 'ico'],
+                                                                'max' => 1024,
+                                                                'upload-dir' => 'site/uploads/media',
+                                                                'resize' => [
+                                                                        'width' => 12,
+                                                                        'height' => 12,
+                                                                ]
+                                                        ]
+                                                ],
+                                                'meta_title' => [
+                                                        'type' => 'text',
+                                                        'rules' => 'required|max:20'
+                                                ],
+                                                'meta_description' => [
+                                                        'type' => 'textarea',
+                                                        'rules' => 'required'
+                                                ]
+                                        ]
+                                ]
+                        ]
                 ],
                 'admins' => [
                         'permalink' => null,
@@ -42,7 +68,7 @@ return [
                                 'activeness',
                                 'create' => [
 // Permission should be an array, but its okay to set it as string when you have just one item
-// By default this permission will check with OR operator, mean when admin have any one of these,
+// By default these permissions will be validated with OR operator, its mean when admin have any one of them,
 // then it will be passed in validator manager. Assign true in to last item, to force admin
 // having all permissions
                                         'permissions' => [
@@ -124,6 +150,7 @@ return [
                 ],
                 'roles',
                 'menus' => [
+                        'type' => 'listing',
                         'actions' => [
                                 'create' => [
                                         'form' => [

@@ -13,8 +13,10 @@ namespace Webarq\Manager\HTML;
 
 use Form;
 use Illuminate\Contracts\Support\Htmlable;
+use Illuminate\Support\Arr;
 use Wa;
 use Webarq\Manager\HTML\Form\InputManager;
+use Webarq\Manager\HTML\Form\LaravelInputHint;
 
 /**
  * A helper class to generator form by adding default layout in to it
@@ -24,6 +26,8 @@ use Webarq\Manager\HTML\Form\InputManager;
  */
 class FormManager implements Htmlable
 {
+    use LaravelInputHint;
+
     /**
      * Form attributes
      *
@@ -67,11 +71,11 @@ class FormManager implements Htmlable
     protected $br = [];
 
     /**
-     * Default html label container
+     * Default html title container
      *
      * @var
      */
-    protected $elementLabelDefaultContainer;
+    protected $elementTitleDefaultContainer;
 
     /**
      * Default html information container
@@ -101,6 +105,33 @@ class FormManager implements Htmlable
     }
 
     /**
+     * @param $url
+     * @return $this
+     */
+    public function setAction($url)
+    {
+        $this->attributes['url'] = $url;
+
+        return $this;
+    }
+
+    /**
+     * @param $key
+     * @param null $value
+     * @return $this
+     */
+    public function setAttribute($key, $value = null)
+    {
+        if (is_array($key)) {
+            $this->attributes = Arr::merge($this->attributes, $key);
+        } else {
+            $this->attributes[$key] = $value;
+        }
+
+        return $this;
+    }
+
+    /**
      * Set form title
      *
      * @param $title
@@ -122,7 +153,7 @@ class FormManager implements Htmlable
      * @param string $level
      * @param string $container
      */
-    public function setMessages($messages = [], $level = 'warning', $container  = ':webarq.form.cms.message')
+    public function setMessages($messages = [], $level = 'warning', $container = ':webarq.form.cms.message')
     {
         $html = $messages;
         if (is_array($messages)) {
@@ -132,19 +163,19 @@ class FormManager implements Htmlable
             }
         }
         $this->message = Wa::html('element', $html, $container, [
-           'level' => $level
+                'level' => $level
         ]);
     }
 
     /**
-     * Set html label default container
+     * Set html title default container
      *
      * @param $container
      * @return $this
      */
-    public function setElementLabelDefaultContainer($container)
+    public function setElementTitleDefaultContainer($container)
     {
-        $this->elementLabelDefaultContainer = $container;
+        $this->elementTitleDefaultContainer = $container;
 
         return $this;
     }
@@ -206,19 +237,19 @@ class FormManager implements Htmlable
      * Get input manager
      *
      * @param $args
-     * @param null $label
+     * @param null $title
      * @param null $info
      * @param null $container
      * @return InputManager
      */
-    private function setInputManager($args, $label = null, $info = null, $container = null)
+    private function setInputManager($args, $title = null, $info = null, $container = null)
     {
 // Initiate InputManager class
         $manager = new InputManager(
-                $args, $label ? : ucwords(snake_case(camel_case(array_get($args, 1)), ' ')), $info,
+                $args, $title ?: ucwords(snake_case(camel_case(array_get($args, 1)), ' ')), $info,
                 array_filter([
                         'input' => $container,
-                        'label' => $this->elementLabelDefaultContainer,
+                        'title' => $this->elementTitleDefaultContainer,
                         'info' => $this->elementInfoDefaultContainer]));
 
         return $manager;
@@ -232,7 +263,7 @@ class FormManager implements Htmlable
      *
      * $f->addCollection(['text', 'codename', 'value'], 'Code Name', 'Get before i take it from you', 'div');
      * $f->addCollection('text', 'codename', 'value')
-     *  ->setLabel('Code Name')
+     *  ->setTitle('Code Name')
      *  ->setInfo('Get before i take it from you')
      *  ->setContainer('div);
      *
@@ -240,22 +271,22 @@ class FormManager implements Htmlable
      * $f->addCollectionGroup(
      *  [['text', 'codename', 'value'], 'Code Name', 'Get before i take it from you', 'div']
      *  ['text', 'weapon', 'trident', function($ipt){
-     *      $ipt->setLabel('Weapon')->setInfo('Select your weapon')
+     *      $ipt->setTitle('Weapon')->setInfo('Select your weapon')
      *  }]
      * )
      *
      * @param mixed $args
-     * @param mixed $label
+     * @param mixed $title
      * @param mixed $info
      * @param mixed $container
      * @return InputManager|null
      */
-    public function addCollection($args = [], $label = null, $info = null, $container = null)
+    public function addCollection($args = [], $title = null, $info = null, $container = null)
     {
         $args = func_get_args();
         if (is_array($args[0])) {
-            if (!is_array($label)) {
-                return $this->inputs[] = $this->setInputManager($args[0], $label, $info, $container);
+            if (!is_array($title)) {
+                return $this->inputs[] = $this->setInputManager($args[0], $title, $info, $container);
             } else {
                 call_user_func_array(array($this, 'addCollectionGroup'), $args);
             }
@@ -303,7 +334,7 @@ class FormManager implements Htmlable
 
             return (new ElementManager($s . $this->compile(), $this->container))->toHtml();
         } else {
-            $s = config('webarq.system.configuration-error',
+            $s = config('webarq.system.frm-configuration-error',
                     'Inputs not provided yet. Please support me by doing the right thing :)');
         }
         return $s;
@@ -350,5 +381,14 @@ class FormManager implements Htmlable
         }
 
         return isset($container) ? Wa::element($s, $container, ['length' => count($collections)]) : $s;
+    }
+
+    /**
+     * @param null|mixed $name
+     * @return mixed
+     */
+    public function getInput($name = null)
+    {
+        return array_get($this->inputs, $name);
     }
 }

@@ -24,6 +24,13 @@ class PanelInfo
     use SetPropertyManagerTrait;
 
     /**
+     * Panel type
+     *
+     * @var
+     */
+    protected $type;
+
+    /**
      * Panel name
      * Used when generate panel anchor <a/> html tag
      *
@@ -93,6 +100,11 @@ class PanelInfo
      * @var string
      */
     protected $table;
+
+    /**
+     * @var string
+     */
+    protected $urlParamAction = '';
 
     /**
      * Create PanelInfo instance
@@ -229,5 +241,21 @@ class PanelInfo
     public function isGuarded()
     {
         return true === $this->guarded;
+    }
+
+    /**
+     * @return string
+     */
+    public function getUrlParamAction()
+    {
+        return $this->urlParamAction;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getType()
+    {
+        return $this->type;
     }
 }

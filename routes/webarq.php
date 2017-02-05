@@ -17,7 +17,8 @@ if (Wa::config('system.configs.queryLog')) {
  */
 function webarqMakeControllerMethod($class, $string)
 {
-    $method = config('webarq.system.action-prefix') . ucfirst(strtolower(Request::method())) . $string;
+    $method = config('webarq.system.action-prefix') . studly_case(strtolower(Request::method() . ' ' . $string));
+
     if (method_exists($class, $method)) {
         return $method;
     }
@@ -31,7 +32,7 @@ function webarqMakeControllerMethod($class, $string)
  */
 function webarqMakeControllerClass($namespace, $directory, $file)
 {
-    if (is_file($directory . DIRECTORY_SEPARATOR . $file . 'Controller.php')) {
+    if (is_file($directory . $file . 'Controller.php')) {
         return $namespace . $file . 'Controller';
     }
 }
@@ -49,7 +50,171 @@ function webarqMakePattern($paramLength)
     return $pattern;
 }
 
-function webarqAutoRoute($directory)
+function webarqMakeRoutePattern($param)
+{
+    $pattern = '{module?}/{controller?}/{action?}';
+
+    for ($i = 1; $i <= $param; $i++) {
+        $pattern .= '/{param' . $i . '?}';
+    }
+
+    return $pattern;
+}
+
+/**
+ * @param string $group Group directory
+ * @param string $a Default module
+ * @param string $b Default panel
+ * @param string $c Default action
+ * @param int $len Param length
+ */
+function webarqAutoRoute($group, $a, $b = null, $c = null, $len = 4)
+{
+    $pattern = webarqMakeRoutePattern($len);
+    Route::match(['get', 'post'], $pattern, function ($mod = null, $pnl = null, $act = null)
+    use ($group, $a, $b, $c, $len) {
+// Default controller
+        $class = $con = $method = null;
+// Set module, controller, and action
+        if (null === $mod) {
+            $mod = $a;
+        }
+        $mod = strtolower($mod);
+        $scMod = studly_case($mod);
+
+        if (null === $pnl) {
+            $pnl = $b;
+        }
+        $pnl = strtolower($pnl);
+        $scPnl = studly_case($pnl);
+
+        if (null === $act) {
+            $act = $c;
+        }
+
+        if (null !== $act) {
+            $act = strtolower($act);
+        }
+        $scAct = studly_case($act);
+
+// Params
+        $params = [];
+        $i = 4;
+        $t = 3 + $len;
+
+        if ('Panel' === $group) {
+            $i += 1;
+            $t += 1;
+        }
+
+        for ($i; $i <= $t; $i++) {
+            if (Request::segment($i)) {
+                $params[] = Request::segment($i);
+            }
+        }
+
+// Server directory separator
+        $sep = DIRECTORY_SEPARATOR;
+        $ns = 'App' . $sep . 'Http' . $sep . 'Controllers' . $sep . $group . $sep;
+        $rt = '..' . $sep . 'app' . $sep . 'Http' . $sep . 'Controllers' . $sep . $group . $sep;
+        $md = null;
+
+// Looking out for controller by given url path
+// Panel is a directory and action is a file controller
+        if (is_dir($rt . $scMod . $sep . $scPnl)
+                && null !== ($class = webarqMakeControllerClass($ns, $rt, $scMod . $sep . $scPnl . $sep . $scAct))
+        ) {
+            $con = $act;
+            $act = array_get($params, 0);
+            if (null !== ($method = webarqMakeControllerMethod($class, array_get($params, 0)))) {
+                array_pull($params, 0);
+            }
+// Module is a directory, and panel is a controller
+        } elseif (is_dir($rt . $scMod)
+                && null !== ($class = webarqMakeControllerClass($ns, $rt, $scMod . $sep . $scPnl))
+        ) {
+            $con = $pnl;
+            if (null !== $act && null === ($method = webarqMakeControllerMethod($class, $act))) {
+                array_unshift($params, $act);
+                $act = null;
+            }
+// Instead of a directory, this time module is a controller file
+        } elseif (null !== ($class = webarqMakeControllerClass($ns, $rt, $scMod))) {
+            $con = $mod;
+            if (null !== ($method = webarqMakeControllerMethod($class, $pnl))) {
+                if (null !== $act) {
+                    array_unshift($params, $act);
+                }
+                $act = $pnl;
+            }
+        } // Last attempt, get default controller
+        elseif (null !== ($con = config('webarq.system.default-controller'))
+                && null !== ($class = webarqMakeControllerClass($ns, $rt, studly_case($con)))
+        ) {
+            if (null !== ($method = webarqMakeControllerMethod($class, $mod))) {
+                if (null !== $act) {
+                    array_unshift($params, $pnl, $act);
+                } else {
+                    array_unshift($params, $pnl);
+                }
+                $act = $mod;
+            }
+        }
+
+// Yay, found a class
+        if (isset($class)) {
+
+            if ('Panel' === $group && 'helper' === $mod) {
+                $mod = array_pull($params, 0);
+                $pnl = array_pull($params, 1);
+// Reindex array keys
+                if ([] !== $params) {
+                    $params = array_combine(range(1, count($params)), array_values($params));
+                }
+            }
+
+            $params['module'] = $mod;
+            $params['panel'] = $pnl;
+            $params['controller'] = $con;
+            $params['action'] = $act;
+
+            if (null === $method) {
+//                $act = 'Panel' === $group ? 'forbidden' : config('webarq.system.default-action');
+                $act = config('webarq.system.default-action');
+                $method = config('webarq.system.action-prefix') . ucfirst(strtolower(Request::method()))
+                        . studly_case($act);
+            }
+
+// Resolving class
+            $class = resolve($class, ['params' => $params]);
+// Execute class "escape" method if any
+            if (method_exists($class, 'escape')) {
+                if (null !== ($escape = $class->escape())) {
+                    return $escape;
+                }
+            }
+// Execute class "before" method if any
+            if (method_exists($class, 'before')) {
+                $class->before($params);
+            }
+
+// Call method (do not forget about method injection)
+            $call = App::call([$class, $method], $params);
+
+            if (!is_null($call)) {
+                return $call;
+            } elseif (method_exists($class, 'after')) {
+                return $class->after();
+            } else {
+                return view('webarq.errors.204');
+            }
+        } else {
+            abort(404, 'Route not matched');
+        }
+    });
+}
+
+function webarqAutoRouteR($directory)
 {
 // Create url pattern
     $pattern = '{module?}/{panel?}/{action?}';
@@ -89,8 +254,8 @@ function webarqAutoRoute($directory)
         $root = '..' . $sep . 'app' . $sep . 'Http' . $sep . 'Controllers' . $sep . $directory . $sep;
         $method = null;
 // Starting by checking if segment panel is a directory
-        if (is_dir($root . $module1 . $sep . $panel1) &&
-                null !==
+        if (is_dir($root . $module1 . $sep . $panel1)
+                && null !==
                 ($class = webarqMakeControllerClass($namespace, $root, $module1 . $sep . $panel1 . $sep . $action1))
         ) {
             $controller = $action;
@@ -99,8 +264,8 @@ function webarqAutoRoute($directory)
                 $action = array_pull($params, 4);
             }
         } // Down to segment module (as directory)
-        elseif (is_dir($root . $module1) &&
-                null !== ($class = webarqMakeControllerClass($namespace, $root, $module1 . $sep . $panel1))
+        elseif (is_dir($root . $module1)
+                && null !== ($class = webarqMakeControllerClass($namespace, $root, $module1 . $sep . $panel1))
         ) {
             $controller = $panel;
 // Un-shift $action into modified parameters when it is not a valid method of class controller and not in admin page

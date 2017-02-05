@@ -47,7 +47,7 @@ class PostManager
         $this->post = $post;
 
 // Pull out translation inputs
-        $translation = array_pull($inputs, 'multilingual');
+        $translation = array_pull($inputs, 'multilingual', []);
 
         if ([] !== $inputs) {
             foreach ($inputs as $input) {
@@ -102,11 +102,11 @@ class PostManager
     }
 
     /**
-     * @param AbstractInput $input
+     * @param FileInputManager $input
      * @return mixed
      * @todo Testing array file input
      */
-    protected function inputFile(AbstractInput $input)
+    protected function inputFile(FileInputManager $input)
     {
 // File options
         $options = (array)$input->{'file'};
@@ -188,7 +188,7 @@ class PostManager
      */
     protected function isEmpty($value)
     {
-        return (!is_array($value) && ('' === trim($value) || null === $value)) || [] === $value;
+        return (is_array($value) && [] === $value) || '' === trim($value) || null === $value;
     }
 
     /**

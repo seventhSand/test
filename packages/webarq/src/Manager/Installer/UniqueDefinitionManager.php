@@ -30,7 +30,6 @@ class UniqueDefinitionManager
         if (strlen($key) > $limit) {
             //Remove vowels
             $key = str_replace(['a', 'e', 'i', 'o', 'u', 'A', 'E', 'I', 'O', 'U'], '', $key);
-            //Remove vowels
         }
 
         return $key;

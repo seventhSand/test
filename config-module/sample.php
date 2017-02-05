@@ -87,6 +87,9 @@ return [
 // Input key should be following "moduleName.tableName.columnName" format name
                                                 'sample.samples.title' => [
                                                         'length' => '100',
+                                                        'error-messages' => [
+                                                                'required' => 'Should be blank'
+                                                        ],
 // Multilingual input
 // 1      : will inherited source input rules
 // true   : will ignored source input rules

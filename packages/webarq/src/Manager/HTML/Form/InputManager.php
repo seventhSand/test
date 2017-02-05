@@ -10,6 +10,7 @@ namespace Webarq\Manager\HTML\Form;
 
 
 use Illuminate\Contracts\Support\Htmlable;
+use Webarq\Manager\Cms\HTML\Form\RulesManager;
 use Webarq\Manager\HTML\ElementManager;
 
 class InputManager implements Htmlable
@@ -19,7 +20,7 @@ class InputManager implements Htmlable
     /**
      * @var object ContainerManager
      */
-    protected $label;
+    protected $title;
 
     /**
      * @var object ContainerManager
@@ -32,18 +33,18 @@ class InputManager implements Htmlable
      * @var array
      */
     protected $containers = [
+            'info' => '<small class="help-block"></small>',
             'input' => '<div class="form-group"></div>',
-            'info' => '<small class="control-info form-text text-muted"></small>',
-            'label' => '<label class="control-label"></label>'
+            'title' => '<label class="control-label"></label>'
     ];
 
     /**
      * @param array $args
-     * @param null $label
+     * @param null $title
      * @param null $info
      * @param string|array $container
      */
-    public function __construct(array $args, $label = null, $info = null, $container = '<div class="form-group"></div>')
+    public function __construct(array $args, $title = null, $info = null, $container = '<div class="form-group"></div>')
     {
         foreach ($args as $i => $arg) {
             if (!is_string($arg) && is_callable($arg)) {
@@ -53,6 +54,8 @@ class InputManager implements Htmlable
                 break;
             }
         }
+// Forgot rules attribute
+        array_forget($args, 'options.rules');
 // Shift input type
         $type = array_shift($args);
 // Set input by calling laravel form type method
@@ -60,7 +63,7 @@ class InputManager implements Htmlable
 // Warning!!!
 // Do not change code sequence
         $this->setContainer($container, 'input');
-        $this->setLabel($label ? : array_get($args, 0));
+        $this->setTitle($title ? : title_case(array_get($args, 0)));
         $this->setInfo($info);
         if (is_callable($arg)) {
             $arg($this);
@@ -88,22 +91,22 @@ class InputManager implements Htmlable
         return $this;
     }
 
-    public function getLabel()
+    public function getTitle()
     {
-        return $this->label;
+        return $this->title;
     }
 
     /**
      * Decoration function.
-     * Set label decoration
+     * Set title decoration
      *
      * @param mixed $value
      * @param null|string $container Html tag name or full html tag (with any attributes)
      * @return InputManager
      */
-    public function setLabel($value, $container = null)
+    public function setTitle($value, $container = null)
     {
-        $this->label = new ElementManager($value, $container ? : $this->containers['label']);
+        $this->title = new ElementManager($value, $container ? : $this->containers['title']);
 
         return $this;
     }
@@ -130,8 +133,8 @@ class InputManager implements Htmlable
 
     public function toHtml()
     {
-        if (isset($this->label) && $this->label instanceof ElementManager) {
-            $this->label = $this->label->toHtml();
+        if (isset($this->title) && $this->title instanceof ElementManager) {
+            $this->title = $this->title->toHtml();
         }
         if (isset($this->info) && $this->info instanceof ElementManager) {
             $this->info = $this->info->toHtml();
@@ -139,12 +142,12 @@ class InputManager implements Htmlable
         $input = $this->input->toHtml();
         if (starts_with($this->containers['input'], ':')) {
             return view(substr($this->containers['input'], 1), [
-                    'label' => $this->label,
+                    'title' => $this->title,
                     'info' => $this->info,
                     'input' => $input
             ]);
         } else {
-            return (new ElementManager($this->label . $input . $this->info, $this->containers['input']))
+            return (new ElementManager($this->title . $input . $this->info, $this->containers['input']))
                     ->toHtml();
         }
     }

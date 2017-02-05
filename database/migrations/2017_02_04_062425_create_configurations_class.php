@@ -15,12 +15,13 @@ class CreateConfigurationsClass extends Migration {
         Schema::create('configurations', function(Blueprint $table)
         {
             $table->increments('id');
+            $table->string('module', 100);
             $table->string('key', 255);
             $table->string('setting', 2000);
             $table->datetime('create_on');
             $table->datetime('last_update')->nullable();
 
-            $table->unique('key', 'key');
+            $table->unique(['module', 'key'], 'module-key');
         });
     }
 

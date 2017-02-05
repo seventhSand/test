@@ -257,7 +257,7 @@ abstract class AbstractInput
      */
     public function getTitle()
     {
-        return $this->title ?: studly_case($this->name);
+        return $this->title ?: title_case(str_replace(['.', '_', '-'], ' ', $this->name));
     }
 
     /**

@@ -10,6 +10,7 @@ return [
         'configurations' => [
                 [
                         'id' => 1,
+                        'module' => 'system',
 // hash('sha1', 'redAlderGreatDane')
                         'key' => '48d35125f4a3c2c005d5b0697463c4651704b427',
 // Crypt::encrypt(['name' => 'Dba', 'email' => 'zoidsimangunsong@gmail.com', 'secret' => 'rubik-cube', 'daemon' => true])
@@ -86,6 +87,8 @@ return [
                 ['admin_id' => 3, 'role_id' => 3]
         ],
         'permissions' => [
+                ['role_id' => 1, 'module' => 'system', 'panel' => 'configurations', 'permission' => 'edit', 'create_on' => '2016-12:21 10:00'],
+
                 ['role_id' => 1, 'module' => 'system', 'panel' => 'admins', 'permission' => 'create', 'create_on' => '2016-12:21 10:00'],
                 ['role_id' => 1, 'module' => 'system', 'panel' => 'admins', 'permission' => 'edit', 'create_on' => '2016-12:21 10:00'],
                 ['role_id' => 1, 'module' => 'system', 'panel' => 'admins', 'permission' => 'activeness', 'create_on' => '2016-12:21 10:00'],

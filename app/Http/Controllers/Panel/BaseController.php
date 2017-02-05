@@ -33,8 +33,7 @@ class BaseController extends Webarq
         parent::__construct($params);
 
         $this->admin = Auth::user();
-
-        view()->share('admin', $this->admin);
+        view()->share(['admin' => $this->admin, 'shareBreadCrumbAction' => $this->getParam('action')]);
     }
 
     /**
@@ -42,19 +41,22 @@ class BaseController extends Webarq
      *
      * @return mixed
      */
-    public function before()
+    public function escape()
     {
         if (null === $this->admin) {
             if ('login' !== $this->action && 'auth' !== $this->controller) {
                 return redirect(URL::panel('system/admins/auth/login'));
             }
-        } elseif (null !== \Request::segment(2) && (
+        } elseif (null !== \Request::segment(2)
+                && (
                         !$this->isAccessible() || !is_object($this->module) || !is_object($this->panel))
         ) {
             return $this->actionGetForbidden();
         }
 
-        return parent::before();
+        view()->share(['shareModule' => $this->module, 'sharePanel' => $this->panel]);
+
+        return parent::escape();
     }
 
     /**
@@ -71,7 +73,7 @@ class BaseController extends Webarq
      */
     public function actionGetIndex()
     {
-        $this->layout->{'rightSection'} = 'You are in home';
+        return $this->actionGetForbidden();
     }
 
     public function after()

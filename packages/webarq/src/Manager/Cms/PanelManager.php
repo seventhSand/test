@@ -111,7 +111,14 @@ class PanelManager
     {
         $module = Wa::module($panel->getModule());
         if (null !== $module) {
-            $action = false !== $panel->getListing() && null !== $panel->getListing() ? 'listing' : '';
+            if ('configuration' === $panel->getType()) {
+                $u = true === $panel->getPermalink() ? 'edit' : 'configuration/edit';
+                return \URL::panel(\URL::detect($panel->getPermalink(), $module->getName(), $panel->getName(), $u));
+            }
+
+            $action = !empty($panel->getListing()) || 'listing' === $panel->getType()
+                    ? 'listing' : $panel->getUrlParamAction();
+
             $link = $this->generateURL(
                     $panel->getPermalink(),
                     $module->getName(),
@@ -187,7 +194,7 @@ class PanelManager
                 return 'form/' . $action;
 
             default:
-                if (null === $permalink) {
+                if (null === $permalink && '' === $action) {
                     $action .= '/' . config('webarq.system.default-action');
                 }
                 return $action;

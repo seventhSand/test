@@ -141,7 +141,10 @@ class ElementManager implements Htmlable
      */
     protected function compile($html, $container, array $attr)
     {
-        if (starts_with($container, ':')) {
+
+        if ('' === $container || null === $container) {
+            $this->html = $html;
+        } elseif (starts_with($container, ':')) {
             $this->html = view(substr($container, 1), ['html' => $html] + $attr)->render();
         } elseif (str_contains($container, ':html')) {
             $this->html = str_replace(':html', $html, $container);

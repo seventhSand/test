@@ -28,16 +28,23 @@ class FormController extends BaseController
     protected $layout = 'form';
 
     /**
-     * Final post data
+     * Pre-defined post data
      *
      * @var array
      */
-    protected $post = [];
+    protected $data = [];
 
     /**
      * @var
      */
     protected $model;
+
+    /**
+     * Form callback when succeed
+     *
+     * @var
+     */
+    protected $callback;
 
     public function before()
     {
@@ -52,12 +59,16 @@ class FormController extends BaseController
     {
         $options = $this->panel->getAction($this->action . '.form', []);
 
+// Take out callback option
+        $this->callback = array_pull($options, 'callback');
+
         $options['action'] = \URL::panel(
                 \URL::detect(
                         array_pull($options, 'permalink'), $this->module->getName(),
                         $this->panel->getName(), 'form/' . $this->action
                 )
         );
+
         if ('edit' === $this->action) {
             $options['action'] .= '/' . $this->getParam(1);
         }
@@ -105,7 +116,7 @@ class FormController extends BaseController
 
         if (!$validator->fails()) {
 //
-            $data = Wa::manager('cms.query.post', 'create', $this->post, $this->builder->getPairs());
+            $data = Wa::manager('cms.query.post', 'create', $this->data, $this->builder->getPairs());
 
             $manager = Wa::manager('cms.query.insert', $this->admin, $data->getPost(), $this->builder->getMaster());
 
@@ -191,7 +202,7 @@ class FormController extends BaseController
         $validator = $this->validator();
 
         if (!$validator->fails()) {
-            $data = Wa::manager('cms.query.post', 'edit', $this->post, $this->builder->getPairs());
+            $data = Wa::manager('cms.query.post', 'edit', $this->data, $this->builder->getPairs());
 
             $manager = Wa::manager('cms.query.update', $this->admin, $data->getPost(), $this->builder->getMaster())
                     ->setId($this->getParam(1));
@@ -217,6 +228,12 @@ class FormController extends BaseController
      */
     public function after()
     {
+        if (null !== ($c = $this->callback)) {
+            if (is_callable($c)) {
+                $c();
+            }
+        }
+
         $this->layout->{'rightSection'} = $this->builder->toHtml();
 
         return parent::after();

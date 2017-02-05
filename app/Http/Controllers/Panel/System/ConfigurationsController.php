@@ -13,5 +13,8 @@ use App\Http\Controllers\Panel\BaseController;
 
 class ConfigurationsController extends BaseController
 {
+    public function actionGetEdit()
+    {
 
+    }
 }

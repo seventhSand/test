@@ -8,7 +8,7 @@
 <div{!! Html::attributes($attribute) !!}>
     <label for="{{ $title or '' }}">{{ $title or '' }}</label>
     {!! $input or '...' !!}
-    @if (null !== $info)
+    @if (!empty($info))
         <span class="help-block">{{ $info }}</span>
     @endif
 </div>

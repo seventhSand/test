@@ -7,11 +7,17 @@
  */ ?>
 <section class="content-header">
     <h1>
-        Dashboard
-        <small>Control panel</small>
+        {{ title_case($shareModule->getName()) }}
+        <small>{{ title_case($sharePanel->getName()) }}</small>
     </h1>
     <ol class="breadcrumb">
         <li><a href="#"><i class="fa fa-dashboard"></i> Home</a></li>
-        <li class="active">Dashboard</li>
+        <li><a href="#">{{ title_case($shareModule->getName()) }}</a></li>
+        @if (!is_null($shareBreadCrumbAction))
+            <li>{{ title_case($sharePanel->getName()) }}</li>
+            <li class="active">{{ title_case($shareBreadCrumbAction) }}</li>
+        @else
+            <li class="active">{{ title_case($sharePanel->getName()) }}</li>
+        @endif
     </ol>
 </section>

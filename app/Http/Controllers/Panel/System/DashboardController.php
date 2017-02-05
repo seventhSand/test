@@ -13,6 +13,11 @@ use App\Http\Controllers\Panel\BaseController;
 
 class DashboardController extends BaseController
 {
+    protected function isAccessible()
+    {
+        return true;
+    }
+
     public function actionGetIndex()
     {
         $this->layout->{'rightSection'} = 'Put your content here ...';

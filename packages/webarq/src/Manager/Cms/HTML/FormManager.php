@@ -171,9 +171,6 @@ class FormManager
 
     protected function setup(array $options)
     {
-        $this->module = array_pull($options, 'module');
-        $this->panel = array_pull($options, 'panel');
-
         $this->setPropertyFromOptions($options);
 
         $this->prepareInputs($options);

@@ -18,7 +18,7 @@ class AuthController extends BaseController
 {
     protected $layout = 'login';
 
-    public function before()
+    public function escape()
     {
         if (isset($this->admin) && 'logout' !== $this->action) {
             return redirect(URL::panel('system/dashboard'));

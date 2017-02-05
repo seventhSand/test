@@ -8,7 +8,8 @@
 
 return [
         ['master' => 'id'],
-        ['master' => 'uLongLabel', 'name' => 'key'],
+        ['master' => 'label', 'name' => 'module', 'uniques' => true],
+        ['master' => 'longLabel', 'name' => 'key', 'uniques' => true],
         ['master' => 'shortIntro', 'name' => 'setting', 'notnull' => true],
         ['master' => 'createOn'],
         ['master' => 'lastUpdate']

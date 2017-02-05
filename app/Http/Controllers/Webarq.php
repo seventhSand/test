@@ -67,24 +67,15 @@ class Webarq extends Controller
     }
 
     /**
-     * Set module with an object of Webarq\Info\ModuleInfo
-     * If module not exist in configuration, string $module will be used
+     * Get params value by key
      *
-     * @param string $module Module name
+     * @param $key
+     * @param null $default
+     * @return mixed
      */
-    protected function setModule($module)
+    protected function getParam($key, $default = null)
     {
-        $this->module = Wa::module($module) ?: $module;
-    }
-
-    /**
-     * Get module name
-     *
-     * @return object|string
-     */
-    protected function getModule()
-    {
-        return is_object($this->module) ? $this->module->getName() : $this->module;
+        return array_get($this->params, $key, $default);
     }
 
     /**
@@ -98,43 +89,13 @@ class Webarq extends Controller
     }
 
     /**
-     * Set panel with an object of Webarq\Info\PanelInfo
-     * If module not exists in configuration, string $panel will be used
+     * Our escaped method when something is wrong, so instead continue
+     * to access the real action method, we just block the user.
+     * This called automatically from routing.
      *
-     * @param string $panel
-     */
-    protected function setPanel($panel)
-    {
-        $this->panel = is_object($this->module) ? $this->module->getPanel($panel, $panel) : $panel;
-    }
-
-    /**
-     * Get panel name
-     *
-     * @return string
-     */
-    protected function getPanel()
-    {
-        return is_object($this->panel) ? $this->panel->getName() : $this->panel;
-    }
-
-    /**
-     * Get params value by key
-     *
-     * @param $key
-     * @param null $default
      * @return mixed
      */
-    protected function getParam($key, $default = null)
-    {
-        return array_get($this->params, $key, $default);
-    }
-
-    /**
-     * Called from rotu
-     * @return mixed
-     */
-    public function before()
+    public function escape()
     {
         if ('POST' == \Request::method() && [] === \Request::input()) {
             return $this->actionGetNoMethod();
@@ -159,5 +120,55 @@ class Webarq extends Controller
     public function after()
     {
         return $this->layout;
+    }
+
+    /**
+     * Constructor like method :D
+     */
+    public function before()
+    {
+
+    }
+
+    /**
+     * Get module name
+     *
+     * @return object|string
+     */
+    protected function getModule()
+    {
+        return is_object($this->module) ? $this->module->getName() : $this->module;
+    }
+
+    /**
+     * Set module with an object of Webarq\Info\ModuleInfo
+     * If module not exist in configuration, string $module will be used
+     *
+     * @param string $module Module name
+     */
+    protected function setModule($module)
+    {
+        $this->module = Wa::module($module) ?: $module;
+    }
+
+    /**
+     * Get panel name
+     *
+     * @return string
+     */
+    protected function getPanel()
+    {
+        return is_object($this->panel) ? $this->panel->getName() : $this->panel;
+    }
+
+    /**
+     * Set panel with an object of Webarq\Info\PanelInfo
+     * If module not exists in configuration, string $panel will be used
+     *
+     * @param string $panel
+     */
+    protected function setPanel($panel)
+    {
+        $this->panel = is_object($this->module) ? $this->module->getPanel($panel, $panel) : $panel;
     }
 }
