@@ -38,8 +38,8 @@ return [
         'system' => [
                 'ghost' => 'ghost-parameter-should-be-unpredictable',
                 'environment' => 'local',
-                'secureUrl' => false,
-                'queryLog' => true,
+                'secure-url' => false,
+                'query-log' => true,
                 'panel-url-prefix' => 'admin-cp',
                 'default-controller' => 'base',
                 'default-action' => 'index',

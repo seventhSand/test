@@ -10,6 +10,7 @@ namespace App\Http\Controllers\Panel\Helper;
 
 
 use App\Http\Controllers\Panel\BaseController;
+use Illuminate\Support\Str;
 use Request;
 use Session;
 use Validator;
@@ -45,6 +46,13 @@ class FormController extends BaseController
      * @var
      */
     protected $callback;
+
+    /**
+     * Inserted ids
+     *
+     * @var array
+     */
+    protected $ids = [];
 
     public function before()
     {
@@ -115,12 +123,17 @@ class FormController extends BaseController
         $validator = $this->validator();
 
         if (!$validator->fails()) {
-//
+
             $data = Wa::manager('cms.query.post', 'create', $this->data, $this->builder->getPairs());
 
             $manager = Wa::manager('cms.query.insert', $this->admin, $data->getPost(), $this->builder->getMaster());
 
-            if ($manager->execute()) {
+            if ($this->ids = $manager->execute($this->builder->getInput())) {
+// Update sequence
+                Wa::manager('cms.query.sequence', $this->builder->getInput(),
+                        $data->getPost(), array_get($this->ids, $this->builder->getMaster()))->execute();
+// Set messages
+                $this->setTransactionMessage(Wa::trans('webarq.messages.success-insert'), 'success');
 // File upload handling
                 $this->uploadFiles($data->getFiles());
 // Redirect to listing controller
@@ -204,11 +217,21 @@ class FormController extends BaseController
         if (!$validator->fails()) {
             $data = Wa::manager('cms.query.post', 'edit', $this->data, $this->builder->getPairs());
 
+
             $manager = Wa::manager('cms.query.update', $this->admin, $data->getPost(), $this->builder->getMaster())
                     ->setId($this->getParam(1));
 
-            $count = $manager->execute();
-            if ($count) {
+            $this->ids = $manager->execute();
+
+            if ($this->ids) {
+// Sequence column update
+                $remote = Request::input('remote-value', []);
+                if (!is_array($remote)) {
+                    $remote = Str::decodeSerialize($remote);
+                }
+                Wa::manager('cms.query.sequence',
+                        $this->builder->getInput(), $data->getPost(), $this->getParam(1), $remote)->execute();
+
 // File upload handling
                 $this->uploadFiles($data->getFiles());
 // Set messages
@@ -228,6 +251,7 @@ class FormController extends BaseController
      */
     public function after()
     {
+// Check for form callback
         if (null !== ($c = $this->callback)) {
             if (is_callable($c)) {
                 $c();

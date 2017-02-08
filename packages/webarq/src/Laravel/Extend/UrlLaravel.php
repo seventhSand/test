@@ -27,7 +27,7 @@ class UrlLaravel
             }
 
             return $this->to(config('webarq.system.panel-url-prefix') . '/' . $str,
-                    $attr, $secure ?: config('webarq.system.secureUrl'));
+                    $attr, $secure ?: config('webarq.system.secure-url'));
         });
 
         /**
@@ -40,7 +40,7 @@ class UrlLaravel
                 return $str;
             }
 
-            return $this->to($str, $attr, $secure ?: config('webarq.system.secureUrl'));
+            return $this->to($str, $attr, $secure ?: config('webarq.system.secure-url'));
         });
 
         URL::macro('detect', function ($url, $module, $panel, $item) {

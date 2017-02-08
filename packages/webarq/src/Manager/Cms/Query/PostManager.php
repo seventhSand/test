@@ -120,6 +120,7 @@ class PostManager
                         array_get($options, 'type', 'file'),
                         $item,
                         array_get($options, 'upload-dir', '/'),
+                        array_get($options, 'file-name'),
                         array_get($options, 'resize', [])
                 );
 // Push in to files
@@ -137,6 +138,7 @@ class PostManager
                     array_get($options, 'type', 'file'),
                     $file,
                     array_get($options, 'upload-dir', '/'),
+                    array_get($options, 'file-name'),
                     array_get($options, 'resize', [])
             );
 // Push in to files
@@ -152,12 +154,13 @@ class PostManager
      * @param string $type
      * @param UploadedFile $file
      * @param string $dir
+     * @param mixed $name
      * @param array $resize
      */
-    protected function loadUploader($type, UploadedFile $file, $dir, array $resize = [])
+    protected function loadUploader($type, UploadedFile $file, $dir, $name = null, array $resize = [])
     {
-        $manager = Wa::manager('uploader.' . $type . ' uploader', $file, $dir)
-                ?: Wa::manager('uploader. file uploader', $file, $dir);
+        $manager = Wa::manager('uploader.' . $type . ' uploader', $file, $dir, $name)
+                ?: Wa::manager('uploader. file uploader', $file, $dir, $name);
 
         if ([] !== $resize) {
             $manager->setResize($resize);
@@ -188,7 +191,7 @@ class PostManager
      */
     protected function isEmpty($value)
     {
-        return (is_array($value) && [] === $value) || '' === trim($value) || null === $value;
+        return !is_object($value) && (is_array($value) ? [] === $value : ('' === trim($value) || null === $value));
     }
 
     /**

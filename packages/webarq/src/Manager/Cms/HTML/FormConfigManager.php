@@ -16,6 +16,21 @@ use Webarq\Manager\Cms\HTML\Form\AbstractInput;
 
 class FormConfigManager extends FormManager
 {
+    /**
+     * @param $type
+     * @param $name
+     * @param null $value
+     * @param array $attr
+     */
+    public function addInput($type, $name, $value = null, array $attr = [])
+    {
+        $attr['type'] = $type;
+        $attr['value'] = $value;
+
+        $input = $this->makeInput($name, $attr);
+
+        $this->inputs[$input->getInputName()] = $input;
+    }
 
     /**
      * @param array $inputs

@@ -8,6 +8,7 @@
 
 return [
         ['master' => 'id'],
+        ['master' => 'int', 'name' => 'parent_id', 'notnull' => true],
         ['master' => 'label', 'name' => 'title', 'multilingual' => true],
         ['master' => 'label', 'name' => 'file', 'multilingual' => [
                 'notnull' => false

@@ -21,6 +21,12 @@ class SelectInputManager extends AbstractInput
 
     protected $blankOption;
 
+    public function getDefault($key = false)
+    {
+        return null !== $this->default
+                ? $this->default : array_first(true === $key ? array_keys($this->options) : $this->options);
+    }
+
     protected function buildInput()
     {
         if (is_callable($this->options)) {

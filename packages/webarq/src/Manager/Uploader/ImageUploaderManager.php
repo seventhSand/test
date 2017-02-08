@@ -31,16 +31,19 @@ class ImageUploaderManager extends FileUploaderManager
     protected function resizing($source, $width, $height, $scale = true)
     {
         $img = Image::make($source);
-        if ($scale) {
-            $img->resize($width, $height, function ($constraint) {
-                $constraint->aspectRatio();
-                $constraint->upsize(); //Prevent from up sizing
-            })->resizeCanvas($width, $height);
-        } else {
-            $img->resize($width, $height);
-        }
 
-        return $img->save();
+        if (($img->width() !== $width && null !== $width) || ($img->height() !== $height && isset($height))) {
+            if ($scale) {
+                $img->resize($width, $height, function ($constraint) {
+                    $constraint->aspectRatio();
+                    $constraint->upsize(); //Prevent from up sizing
+                })->resizeCanvas($width, $height);
+            } else {
+                $img->resize($width, $height);
+            }
+
+            return $img->save();
+        }
     }
 
     public function setResize(array $options)

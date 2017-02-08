@@ -12,7 +12,8 @@ namespace App\Http\Controllers\Panel\Helper;
 use App\Http\Controllers\Panel\BaseController;
 use DB;
 use Wa;
-use Webarq\Info\PanelInfo;
+use Webarq\Info\TableInfo;
+use Webarq\Model\NoModel;
 
 class DeleteController extends BaseController
 {
@@ -21,80 +22,96 @@ class DeleteController extends BaseController
      */
     protected $id;
 
-    /**
-     * @var array
-     */
-    protected $options = [];
-
     public function actionGetIndex()
     {
-        $this->id = $this->getParam('1');
-        $this->options = $this->panel->getAction('delete');
+        $id = $this->getParam('1');
+        $op = $this->panel->getAction('delete', []);
+// Find row
+        $cn = Wa::table($this->panel->getTable())->primaryColumn()->getName();
+        $rw = NoModel::instance($this->panel->getTable($cn))
+                ->where($cn, $id)
+                ->first();
 
-        if (!is_numeric($this->id)) {
+        if (null === $rw) {
             return $this->actionGetForbidden();
-        }
+        } else {
+            $rw = $rw->toArray();
+            if ([] === ($rules = array_get($op, 'rules', []))
+                    || Wa::manager('cms.rule', $this->admin, $rules, $rw, $this->panel->getTable())->isValid()
+            ) {
+                $tb = $this->compile(array_pull($op, 'tables', []));
 
-        if ([] !== ($tables = $this->compile()) && null !== ($p = array_pull($tables, 'primary'))) {
-// Primary table is in top priority
-            $mgr = Wa::table($p);
-            $del = Wa::manager('cms.query.delete', $mgr, array_pull($tables, $p, []), $this->getParam(1))->delete();
-// Primary deletion should be true
-            if (false === $del) {
+                if ([] !== $tb) {
+                    list($primary, $secondaries) = $tb;
+                    list($table, $options) = $primary;
+// Deleting some row
+                    $mgr = Wa::table($table);
+                    $this->checkSequenceColumn($mgr, $options);
+                    $del = Wa::manager('cms.query.delete', $table, $options, [$rw], $mgr->primaryColumn()->getName())
+                            ->delete(true);
+
+                    if ($del) {
+                        if ([] !== $secondaries) {
+                            foreach ($secondaries as $table => $options) {
+                                $this->checkSequenceColumn(Wa::table($table), $options);
+
+                                Wa::manager('cms.query.delete', $table, $options,
+                                        $this->getParam(1), $mgr->getReferenceKeyName())->delete(true);
+                            }
+                        }
+                    }
+// Set message to session
+                    $this->setTransactionMessage(Wa::trans('webarq.messages.success-delete'), 'success');
+
+                    if (null !== ($callback = array_get($op, 'callback')) && is_callable($callback)) {
+                        return $callback($id);
+                    }
+
+                    return redirect(Wa::panel()->listingURL($this->panel));
+                } else {
+                    return $this->actionGetForbidden();
+                }
+            } else {
                 return $this->actionGetForbidden();
             }
-
-// Following the rest
-            if ([] !== $tables) {
-// @todo log sub deletion history
-                foreach ($tables as $table => $columns) {
-                    Wa::manager('cms.query.delete', Wa::table($table), $columns,
-                            $this->getParam(1), $mgr->{'getReferenceKeyName'}())->delete(false);
-                }
-            }
-
-            $this->setTransactionMessage(Wa::trans('webarq.messages.success-delete'), 'success');
-        } else {
-            return $this->actionGetForbidden();
         }
-
-        return redirect(Wa::panel()->listingURL($this->panel));
-
     }
 
-    protected function compile()
+    /**
+     * @param array $tables
+     * @return array
+     */
+    protected function compile(array $tables)
     {
-// Primary table
-        $primary = null;
-// Get form create for input file
-        $data = [];
-        $inputs = $this->panel->getAction('create.form', []);
-        if ([] !== $inputs) {
-            $primary = array_get($inputs, 'master');
-            foreach ($inputs as $input => $option) {
-                if (is_numeric($input)) {
-                    $input = $option;
-                    $option = [];
+        if ([] !== $tables) {
+            $primary = '';
+            foreach ($tables as $table => $options) {
+                if (is_numeric($table)) {
+                    unset($tables[$table]);
+                    $table = $options;
+                    $options = [];
+                    $tables[$table] = $options;
                 }
-// Collect table
-                if (str_contains($input, '.')) {
-                    $a = explode('.', $input);
-                    if (null === $primary || 0 === strpos($primary, str_singular($a[1]))) {
-                        $primary = $a[1];
-                    }
-                    if (!isset($data[$a[1]])) {
-                        $data[$a[1]] = [];
-                    }
-                }
-// Check for media files
-                if (isset($option['file'])) {
-                    $data[$a[1]][] = $a[2];
+
+                if ('' === $primary || 0 === strpos($primary, $table)) {
+                    $primary = $table;
                 }
             }
-// Mark primary data table
-            $data['primary'] = $primary;
+
+            return [[$primary, array_pull($tables, $primary, [])], $tables];
         }
 
-        return $data;
+        return [];
+    }
+
+    /**
+     * @param TableInfo $table
+     * @param array $options
+     */
+    protected function checkSequenceColumn(TableInfo $table = null, array &$options)
+    {
+        if (null !== $table && !isset($options['sequence-column']) && null !== $table->getSequence()) {
+            $options['sequence-column'] = $table->getSequence()->getName();
+        }
     }
 }

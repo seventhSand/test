@@ -56,14 +56,15 @@
     </div>
 </div>
 
-@section('script')
-    <script src="{{URL::asset('gentelella/vendors/jquery/dist/jquery.min.js')}}"></script>
-    <script src="{{URL::asset('gentelella/vendors/bootstrap/dist/js/bootstrap.min.js')}}"></script>
-    <script src="{{URL::asset('gentelella/vendors/fastclick/lib/fastclick.js')}}"></script>
-    <script src="{{URL::asset('gentelella/vendors/nprogress/nprogress.js')}}"></script>
-    <script src="{{URL::asset('gentelella/vendors/dropzone/dist/min/dropzone.min.js')}}"></script>
-    <script src="{{URL::asset('gentelella/build/js/custom.min.js')}}"></script>
-@show
+
+<script src="{{URL::asset('gentelella/vendors/jquery/dist/jquery.min.js')}}"></script>
+<script src="{{URL::asset('gentelella/vendors/bootstrap/dist/js/bootstrap.min.js')}}"></script>
+<script src="{{URL::asset('gentelella/vendors/fastclick/lib/fastclick.js')}}"></script>
+<script src="{{URL::asset('gentelella/vendors/nprogress/nprogress.js')}}"></script>
+<script src="{{URL::asset('gentelella/vendors/dropzone/dist/min/dropzone.min.js')}}"></script>
+<script src="{{URL::asset('gentelella/build/js/custom.min.js')}}"></script>
+
+@stack('script')
 </body>
 </html>
 

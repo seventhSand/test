@@ -68,7 +68,12 @@ class StrLaravel
          * @param string $string
          */
         Str::macro('decodeSerialize', function ($string) {
-            return unserialize(base64_decode($string));
+// Safety decoder
+            try {
+                return unserialize(base64_decode($string));
+            } catch(\Exception $e) {
+                return $string;
+            }
         });
 
         /**

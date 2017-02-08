@@ -20,6 +20,7 @@ return [
         'messages' => [
                 'invalid-update' => 'There is no data to update',
                 'success-update' => 'Congratulations. Your data has been updated',
+                'success-insert' => 'Congratulations. Your data has been inserted',
         ],
 
         'title' => [

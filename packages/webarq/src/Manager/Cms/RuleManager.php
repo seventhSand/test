@@ -9,7 +9,9 @@
 namespace Webarq\Manager\Cms;
 
 
+use Wa;
 use Webarq\Manager\AdminManager;
+use Webarq\Model\NoModel;
 
 class RuleManager
 {
@@ -40,16 +42,20 @@ class RuleManager
             '<' => 'isLower',
     ];
 
+    protected $table;
+
     /**
      * @param AdminManager $admin
      * @param array $rules
      * @param array $items
+     * @param mixed $table
      */
-    public function __construct(AdminManager $admin, $rules = [], $items = [])
+    public function __construct(AdminManager $admin, $rules = [], $items = [], $table = null)
     {
         $this->admin = $admin;
         $this->rules = $rules;
         $this->items = $items;
+        $this->table = $table;
     }
 
     /**
@@ -62,18 +68,56 @@ class RuleManager
         } elseif (is_callable($this->rules)) {
             return call_user_func_array($this->rules, [$this->admin, $this->items]);
         } elseif (is_array($this->rules) && [] !== $this->rules) {
-            $and = true === last($this->rules);
-            foreach ($this->rules as $key => $value) {
-                $valid = $this->compareValue($this->getValue($key), $this->getValue($value));
-                if (true === $and && !$valid) {
-                    return false;
-                } elseif ($valid) {
-                    return true;
+            $and = false;
+            if (true === last($this->rules)) {
+                $and = true;
+                array_pop($this->rules);
+            }
+
+            $valid = $this->checkChildRow($this->rules);
+
+            if (!$valid && true === $and) {
+                return false;
+            }
+
+            if ([] !== $this->rules) {
+                foreach ($this->rules as $key => $value) {
+                    $valid = $this->compareValue($this->getValue($key), $this->getValue($value));
+
+                    if (true === $and && !$valid) {
+// All rules should be valid
+                        return false;
+                    } elseif ($valid) {
+// One is enough for us
+                        return true;
+                    }
                 }
+            } else {
+                return $valid;
             }
         }
 
         return false;
+    }
+
+    /**
+     * Check for child rules
+     *
+     * @param array $rules
+     * @return bool
+     */
+    protected function checkChildRow(array &$rules)
+    {
+        $child = array_pull($rules, 'has-child');
+        $parent = array_pull($rules, 'parent-column');
+
+        if (true !== $child && null !== $parent && null !== $this->table) {
+            $id = array_pull($rules, 'primary-column', Wa::table($this->table)->primaryColumn()->getName());
+            return null === NoModel::instance($this->table, $id)
+                    ->where($parent, array_get($this->items, $id))
+                    ->first();
+        }
+        return true;
     }
 
     protected function compareValue($left, $right, $operator = '===')

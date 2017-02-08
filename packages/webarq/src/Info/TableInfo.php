@@ -176,7 +176,7 @@ class TableInfo
             $this->multilingual = true;
         }
 
-        if ('sequence' === $column->getExtra('master')) {
+        if ('sequence' === $column->getMaster()) {
             $this->sequence = $column;
         }
 

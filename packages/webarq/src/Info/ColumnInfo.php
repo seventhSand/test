@@ -117,6 +117,11 @@ class ColumnInfo
     protected $uniques = false;
 
     /**
+     * @var
+     */
+    protected $master;
+
+    /**
      * Create ColumnInfo instance
      *
      * @param array $options
@@ -249,26 +254,6 @@ class ColumnInfo
     }
 
     /**
-     * Column is unique
-     *
-     * @return bool
-     */
-    public function isUnique()
-    {
-        return $this->unique;
-    }
-
-    /**
-     * Column is unique along with another column
-     *
-     * @return bool
-     */
-    public function isUniques()
-    {
-        return $this->uniques;
-    }
-
-    /**
      * Magic method, to get property or extra information
      *
      * @param $key
@@ -296,6 +281,16 @@ class ColumnInfo
     }
 
     /**
+     * Get column master config
+     *
+     * @return mixed
+     */
+    public function getMaster()
+    {
+        return $this->master;
+    }
+
+    /**
      * Get input attributes
      *
      * @return array
@@ -318,6 +313,37 @@ class ColumnInfo
     }
 
     /**
+     * Check if column data type is integer
+     *
+     * @return bool
+     */
+    public function isInt()
+    {
+        return str_contains($this->type, 'int')
+        || in_array($this->type, ['decimal', 'float', 'double', 'numeric', 'real']);
+    }
+
+    /**
+     * Column is unique
+     *
+     * @return bool
+     */
+    public function isUnique()
+    {
+        return $this->unique;
+    }
+
+    /**
+     * Column is unique along with another column
+     *
+     * @return bool
+     */
+    public function isUniques()
+    {
+        return $this->uniques;
+    }
+
+    /**
      * Check if column is multilingual
      *
      * @return bool
@@ -327,17 +353,6 @@ class ColumnInfo
         $value = $this->getExtra('multilingual');
 
         return true === $value || (is_array($value) && [] !== $value);
-    }
-
-    /**
-     * Check if column data type is integer
-     *
-     * @return bool
-     */
-    public function isInt()
-    {
-        return str_contains($this->type, 'int')
-        || in_array($this->type, ['decimal', 'float', 'double', 'numeric', 'real']);
     }
 
     public function __clone()

@@ -12,7 +12,6 @@ namespace App\Http\Controllers\Panel\Helper;
 
 
 use App\Http\Controllers\Panel\BaseController;
-use DB;
 use Illuminate\Support\Str;
 use Request;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
@@ -21,6 +20,7 @@ use Wa;
 use Webarq\Manager\Cms\HTML\Form\Input\FileInputManager;
 use Webarq\Manager\Cms\HTML\FormManager;
 use Webarq\Manager\HTML\Form\LaravelInputHint;
+use Webarq\Model\ConfigurationModel;
 
 class ConfigurationController extends BaseController
 {
@@ -54,7 +54,7 @@ class ConfigurationController extends BaseController
             $this->form = Wa::html('form');
 
             if (is_callable($options)) {
-                $options($this->form);
+                $options($this->form, $this->getValues());
             } else {
                 $this->setFormAction($options);
                 $this->setFormTitle($options);
@@ -65,6 +65,29 @@ class ConfigurationController extends BaseController
                 $this->form = Wa::manager('cms.html.form config', $this->admin, $options);
             }
         }
+    }
+
+    /**
+     * Get form values
+     *
+     * @return array
+     */
+    protected function getValues()
+    {
+        $find = ConfigurationModel::where('module', $this->module->getName())
+                ->where('key', '<>', '48d35125f4a3c2c005d5b0697463c4651704b427')
+                ->get()
+                ->toArray();
+        if ([] !== $find) {
+            foreach ($find as $row) {
+                $rows[$row['key']] = is_numeric($row['setting'])
+                        ? $row['setting'] : Str::decodeSerialize($row['setting']);
+            }
+
+            return $rows;
+        }
+
+        return [];
     }
 
     /**
@@ -97,29 +120,39 @@ class ConfigurationController extends BaseController
 
     public function actionGetEdit()
     {
+        $val = $this->getValues();
+
+        $val['remote-value'] = Str::encodeSerialize($val);
+
+        $this->form->setvalues($val);
+
+        $this->form->addInput('hidden', 'remote-value');
+
         $this->form->compile();
     }
-
 
     public function actionPostEdit()
     {
         if (null !== $this->form) {
-// Add post data in to form builder
             $this->form->setvalues(Request::all());
 
-// Compile the form inputs
             $this->form->compile();
 
             $validator = $this->validator($this->form);
 
             if (!$validator->fails()) {
-                $rows = $this->makeRows();
-                if ([] !== $rows) {
-                    $this->saveRows($rows);
-// Set messages
-                    $this->setTransactionMessage(Wa::trans('webarq.messages.success-update'), 'success');
+                if ([] !== ($rows = $this->makeRows())) {
 
-                    return redirect(Request::url());
+                    if ($this->saveRows($rows) || [] !== $this->inputFiles) {
+
+                        $this->uploadFiles($this->inputFiles);
+
+                        $this->setTransactionMessage(Wa::trans('webarq.messages.success-update'), 'success');
+
+                        return redirect(Request::url());
+                    } else {
+                        $this->form->setAlert([trans('webarq.messages.invalid-update')], 'warning');
+                    }
                 }
             } else {
                 $this->form->setAlert($validator->errors()->getMessages(), 'warning');
@@ -146,10 +179,12 @@ class ConfigurationController extends BaseController
     {
         $inputs = $this->form->getInput();
         if ([] !== $inputs) {
-            $rows = [];
             foreach ($inputs as $name => $input) {
                 if ($input instanceof FileInputManager) {
                     $value = $this->inputFile($input);
+                    if ([] === $value || null === $value) {
+                        continue;
+                    }
                 } else {
                     $value = $input->getValue();
                 }
@@ -164,38 +199,6 @@ class ConfigurationController extends BaseController
         }
 
         return [];
-    }
-
-    protected function saveRows(array $rows)
-    {
-        foreach ($rows as $key => $value) {
-            if (is_array($value)) {
-                $value = Str::encodeSerialize($value);
-            }
-//  Find row
-            $find = DB::table('configurations')
-                ->whereModule($this->module->getName())
-                ->whereKey($key)
-                ->get()
-                ->toArray();
-
-            if ([] !== $find) {
-                unset($rows[$key]);
-            } else {
-                $rows[$key] = [
-                    'module' => $this->module->getName(),
-                    'key' => $key,
-                    'setting' => $value,
-                    'create_on' => Wa::load('manager.value modifier')->datetime()
-                ];
-            }
-        }
-// Insert new row
-        if ([] !== $rows) {
-            $insert = DB::table('configurations')->insert($rows);
-        }
-
-        return !empty($insert);
     }
 
     /**
@@ -217,6 +220,7 @@ class ConfigurationController extends BaseController
                         array_get($options, 'type', 'file'),
                         $item,
                         array_get($options, 'upload-dir', '/'),
+                        array_get($options, 'file-name'),
                         array_get($options, 'resize', [])
                 );
 // Push in to files
@@ -234,6 +238,7 @@ class ConfigurationController extends BaseController
                     array_get($options, 'type', 'file'),
                     $file,
                     array_get($options, 'upload-dir', '/'),
+                    array_get($options, 'file-name'),
                     array_get($options, 'resize', [])
             );
 // Push in to files
@@ -249,18 +254,90 @@ class ConfigurationController extends BaseController
      * @param string $type
      * @param UploadedFile $file
      * @param string $dir
+     * @param mixed $name
      * @param array $resize
      */
-    protected function loadUploader($type, UploadedFile $file, $dir, array $resize = [])
+    protected function loadUploader($type, UploadedFile $file, $dir, $name = null, array $resize = [])
     {
-        $manager = Wa::manager('uploader.' . $type . ' uploader', $file, $dir)
-                ?: Wa::manager('uploader. file uploader', $file, $dir);
+        $manager = Wa::manager('uploader.' . $type . ' uploader', $file, $dir, $name)
+                ?: Wa::manager('uploader. file uploader', $file, $dir, $name);
 
         if ([] !== $resize) {
             $manager->setResize($resize);
         }
 
         return $manager;
+    }
+
+    protected function saveRows(array $rows)
+    {
+        $update = false;
+
+        foreach ($rows as $key => $value) {
+            if (is_array($value)) {
+                $value = Str::encodeSerialize($value);
+            }
+//  Find row
+            $find = ConfigurationModel::whereModule($this->module->getName())
+                    ->whereKey($key)
+                    ->get()
+                    ->toArray();
+
+            if ([] === $find) {
+                $rows[$key] = [
+                        'module' => $this->module->getName(),
+                        'key' => $key,
+                        'setting' => $value,
+                        'create_on' => Wa::load('manager.value modifier')->datetime()
+                ];
+            } else {
+                unset($rows[$key]);
+
+                if (ConfigurationModel::whereKey($key)
+                        ->whereModule($this->module->getName())
+                        ->update(['setting' => $value])
+                ) {
+                    $update = true;
+                }
+            }
+
+            if ([] !== $rows) {
+
+            }
+        }
+// Insert new row
+        if ([] !== $rows) {
+            $insert = ConfigurationModel::insert($rows);
+        }
+
+        return !empty($insert) || $update;
+    }
+
+    /**
+     * File uploader
+     *
+     * @param array $files
+     */
+    protected function uploadFiles(array $files)
+    {
+        $remote = Request::input('remote-value', []);
+        if (!is_array($remote)) {
+            $remote = unserialize(base64_decode($remote));
+        }
+
+        if ([] !== $files) {
+            foreach ($files as $key => $file) {
+// Upload file
+                $file->upload();
+// Unlink old file
+                if (!is_numeric($key) && isset($remote[$key]) && is_file($remote[$key])
+                        && $file->getPathName() !== $remote[$key]
+                ) {
+                    unlink($remote[$key]);
+                }
+            }
+        }
+
     }
 
     public function after()
@@ -272,15 +349,5 @@ class ConfigurationController extends BaseController
         } else {
             return $this->actionGetForbidden();
         }
-    }
-
-    /**
-     * Get form values
-     *
-     * @return array
-     */
-    protected function getValues()
-    {
-        return ['name' => 'Name'];
     }
 }

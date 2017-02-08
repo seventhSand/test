@@ -12,6 +12,7 @@ namespace Webarq\Manager\Cms\HTML\Form;
 
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
+use Webarq\Info\ColumnInfo;
 
 /**
  * Class RulesManager
@@ -44,6 +45,16 @@ class RulesManager
     protected $value;
 
     /**
+     * @var object Webarq\Info\ColumnInfo
+     */
+    protected $column;
+
+    /**
+     * @var object Webarq\Info\TableInfo
+     */
+    protected $table;
+
+    /**
      * Create RulesManager instance
      *
      * Calling all methods which are ended with "Rule" string
@@ -53,6 +64,8 @@ class RulesManager
     public function __construct(array $attributes)
     {
         $this->attributes = $attributes;
+        $this->table = array_get($this->attributes, 'table');
+        $this->column = array_get($this->attributes, 'column');
 
         foreach (get_class_methods($this) as $method) {
             if ('Rule' === substr($method, -4)) {
@@ -205,7 +218,6 @@ class RulesManager
                 $unique = $this->getAttribute('table')->getName() . ',' . $this->getAttribute('column')->getName();
                 if (null !== $this->value) {
                     $unique .= ',' . $this->value;
-                    dd($unique);
                 }
             }
 
@@ -224,7 +236,7 @@ class RulesManager
     protected function fileRule()
     {
         if (null !== ($files = $this->getAttribute('file')) && is_array($files)) {
-            array_forget($files, ['upload-dir', 'resize', 'prefix']);
+            array_forget($files, ['upload-dir', 'resize', 'prefix', 'file-name']);
 
             foreach ($files as $key => $value) {
                 if (is_numeric($key) || 'type' === $key) {

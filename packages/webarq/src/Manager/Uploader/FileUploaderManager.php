@@ -24,9 +24,18 @@ class FileUploaderManager
     protected $dir;
 
     /**
+     * File name
+     *
      * @var
      */
     protected $name;
+
+    /**
+     * Full path file name
+     *
+     * @var
+     */
+    protected $fullPath;
 
     public function __construct(UploadedFile $file, $dir, $name = null)
     {
@@ -58,16 +67,21 @@ class FileUploaderManager
 
     public function upload()
     {
-        return $this->file->move($this->dir, $this->getName());
+        return $this->file->move(public_path($this->dir), $this->getName());
     }
 
     /**
-     * @param bool|true $ext
      * @return mixed
      */
-    public function getName($ext = true)
+    public function getName()
     {
-        return $this->name . (true === $ext ? '.' . $this->file->getClientOriginalExtension() : '');
+// Make sure file name has it's extension
+        $ext = $this->file->getClientOriginalExtension();
+        if (!ends_with($this->name, $ext)) {
+            return $this->name . '.' . $ext;
+        }
+
+        return $this->name;
     }
 
     /**
@@ -81,18 +95,27 @@ class FileUploaderManager
         if (null === $name) {
             $name = $this->file->getClientOriginalName();
             $name = substr($name, 0, strrpos($name, '.'));
-        }
-        $name = str_slug(strtolower($name));
 
-        if (true === $uniqueId) {
-            $name = uniqid() . '-' . $name;
+            if (true === $uniqueId) {
+                $name = uniqid() . '-' . $name;
+            }
         }
+
+        $name = str_slug(strtolower($name));
 
         $this->name = $name;
     }
 
     public function getPathName()
     {
-        return $this->dir . '/' . $this->getName();
+        if (null === $this->fullPath) {
+            if ('/' !== $this->dir) {
+                $this->fullPath = trim($this->dir, '/') . '/';
+            }
+
+            $this->fullPath .= $this->getName();
+        }
+
+        return $this->fullPath;
     }
 }

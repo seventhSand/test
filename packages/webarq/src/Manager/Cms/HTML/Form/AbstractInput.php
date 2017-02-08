@@ -307,13 +307,21 @@ abstract class AbstractInput
     }
 
     /**
+     * @return mixed
+     */
+    public function getDefault()
+    {
+        return $this->default;
+    }
+
+    /**
      * @param $value
      */
     public function setValue($value)
     {
         $this->rules->setValue($value);
 
-        $this->value = $value;
+        $this->value = null !== $value ? $value : $this->value;
     }
 
     /**
@@ -373,9 +381,13 @@ abstract class AbstractInput
         return property_exists($this, $key) ? $this->{$key} : null;
     }
 
+    /**
+     * Manage how an input cloned
+     */
     public function __clone()
     {
         $this->attribute = clone $this->attribute;
+        $this->value = null;
 
         if (true === $this->multilingual) {
             $this->setRule();

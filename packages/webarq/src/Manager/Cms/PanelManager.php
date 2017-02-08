@@ -296,7 +296,7 @@ class PanelManager
 // Pull out rules from button settings
                     $rules = array_pull($options, 'rules', []);
 
-                    if (Wa::manager('cms.rule', $this->admin, $rules, $row)->isValid()) {
+                    if (Wa::manager('cms.rule', $this->admin, $rules, $row, $panel->getTable())->isValid()) {
                         $options['permalink'] = $this->generateURL(array_get($options, 'permalink'),
                                 $module->getName(), $panel->getName(), $action, $row);
 

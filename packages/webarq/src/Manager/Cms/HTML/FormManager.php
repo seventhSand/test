@@ -10,6 +10,7 @@ namespace Webarq\Manager\Cms\HTML;
 
 use Form;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Str;
 use Wa;
 use Webarq\Manager\AdminManager;
 use Webarq\Manager\Cms\HTML\Form\AbstractInput;
@@ -162,6 +163,13 @@ class FormManager
      */
     protected $editingRowId;
 
+    /**
+     * Sequence input, in [input => column info] pair
+     *
+     * @var array
+     */
+    protected $sequenceInputs = [];
+
     public function __construct(AdminManager $admin, array $options = [])
     {
         $this->admin = $admin;
@@ -298,7 +306,7 @@ class FormManager
         }
 
         if (is_array($this->values)) {
-            $this->html .= Form::hidden('remote-value', base64_encode(serialize($this->values)));
+            $this->html .= Form::hidden('remote-value', Str::encodeSerialize($this->values));
         }
 
         $this->setEditingRowId($id);
@@ -386,15 +394,58 @@ class FormManager
                 if ('edit' === $this->type && $input->attribute()->has('unique')) {
                     $input->rules->setItem('unique', $input->rules->getItem('unique') . ',' . $this->editingRowId);
                 }
+// Check for input sequence
+                $this->modifySequenceRule($input);
+
 // Collect input validator
                 $this->collectInputValidator($input);
 
                 $this->html .= $input->buildHtml();
             }
+
+            if (isset($sequence)) {
+
+            }
         }
 
         if (null !== \Request::input('remote-value')) {
             $this->html .= Form::hidden('remote-value', \Request::input('remote-value'));
+        }
+    }
+
+    /**
+     * @param AbstractInput $input
+     */
+    protected function modifySequenceRule(AbstractInput $input)
+    {
+        if (null !== $input->column && 'sequence' === $input->column->getMaster()) {
+            $newItem = 'create' === $this->type;
+            $remotes = [];
+// Check for remote value
+            if ('edit' === $this->type) {
+                $remotes = \Request::input('remote-value');
+                if (null !== $remotes) {
+                    $remotes = Str::decodeSerialize($remotes);
+                }
+            }
+
+            $max = \DB::table($input->table->getName());
+            if (null !== ($parents = $input->attribute()->get('grouping-column'))) {
+                foreach ((array)$parents as $column) {
+                    if (null !== ($ipt = array_get($this->inputs, $column))) {
+                        $max->where($ipt->column->getName(), $ipt->getValue());
+                        if (is_numeric($ipt->getValue())
+                                && (int)$ipt->getValue() !== (int)array_get($remotes, $column)
+                        ) {
+                            $newItem = true;
+                        }
+                    }
+                }
+            }
+
+            $input->rules->setItem('max', $max->get()->count() + ($newItem ? 1 : 0));
+
+            $this->sequenceInputs[$column] = $input;
         }
     }
 
@@ -440,6 +491,13 @@ class FormManager
         ]);
     }
 
+    /**
+     * @return array
+     */
+    public function getSequenceInput()
+    {
+        return $this->sequenceInputs;
+    }
 
     /**
      * Modify value based on modifier config

@@ -33,14 +33,15 @@ return [
                                                         'enctype' => 'multipart/form-data'
                                                 ],
                                                 'favicon' => [
+                                                        'info' => 'Please use image in 16px X 16px dimension',
                                                         'file' => [
                                                                 'type' => 'image',
                                                                 'mimes' => ['png', 'ico'],
                                                                 'max' => 1024,
-                                                                'upload-dir' => 'site/uploads/media',
+                                                                'file-name' => 'favicon',
                                                                 'resize' => [
-                                                                        'width' => 12,
-                                                                        'height' => 12,
+                                                                        'width' => 16,
+                                                                        'height' => 16
                                                                 ]
                                                         ]
                                                 ],
@@ -51,6 +52,10 @@ return [
                                                 'meta_description' => [
                                                         'type' => 'textarea',
                                                         'rules' => 'required'
+                                                ],
+                                                'online' => [
+                                                        'type' => 'select',
+                                                        'options' => ['Offline', 'Online'],
                                                 ]
                                         ]
                                 ]
@@ -157,18 +162,11 @@ return [
                                                 'attributes' => [
                                                         'enctype' => 'multipart/form-data',
                                                 ],
-                                                'system.menus.title' => [
-                                                        'referrer' => 'seo-url'
-                                                ],
-                                                'system.menus.template',
-                                                'system.menus.permalink' => [
-                                                        'type' => 'text',
-                                                        'class' => '.seo-url'
-                                                ],
                                                 'system.menus.parent_id' => [
+                                                        'name' => 'parental',
 // Allow system to build select input, and get options from mentioned table
                                                         'type' => 'select table',
-                                                        'title' => 'Pare nt Menu',
+                                                        'title' => 'Parent Menu',
                                                         'source-table' => [
 // Table name, while not set will get current input table
                                                                 'name' => 'menus',
@@ -178,18 +176,23 @@ return [
                                                         'blank-option' => [0 => 'This is a parent menu'],
 
                                                 ],
-                                                'system.menus.sequence'
-                                        ]
-                                ],
-                                'edit' => [
-                                        'form' => [
                                                 'system.menus.title' => [
-                                                        'referrer' => 'seo-url'
+                                                        'referrer' => '.seo-url'
                                                 ],
                                                 'system.menus.template',
                                                 'system.menus.permalink' => [
                                                         'type' => 'text',
-                                                        'class' => '.seo-url'
+                                                        'class' => 'seo-url'
+                                                ],
+                                                'system.menus.sequence' => [
+                                                        'parent-column' => 'parental'
+                                                ]
+                                        ]
+                                ],
+                                'edit' => [
+                                        'form' => [
+                                                'attributes' => [
+                                                        'enctype' => 'multipart/form-data',
                                                 ],
                                                 'system.menus.parent_id' => [
 // Allow system to build select input, and get options from mentioned table
@@ -204,7 +207,17 @@ return [
                                                         'blank-option' => [0 => 'This is a parent menu'],
 
                                                 ],
-                                                'system.menus.sequence'
+                                                'system.menus.title' => [
+                                                        'referrer' => '.seo-url'
+                                                ],
+                                                'system.menus.template',
+                                                'system.menus.permalink' => [
+                                                        'type' => 'text',
+                                                        'class' => 'seo-url'
+                                                ],
+                                                'system.menus.sequence' => [
+                                                        'parent-column' => 'parent_id'
+                                                ]
                                         ]
                                 ],
                                 'activeness',

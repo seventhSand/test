@@ -6,10 +6,9 @@
  * Time: 6:46 PM
  */ ?>
 
-@section('script')
-    @parent
-    <script src="{{URL::asset('plugins/webarq/js/function.js')}}"></script>
-@stop
+@push('script')
+    <script src="{{URL::asset('plugins/webarq/js/form.js')}}"></script>
+@endpush
 
 <div class="box-header with-border">
     <h3 class="box-title">{{ $title }}</h3>

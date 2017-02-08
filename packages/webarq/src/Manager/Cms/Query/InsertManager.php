@@ -10,8 +10,10 @@ namespace Webarq\Manager\Cms\Query;
 
 
 use DB;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Arr;
 use Wa;
+use Webarq\Info\ColumnInfo;
 use Webarq\Info\TableInfo;
 
 class InsertManager extends QueryManager
@@ -19,9 +21,10 @@ class InsertManager extends QueryManager
     protected $formType = 'create';
 
     /**
-     * @return bool
+     * @param array $columns
+     * @return null|array
      */
-    public function execute()
+    public function execute(array $columns = [])
     {
         if ([] !== $this->post && !is_null($this->master)) {
 // Master data should be inserted before another
@@ -37,17 +40,14 @@ class InsertManager extends QueryManager
                 $this->rowBinder($model, $row);
 // Save
                 $model->save();
-// Last inserted id
-                $id = $model->{$model->getKeyName()};
+// Collect inserted id
+                $id[$this->master] = $model->{$model->getKeyName()};
 // Translation
                 $tr = array_pull($this->post, 'translation', []);
-                $this->translation($id, $m, $tr);
-// Support rows
-
-                $this->supportData($id, $m, $this->post);
+                $this->insertTranslation($id[$this->master], $m, $tr);
+// Secondary row
+                return array_merge($id, $this->insertSecondaryRow($id[$this->master], $m, $this->post));
             }
-
-            return true;
         }
     }
 
@@ -56,7 +56,7 @@ class InsertManager extends QueryManager
      * @param TableInfo $table
      * @param array $rows
      */
-    protected function translation($id, TableInfo $table, array $rows = [])
+    protected function insertTranslation($id, TableInfo $table, array $rows = [])
     {
         if ($table->isMultiLingual() && [] !== $rows) {
 // Table name translation
@@ -84,14 +84,17 @@ class InsertManager extends QueryManager
      * @param $id
      * @param TableInfo $master
      * @param array $groups
+     * @return array
      */
-    protected function supportData($id, TableInfo $master, array $groups)
+    protected function insertSecondaryRow($id, TableInfo $master, array $groups)
     {
+        $ids = [];
         foreach ($groups as $table => $rows) {
             $t = Wa::table($table);
             if (Arr::isAssoc($rows)) {
                 $rows = [$rows];
             }
+// We need to collect inserted id, so just inserted row by row
             foreach ($rows as $row) {
 // Initiate model
                 $model = $this->initiateModel($table);
@@ -103,7 +106,11 @@ class InsertManager extends QueryManager
                 $this->rowBinder($model, $row);
 // Save
                 $model->save();
+// Collect inserted id
+                $ids[$table][] = $model->{$model->getKeyName()};
             }
         }
+
+        return $ids;
     }
 }

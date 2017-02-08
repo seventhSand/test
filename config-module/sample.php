@@ -22,6 +22,8 @@ return [
 //                                'table' => 'samples',
                                 'headers' => [
                                         'columns' => [
+                                                'sequence',
+                                                'parent_id',
                                                 'title',
                                                 'file' => [
 // Modify value before rendering. All modifier should be
@@ -83,13 +85,32 @@ return [
                                                 ],
 // Add form title
                                                 'title' => 'Create Sample',
+                                                'sample.samples.parent_id' => [
+                                                        'name' => 'parental',
+// Allow system to build select input, and get options from mentioned table
+                                                        'type' => 'select table',
+                                                        'title' => 'Parent Menu',
+                                                        'source-table' => [
+// Table name, while not set will get current input table
+                                                                'name' => 'samples',
+// Column for select option value, and select option label
+                                                                'column' => ['id', 'title', 'parent_id']
+                                                        ],
+// Enable option tree, the value would be column name used to grouping the option
+                                                        'traverse' => 'parent_id',
+// Default input value
+//                                                        'default' => 0,
+// Enable blank select option
+                                                        'blank-option' => [0 => 'This is a parent sample'],
+
+                                                ],
 // Following by input key => attributes
 // Input key should be following "moduleName.tableName.columnName" format name
                                                 'sample.samples.title' => [
                                                         'length' => '100',
                                                         'error-messages' => [
-                                                                'required' => 'Should be blank'
-                                                        ],
+                                                                'required' => 'Please fill the title'
+                                                        ]
 // Multilingual input
 // 1      : will inherited source input rules
 // true   : will ignored source input rules
@@ -117,7 +138,9 @@ return [
                                                 'sample.samples.description',
                                                 'sample.samples.sequence' => [
 // Do not show input on the form
-//                                                        'invisible' => true
+//                                                        'invisible' => true,
+// Uncomment this when sequence column depending on another input value
+                                                        'grouping-column' => 'parental'
                                                 ],
                                         ]
                                 ],
@@ -132,10 +155,26 @@ return [
                                                 ],
 // Add form title
                                                 'title' => 'Edit Sample',
+                                                'sample.samples.parent_id' => [
+                                                        'name' => 'parental',
+// Allow system to build select input, and get options from mentioned table
+                                                        'type' => 'select table',
+                                                        'title' => 'Parent Menu',
+                                                        'source-table' => [
+// Table name, while not set will get current input table
+                                                                'name' => 'samples',
+// Column for select option value, and select option label
+                                                                'column' => ['id', 'title']
+                                                        ],
+                                                        'blank-option' => [0 => 'This is a parent sample'],
+                                                        'rules' => 'not_in:' . Request::segment(7)
+
+                                                ],
 // Following by input key => attributes
 // Input key should be following "moduleName.tableName.columnName" format name
                                                 'sample.samples.title' => [
-                                                        'length' => '100'
+                                                        'length' => '100',
+                                                        'value' => 'Jack'
                                                 ],
                                                 'sample.samples.file' => [
                                                         'permissions' => 'upload',
@@ -157,10 +196,30 @@ return [
                                                         'ignored' => true
                                                 ],
                                                 'sample.samples.description',
-                                                'sample.samples.sequence'
+                                                'sample.samples.sequence' => [
+// Do not show input on the form
+//                                                        'invisible' => true,
+// Uncomment this when sequence column depending on another input value
+                                                        'grouping-column' => 'parental'
+                                                ]
                                         ]
                                 ],
-                                'delete',
+                                'delete' => [
+                                        'rules' => [
+// When we want to protect a parent  which have child, then these two config should be set,
+// or it would not work correctly
+                                                'has-child' => false,
+                                                'parent-column' => 'parent_id'
+                                        ],
+                                        'tables' => [
+                                                'samples' => [
+// The table has column(s) contain file path, and we need to delete the file(s) as well
+                                                        'mime-column' => 'file',
+// The table has a sequence column, fixed the others sequence while deleting the row
+                                                        'sequence-column' => 'sequence:parent_id',
+                                                ]
+                                        ]
+                                ],
                                 'export' => [
                                         'placement' => ['header', 'listing'],
 // Limit options, number of limit or array of [offset, number of limit]

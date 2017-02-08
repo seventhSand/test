@@ -49,7 +49,6 @@ function isValidURL(str, protocol) {
 
 $(document).ready(function(){
 
-    console.log('halo');
 });
 
 $(function () {

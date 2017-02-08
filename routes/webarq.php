@@ -6,7 +6,7 @@
  * Time: 12:18 PM
  */
 
-if (Wa::config('system.configs.queryLog')) {
+if (config('webarq.system.query-log')) {
     DB::enableQueryLog();
 }
 
