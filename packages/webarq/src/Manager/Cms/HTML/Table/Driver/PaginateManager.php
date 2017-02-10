@@ -80,6 +80,25 @@ class PaginateManager extends AbstractManager
     }
 
     /**
+     * @param array $columns
+     * @param $query
+     * @return $this
+     */
+    public function buildSearch(array $columns, $query)
+    {
+        if (null !== $query) {
+            foreach ($columns as $column) {
+                if (is_array($column)) {
+
+                } else {
+                    $this->builder->where($column, 'like', '%' . $query . '%');
+                }
+            }
+        }
+        return $this;
+    }
+
+    /**
      * @param null|string $view
      * @return string
      */

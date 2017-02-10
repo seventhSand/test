@@ -11,7 +11,9 @@ namespace App\Http\Controllers\Panel\Helper;
 
 use App\Http\Controllers\Panel\BaseController;
 use DB;
+use Illuminate\Support\Arr;
 use Wa;
+use Webarq\Info\PanelInfo;
 use Webarq\Info\TableInfo;
 use Webarq\Model\NoModel;
 
@@ -39,7 +41,7 @@ class DeleteController extends BaseController
             if ([] === ($rules = array_get($op, 'rules', []))
                     || Wa::manager('cms.rule', $this->admin, $rules, $rw, $this->panel->getTable())->isValid()
             ) {
-                $tb = $this->compile(array_pull($op, 'tables', []));
+                $tb = $this->compile($op);
 
                 if ([] !== $tb) {
                     list($primary, $secondaries) = $tb;
@@ -78,11 +80,17 @@ class DeleteController extends BaseController
     }
 
     /**
-     * @param array $tables
+     * @param array $options
      * @return array
      */
-    protected function compile(array $tables)
+    protected function compile(array &$options = [])
     {
+        $tables = array_pull($options, 'tables', []);
+
+        if ([] === $tables) {
+            $tables = $this->checkTable($this->panel);
+        }
+
         if ([] !== $tables) {
             $primary = '';
             foreach ($tables as $table => $options) {
@@ -99,6 +107,53 @@ class DeleteController extends BaseController
             }
 
             return [[$primary, array_pull($tables, $primary, [])], $tables];
+        }
+
+        return [];
+    }
+
+    /**
+     * @param PanelInfo|null $panel
+     * @return array
+     */
+    protected function checkTable(PanelInfo $panel = null)
+    {
+        if (null !== $panel) {
+            if ([] !== ($inputs = $panel->getAction('create.form', []))) {
+                $tables = [];
+                foreach ($inputs as $input => $setting) {
+                    if (is_numeric($input)) {
+                        $input = $setting;
+                        $setting = [];
+                    }
+// This is a must
+                    if (2 !== substr_count($input, '.')) continue;
+
+                    list($module, $table, $column) = explode('.', $input);
+
+                    if (!isset($tables[$table])) {
+                        $tables[$table] = [];
+                    }
+
+                    if (null !== Wa::table($table)) {
+                        if (null !== ($config = Wa::table($table)->getColumn($column))) {
+                            $setting = Arr::merge($config->unserialize(), $setting);
+                        }
+
+                        if ('sequence' === array_get($setting, 'master')) {
+                            $tables[$table]['sequence-column'] = $column;
+                        }
+
+                        if (null !== array_get($setting, 'file')) {
+                            $tables[$table]['mime-column'] = $column;
+                        }
+                    }
+                }
+
+                return $tables;
+            } else {
+                return [$panel->getTable(), []];
+            }
         }
 
         return [];

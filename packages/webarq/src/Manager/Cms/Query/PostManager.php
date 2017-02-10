@@ -130,7 +130,7 @@ class PostManager
             }
         } else {
             if (null === $file) {
-                return null;
+                return $input->getDefault();
             }
 
 // Init uploader

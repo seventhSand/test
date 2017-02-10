@@ -21,14 +21,14 @@ class RuleManager
     protected $admin;
 
     /**
-     * @var array
+     * @var array|callback
      */
     protected $rules;
 
     /**
      * @var array
      */
-    protected $items;
+    protected $items = [];
 
     protected $operator = [
             '===' => 'isIdentical',
@@ -46,15 +46,15 @@ class RuleManager
 
     /**
      * @param AdminManager $admin
-     * @param array $rules
+     * @param array|callback $rules
      * @param array $items
      * @param mixed $table
      */
     public function __construct(AdminManager $admin, $rules = [], $items = [], $table = null)
     {
         $this->admin = $admin;
-        $this->rules = $rules;
-        $this->items = $items;
+        $this->rules = !is_string($rules) && is_callable($rules) ? $rules : (array)$rules;
+        $this->items = (array)$items;
         $this->table = $table;
     }
 
@@ -63,10 +63,10 @@ class RuleManager
      */
     public function isValid()
     {
-        if ([] === $this->rules || [] === $this->items) {
-            return true;
-        } elseif (is_callable($this->rules)) {
+        if (!is_string($this->rules) && is_callable($this->rules)) {
             return call_user_func_array($this->rules, [$this->admin, $this->items]);
+        } elseif ([] === $this->rules || [] === $this->items) {
+            return true;
         } elseif (is_array($this->rules) && [] !== $this->rules) {
             $and = false;
             if (true === last($this->rules)) {
@@ -82,7 +82,13 @@ class RuleManager
 
             if ([] !== $this->rules) {
                 foreach ($this->rules as $key => $value) {
-                    $valid = $this->compareValue($this->getValue($key), $this->getValue($value));
+                    if (!is_string($value) && is_callable($value)) {
+                        $valid = $value($this->admin, $this->items);
+                    } elseif (is_numeric($key)) {
+                        $valid = $this->groupRules($value);
+                    } else {
+                        $valid = $this->compareValue($this->getValue($key), $this->getValue($value));
+                    }
 
                     if (true === $and && !$valid) {
 // All rules should be valid
@@ -98,6 +104,29 @@ class RuleManager
         }
 
         return false;
+    }
+
+    /**
+     * @param array $groups
+     * @return bool
+     */
+    protected function groupRules(array $groups)
+    {
+        if ([] !== $groups) {
+            foreach ($groups as $key => $value) {
+                if (!is_string($value) && is_callable($value)) {
+                    $valid = $value($this->admin, $this->items);
+                } else {
+                    $valid = $this->compareValue($this->getValue($key), $this->getValue($value));
+                }
+
+                if (!$valid) {
+                    return false;
+                }
+            }
+        }
+
+        return true;
     }
 
     /**
@@ -120,6 +149,12 @@ class RuleManager
         return true;
     }
 
+    /**
+     * @param $left
+     * @param $right
+     * @param string $operator
+     * @return bool
+     */
     protected function compareValue($left, $right, $operator = '===')
     {
         if (is_array($right) && isset($this->operator[$right[0]])) {
@@ -128,18 +163,21 @@ class RuleManager
                 $right = array_shift($right);
             }
         }
+
         if (!is_array($left) && is_array($right)) {
             return in_array($left, $right);
         } else {
-            return $this->{$this->operator[$operator]}($left, $right);
+            return $this->{$this->operator[$operator]}($this->safeValue($left), $this->safeValue($right));
         }
     }
 
+    /**
+     * @param $value
+     * @return mixed
+     */
     protected function getValue($value)
     {
-        if (is_callable($value)) {
-            $value = call_user_func_array($this->rules, [$this->admin, $this->items]);
-        } elseif (is_string($value) && str_contains($value, '.')) {
+        if (is_string($value) && str_contains($value, '.')) {
             list($property, $path) = explode('.', $value, 2);
             $method = 'get' . ucfirst(strtolower($property));
             if (method_exists($this, $method)) {
@@ -147,7 +185,16 @@ class RuleManager
             }
         }
 
-        return is_numeric($value) ? (int)$value : $value;
+        return $this->safeValue($value);
+    }
+
+    /**
+     * @param $value
+     * @return mixed
+     */
+    protected function safeValue($value)
+    {
+        return is_numeric($value) ? (str_contains($value, '.') ? (float)$value : (int)$value) : $value;
     }
 
     /**

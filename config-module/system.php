@@ -167,9 +167,9 @@ return [
 // Allow system to build select input, and get options from mentioned table
                                                         'type' => 'select table',
                                                         'title' => 'Parent Menu',
-                                                        'source-table' => [
+                                                        'sources' => [
 // Table name, while not set will get current input table
-                                                                'name' => 'menus',
+                                                                'table' => 'menus',
 // Column for select option value, and select option label
                                                                 'column' => ['id', 'title']
                                                         ],
@@ -185,7 +185,7 @@ return [
                                                         'class' => 'seo-url'
                                                 ],
                                                 'system.menus.sequence' => [
-                                                        'parent-column' => 'parental'
+                                                        'grouping-column' => 'parental'
                                                 ]
                                         ]
                                 ],

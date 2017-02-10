@@ -73,6 +73,13 @@ class TableManager extends \Webarq\Manager\HTML\TableManager
     protected $table;
 
     /**
+     * Searchable column
+     *
+     * @var array
+     */
+    protected $searchable = [];
+
+    /**
      * Create CMS\TableManager instance
      *
      * @param AdminManager $admin
@@ -88,6 +95,10 @@ class TableManager extends \Webarq\Manager\HTML\TableManager
 
         $settings = $panel->getListing();
         $this->setPropertyFromOptions($settings);
+
+        if (null !== $this->searchable && !is_array($this->searchable)) {
+            $this->searchable = explode(',', $this->searchable);
+        }
 
         $this->collectPagination();
 
@@ -207,7 +218,9 @@ class TableManager extends \Webarq\Manager\HTML\TableManager
         if (null === $this->driver) {
             $this->driver = Wa::manager('cms.HTML!.table.driver.paginate',
                     Wa::table($this->table ?: $this->panel->getTable()), $columns, $this->pagination[0])
-                    ->buildSequence($this->sequence);
+                    ->buildSequence($this->sequence)
+                    ->buildSearch($this->searchable, \Request::input('q'));
+
         } else {
             $args = $this->driver;
             if (!is_array($args)) {

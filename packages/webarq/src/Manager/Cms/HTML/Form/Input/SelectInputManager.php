@@ -29,12 +29,11 @@ class SelectInputManager extends AbstractInput
 
     protected function buildInput()
     {
-        if (is_callable($this->options)) {
-            $method = $this->options;
-            $this->options = $method();
+        if (is_callable($method = $this->options)) {
+            $this->options = $method($this->value);
+        } else {
+            $this->setBlankOption();
         }
-
-        $this->setBlankOption();
 
         return \Form::select($this->name, $this->options, $this->value, $this->attribute->toArray());
     }

@@ -22,6 +22,7 @@ return [
 //                                'table' => 'samples',
                                 'headers' => [
                                         'columns' => [
+                                                'id',
                                                 'sequence',
                                                 'parent_id',
                                                 'title',
@@ -37,9 +38,6 @@ return [
                                         ],
 // Add container head (normally is thead)
                                         'container' => 'thead'
-                                ],
-                                'filter' => [
-
                                 ],
 // Default listing sequence, give array for multiple column sequence
                                 'sequence' => 'sequence',
@@ -90,14 +88,15 @@ return [
 // Allow system to build select input, and get options from mentioned table
                                                         'type' => 'select table',
                                                         'title' => 'Parent Menu',
-                                                        'source-table' => [
+                                                        'sources' => [
 // Table name, while not set will get current input table
-                                                                'name' => 'samples',
+                                                                'table' => 'samples',
 // Column for select option value, and select option label
-                                                                'column' => ['id', 'title', 'parent_id']
+                                                                'column' => ['id', 'title']
                                                         ],
-// Enable option tree, the value would be column name used to grouping the option
-                                                        'traverse' => 'parent_id',
+// Enable option tree
+// String column name which using for traversing or "true" as an alias for "parent_id"
+                                                        'traverse' => true,
 // Default input value
 //                                                        'default' => 0,
 // Enable blank select option
@@ -133,7 +132,9 @@ return [
                                                                         'width' => 200,
                                                                         'height' => 200,
                                                                 ]
-                                                        ]
+                                                        ],
+                                                        'notnull' => false,
+                                                        'default' => ''
                                                 ],
                                                 'sample.samples.description',
                                                 'sample.samples.sequence' => [
@@ -159,13 +160,19 @@ return [
                                                         'name' => 'parental',
 // Allow system to build select input, and get options from mentioned table
                                                         'type' => 'select table',
-                                                        'title' => 'Parent Menu',
-                                                        'source-table' => [
+                                                        'title' => 'Parent Sample',
+                                                        'sources' => [
 // Table name, while not set will get current input table
-                                                                'name' => 'samples',
+                                                                'table' => 'samples',
 // Column for select option value, and select option label
                                                                 'column' => ['id', 'title']
                                                         ],
+// Enable option tree
+// String column name which using for traversing or "true" as an alias for "parent_id"
+                                                        'traverse' => true,
+// Default input value
+//                                                        'default' => 0,
+// Enable blank select option
                                                         'blank-option' => [0 => 'This is a parent sample'],
                                                         'rules' => 'not_in:' . Request::segment(7)
 
@@ -195,7 +202,10 @@ return [
 // Ignored when field is empty
                                                         'ignored' => true
                                                 ],
-                                                'sample.samples.description',
+                                                'sample.samples.description' => [
+                                                        'class' => 'ckeditor',
+                                                        'id' => 'editor1'
+                                                ],
                                                 'sample.samples.sequence' => [
 // Do not show input on the form
 //                                                        'invisible' => true,
@@ -205,11 +215,29 @@ return [
                                         ]
                                 ],
                                 'delete' => [
+// Rules as callback.
+// Accept two parameters which is object $admin and array $row
+//                                        'rules' => function($admin, $row) {
+//                                                return 1 !== array_get($row, 'id');
+//                                        },
                                         'rules' => [
-// When we want to protect a parent  which have child, then these two config should be set,
-// or it would not work correctly
-                                                'has-child' => false,
-                                                'parent-column' => 'parent_id'
+// How to filter an item
+// Delete item when has no child, and parent column would be "parent_id"
+//                                                'has-child' => false,
+//                                                'parent-column' => 'parent_id',
+// Using callback which is accept two parameters which is object $admin and array $row
+// Delete item only when item id not identical with 1
+//                                                'item.id' => function($admin, $row) {
+//                                                        return 1 !== array_get($row, 'id');
+//                                                },
+// Delete item only when item title identical with "some title"
+// or item id identical with 1
+//                                                'item.title' => ['===', 'some title'],
+//                                                'item.id' => ['===', 1],
+// Delete item only when item id not identical with 1, and item title is not identical   "some title"
+//                                                ['item.id' => ['!==', 1], 'item.title' => ['!==', 'some title']],
+// Set last item to make sure all rules is valid
+//                                                true
                                         ],
                                         'tables' => [
                                                 'samples' => [

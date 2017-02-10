@@ -66,7 +66,7 @@
         </div>
 
         <div class="form-group has-feedback{{ isset($messages['password']) ? ' bad' : '' }}">
-            <input type="text" name="password" class="form-control" placeholder="Password">
+            <input type="password" name="password" class="form-control" placeholder="Password">
             <span class="glyphicon glyphicon-lock form-control-feedback"></span>
         </div>
         <div class="row">

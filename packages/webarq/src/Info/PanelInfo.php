@@ -11,6 +11,7 @@
 namespace Webarq\Info;
 
 
+use Wa;
 use Webarq\Manager\setPropertyManagerTrait;
 
 /**
@@ -166,10 +167,8 @@ class PanelInfo
     {
         if (null === $this->title) {
             $this->title = ucfirst($this->name);
-            if (false !== ($var = strpos())) {
-
-            }
         }
+
         return $this->title ?: ucfirst($this->name);
     }
 
@@ -178,11 +177,13 @@ class PanelInfo
      */
     protected function setTitle()
     {
-        if (!isset($this->title)) {
+        if (null === $this->title) {
             $this->title = $str = $this->name;
             if (str_contains($str, ':')) {
                 list($this->title, $this->table) = explode(':', $str, 2);
             }
+
+            $this->title = Wa::trans($this->title);
         }
     }
 
